@@ -44,7 +44,7 @@ npm run build
 
 Build command: `npm run build`. Output directory: `dist`.
 
-If your Cloudflare project runs deploys via `wrangler deploy` (Cloudflare's unified Workers/Pages experience, as opposed to the older `wrangler pages deploy`), `wrangler.toml` at the repo root configures it to serve `dist` as static assets with SPA routing (`not_found_handling = "single-page-application"`). This is deliberate: Wrangler's auto-detected Vite integration requires Vite 6+, and this project is on Vite 5, so the explicit `[assets]` config sidesteps that auto-configuration step entirely. `public/_redirects` is kept for hosts (like classic Cloudflare Pages or Firebase Hosting) that use that convention instead.
+If your Cloudflare project runs deploys via `wrangler deploy` (Cloudflare's unified Workers/Pages experience, as opposed to the older `wrangler pages deploy`), `wrangler.toml` at the repo root configures it to serve `dist` as static assets with SPA routing (`not_found_handling = "single-page-application"`). This is deliberate: Wrangler's auto-detected Vite integration requires Vite 6+, and this project is on Vite 5, so the explicit `[assets]` config sidesteps that auto-configuration step entirely. There's no `public/_redirects` file — a `/* /index.html 200` rule there fought with `not_found_handling` and Cloudflare's asset engine flagged it as a redirect loop. Firebase Hosting doesn't use `_redirects` either; its SPA fallback comes from the `rewrites` entry in `firebase.json`.
 
 Set the `VITE_FIREBASE_*` variables from `.env.example` in the Cloudflare project's environment variables (Production and Preview) — Vite inlines them at build time, so they must be set there, not just in a local `.env.local`.
 
