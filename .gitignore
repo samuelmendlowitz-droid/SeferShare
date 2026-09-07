@@ -8,6 +8,7 @@ vite.config.js
 *.local
 .firebase
 firebase-debug.log
+.wrangler
 functions/node_modules
 functions/lib
 .DS_Store

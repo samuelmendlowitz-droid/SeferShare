@@ -40,9 +40,15 @@ npm run build
    ```
    This also flips their Firestore `users/{uid}.isAdmin` field manually (used for UI gating) — the custom claim is what Firestore/Functions security actually checks.
 
-### Cloudflare Pages
+### Cloudflare
 
-Build command: `npm run build`. Output directory: `dist`. `public/_redirects` is copied into `dist` automatically so client-side routes resolve.
+Build command: `npm run build`. Output directory: `dist`.
+
+If your Cloudflare project runs deploys via `wrangler deploy` (Cloudflare's unified Workers/Pages experience, as opposed to the older `wrangler pages deploy`), `wrangler.toml` at the repo root configures it to serve `dist` as static assets with SPA routing (`not_found_handling = "single-page-application"`). This is deliberate: Wrangler's auto-detected Vite integration requires Vite 6+, and this project is on Vite 5, so the explicit `[assets]` config sidesteps that auto-configuration step entirely. `public/_redirects` is kept for hosts (like classic Cloudflare Pages or Firebase Hosting) that use that convention instead.
+
+Set the `VITE_FIREBASE_*` variables from `.env.example` in the Cloudflare project's environment variables (Production and Preview) — Vite inlines them at build time, so they must be set there, not just in a local `.env.local`.
+
+**Important**: keep `VITE_FIREBASE_AUTH_DOMAIN` set to the Firebase Hosting domain (e.g. `<project>.web.app`) even when the app itself is served from Cloudflare. Only Firebase Hosting knows how to proxy the reserved `/__/auth/**` paths Google sign-in depends on; serving the app from a different domain than `authDomain` reintroduces the storage-partitioning "missing initial state" error popup/redirect sign-in hit earlier. Email/password sign-in is unaffected either way.
 
 ## Architecture notes
 
