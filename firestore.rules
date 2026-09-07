@@ -49,14 +49,7 @@ service cloud.firestore {
     // --- Sefarim catalog (public fields only — wholesalePrice lives elsewhere) --
     match /sefarim/{seferId} {
       allow read: if signedIn();
-      allow create, update: if isAdmin() || (
-        signedIn() &&
-        isApprovedVendor(request.auth.uid) &&
-        // every vendorListing entry must belong either to this vendor or already existed
-        request.resource.data.vendorListings.filter(
-          l => l.vendorId == request.auth.uid
-        ).size() > 0
-      );
+      allow create, update: if isAdmin() || (signedIn() && isApprovedVendor(request.auth.uid));
       allow delete: if isAdmin();
     }
 
