@@ -53,38 +53,41 @@ export function AppLayout(props: AppLayoutProps) {
   const isHome = props.variant === 'home';
 
   return (
-    <div className="min-h-screen pb-28">
+    <div className="min-h-screen pb-36">
       <main className="mx-auto max-w-2xl px-4 pt-6">{props.children}</main>
 
-      <CornerButton
-        side="left"
-        label={isHome ? t('nav.profile') : t('nav.home')}
-        icon={isHome ? <ProfileIcon /> : <HomeIcon />}
-        onClick={() => navigate(isHome ? '/profile' : '/')}
-      />
+      {/* Fixed bottom cluster: same outer margin (px-4 / bottom-4) as `main`, and the
+          same gap (gap-4) between the button row and the nav bar below it. */}
+      <div className="fixed inset-x-0 bottom-4 z-40 mx-auto flex max-w-2xl flex-col gap-4 px-4">
+        <div className="flex items-center justify-between">
+          <CornerButton
+            label={isHome ? t('nav.profile') : t('nav.home')}
+            icon={isHome ? <ProfileIcon /> : <HomeIcon />}
+            onClick={() => navigate(isHome ? '/profile' : '/')}
+          />
+          <CornerButton
+            label={isHome ? t('donation.browse') : t('campaign.create')}
+            icon={<PlusIcon />}
+            onClick={() => navigate(isHome ? '/donate' : '/campaigns/new')}
+          />
+        </div>
 
-      {isHome ? (
-        <FloatingToggleBar
-          options={homeOptions}
-          activeKey={props.filter}
-          onChange={(key) => props.onFilterChange(key as HomeFilter)}
-          onSearch={props.onSearch}
-        />
-      ) : (
-        <FloatingToggleBar
-          options={profileOptions}
-          activeKey={props.tab}
-          onChange={(key) => props.onTabChange(key as ProfileTab)}
-          onSearch={props.onSearch}
-        />
-      )}
-
-      <CornerButton
-        side="right"
-        label={isHome ? t('donation.browse') : t('campaign.create')}
-        icon={<PlusIcon />}
-        onClick={() => navigate(isHome ? '/donate' : '/campaigns/new')}
-      />
+        {isHome ? (
+          <FloatingToggleBar
+            options={homeOptions}
+            activeKey={props.filter}
+            onChange={(key) => props.onFilterChange(key as HomeFilter)}
+            onSearch={props.onSearch}
+          />
+        ) : (
+          <FloatingToggleBar
+            options={profileOptions}
+            activeKey={props.tab}
+            onChange={(key) => props.onTabChange(key as ProfileTab)}
+            onSearch={props.onSearch}
+          />
+        )}
+      </div>
     </div>
   );
 }

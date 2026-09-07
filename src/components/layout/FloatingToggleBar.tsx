@@ -18,13 +18,11 @@ export function FloatingToggleBar({ options, activeKey, onChange, onSearch }: Fl
   const { t } = useTranslation();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const activeIndex = Math.max(0, options.findIndex((o) => o.key === activeKey));
 
   return (
     <div
-      className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1
-        rounded-pill border border-[rgba(214,228,240,0.6)] bg-[rgba(255,255,255,0.72)]
-        px-1.5 py-1.5 shadow-navbar backdrop-blur-md transition-all duration-250"
+      className="flex w-full items-center gap-1 rounded-pill border border-[rgba(214,228,240,0.6)]
+        bg-[rgba(255,255,255,0.72)] px-1.5 py-1.5 shadow-navbar backdrop-blur-md"
     >
       <button
         type="button"
@@ -45,28 +43,23 @@ export function FloatingToggleBar({ options, activeKey, onChange, onSearch }: Fl
             onSearch(e.target.value);
           }}
           placeholder={t('nav.searchPlaceholder') ?? ''}
-          className="h-9 w-48 rounded-pill bg-transparent px-3 text-sm text-text
-            placeholder:text-text-muted focus:outline-none sm:w-64"
+          className="h-9 w-full min-w-0 rounded-pill bg-transparent px-3 text-sm text-text
+            placeholder:text-text-muted focus:outline-none"
         />
       ) : (
-        <div className="relative flex items-center">
-          <div
-            className="absolute h-9 rounded-pill bg-accent transition-transform duration-250 ease-in-out"
-            style={{
-              width: `${100 / options.length}%`,
-              transform: `translateX(${activeIndex * 100}%)`,
-              left: 0,
-              right: 0,
-            }}
-          />
+        <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto no-scrollbar">
           {options.map((option) => (
             <button
               key={option.key}
               type="button"
               onClick={() => onChange(option.key)}
-              className={`relative z-10 h-9 flex-1 whitespace-nowrap rounded-pill px-3 text-sm
+              className={`h-9 shrink-0 whitespace-nowrap rounded-pill px-3 text-sm
                 font-medium transition-colors duration-200
-                ${activeKey === option.key ? 'text-white' : 'text-text-muted hover:text-accent'}`}
+                ${
+                  activeKey === option.key
+                    ? 'bg-accent text-white'
+                    : 'text-text-muted hover:bg-white/60 hover:text-accent'
+                }`}
             >
               {option.label}
             </button>
