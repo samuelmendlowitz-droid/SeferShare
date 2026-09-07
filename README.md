@@ -9,7 +9,7 @@ A mobile-first web app where people donate seforim (Jewish books) to institution
 - **Frontend**: React + TypeScript + Vite, Tailwind CSS, react-router-dom, react-i18next (English/Hebrew with global RTL/LTR switching)
 - **Backend**: Firebase (Firestore, Auth, Storage, Cloud Functions)
 - **Payments**: Stripe (PaymentIntents, created server-side only)
-- **Hosting**: Cloudflare Pages (see `public/_redirects` for SPA fallback)
+- **Hosting**: currently deployed to Firebase Hosting (https://sefershare.web.app) for early testing; the spec calls for Cloudflare Pages long-term (see `public/_redirects` for that SPA fallback)
 
 ## Getting started
 
@@ -28,11 +28,13 @@ npm run build
 ### Firebase setup
 
 1. Create a Firebase project, enable Firestore, Auth (Google, Email/Password, Phone), Storage, and Functions.
-2. `firebase deploy --only firestore:rules,firestore:indexes,storage`
-3. Set Cloud Functions secrets: `firebase functions:secrets:set STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
-4. `firebase deploy --only functions`
-5. Point your Stripe webhook at the deployed `confirmDonation` URL, subscribed to `payment_intent.succeeded`.
-6. Bootstrap your first admin (there is no self-service admin signup by design):
+2. **Set `VITE_FIREBASE_AUTH_DOMAIN` to your Firebase Hosting domain** (e.g. `<project>.web.app`), not the default `<project>.firebaseapp.com`. Google sign-in stores pending auth state keyed to this origin; browsers with storage partitioning (Chrome, Safari ITP, Brave) treat `.web.app` and `.firebaseapp.com` as different sites, which breaks both `signInWithPopup` and `signInWithRedirect` with a "missing initial state" error if they don't match where the app is served.
+3. `firebase deploy --only firestore:rules,firestore:indexes,storage`
+4. `firebase deploy --only hosting` (after `npm run build`) to serve the frontend from Firebase Hosting.
+5. Set Cloud Functions secrets: `firebase functions:secrets:set STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Until these are set, `createPaymentIntent` and `confirmDonation` stay commented out in `functions/src/index.ts` (see the TODO there) — Firebase's function analyzer resolves secret bindings for every exported function up front, so deploying anything else fails if those two are present without the secrets existing.
+6. `firebase deploy --only functions`
+7. Point your Stripe webhook at the deployed `confirmDonation` URL, subscribed to `payment_intent.succeeded`.
+8. Bootstrap your first admin (there is no self-service admin signup by design):
    ```bash
    GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/set-admin-claim.mjs <uid>
    ```
