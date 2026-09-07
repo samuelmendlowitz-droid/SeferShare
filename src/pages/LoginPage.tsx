@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -8,12 +8,18 @@ import { Card } from '../components/ui/Card';
 export function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { signInWithGoogle, signInWithEmail, registerWithEmail } = useAuth();
+  const { firebaseUser, loading, signInWithGoogle, signInWithEmail, registerWithEmail } = useAuth();
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Google sign-in uses a full-page redirect (see AuthContext), so on the way
+  // back the app remounts here — send an already-authenticated user onward.
+  useEffect(() => {
+    if (!loading && firebaseUser) navigate('/');
+  }, [loading, firebaseUser, navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -79,8 +85,8 @@ export function LoginPage() {
           className="mt-3 w-full"
           onClick={async () => {
             try {
+              // Navigates away immediately; the app remounts on return (see effect above).
               await signInWithGoogle();
-              navigate('/');
             } catch (err) {
               setError(err instanceof Error ? err.message : String(err));
             }

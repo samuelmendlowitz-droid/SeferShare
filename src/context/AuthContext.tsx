@@ -4,7 +4,7 @@ import {
   signInWithPhoneNumber,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type ConfirmationResult,
@@ -73,7 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       loading,
       async signInWithGoogle() {
-        await signInWithPopup(auth, new GoogleAuthProvider());
+        // Popup sign-in depends on sessionStorage syncing between the popup and
+        // opener window, which many browsers now block by default (Chrome storage
+        // partitioning, Safari ITP, Brave shields) — redirect avoids that entirely.
+        await signInWithRedirect(auth, new GoogleAuthProvider());
       },
       async signInWithEmail(email, password) {
         await signInWithEmailAndPassword(auth, email, password);
