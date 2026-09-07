@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type ConfirmationResult,
@@ -19,6 +20,7 @@ interface AuthContextValue {
   firebaseUser: FirebaseUser | null;
   profile: User | null;
   loading: boolean;
+  redirectError: string | null;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   registerWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
@@ -53,9 +55,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [redirectError, setRedirectError] = useState<string | null>(null);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, async (fbUser) => {
+    // Surfaces errors from the signInWithRedirect round-trip (e.g. stale pending-auth
+    // state left over from a previous failed attempt) instead of leaving the UI stuck
+    // silently on the loading state — onAuthStateChanged alone doesn't report these.
+    getRedirectResult(auth).catch((err) => {
+      setRedirectError(err instanceof Error ? err.message : String(err));
+    });
+
+    // Safety net: never let the app hang on the loading spinner forever if auth
+    // state resolution stalls for any reason.
+    const stuckTimer = setTimeout(() => setLoading(false), 8000);
+
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      clearTimeout(stuckTimer);
       setFirebaseUser(fbUser);
       if (fbUser) {
         const p = await ensureUserProfile(fbUser);
@@ -65,6 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setLoading(false);
     });
+
+    return () => {
+      clearTimeout(stuckTimer);
+      unsubscribe();
+    };
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -72,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       firebaseUser,
       profile,
       loading,
+      redirectError,
       async signInWithGoogle() {
         // Popup sign-in depends on sessionStorage syncing between the popup and
         // opener window, which many browsers now block by default (Chrome storage
@@ -102,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await firebaseSignOut(auth);
       },
     }),
-    [firebaseUser, profile, loading],
+    [firebaseUser, profile, loading, redirectError],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

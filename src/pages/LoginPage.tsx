@@ -8,7 +8,8 @@ import { Card } from '../components/ui/Card';
 export function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { firebaseUser, loading, signInWithGoogle, signInWithEmail, registerWithEmail } = useAuth();
+  const { firebaseUser, loading, redirectError, signInWithGoogle, signInWithEmail, registerWithEmail } =
+    useAuth();
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,7 +67,9 @@ export function LoginPage() {
             placeholder={t('auth.password') ?? ''}
             className="w-full rounded-btn border border-border px-3 py-2 text-sm"
           />
-          {error && <p className="text-sm text-error">{error}</p>}
+          {(error || redirectError) && (
+            <p className="text-sm text-error">{error ?? redirectError}</p>
+          )}
           <Button type="submit" className="w-full">
             {mode === 'signIn' ? t('auth.signIn') : t('auth.signUp')}
           </Button>
