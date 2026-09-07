@@ -1,0 +1,127 @@
+{
+  "app": {
+    "name": "ספר שער"
+  },
+  "nav": {
+    "home": "בית",
+    "profile": "פרופיל",
+    "search": "חיפוש",
+    "searchPlaceholder": "חיפוש ספרים, בתי כנסת או שמות…",
+    "allCampaigns": "כל הקמפיינים",
+    "where": "היכן",
+    "who": "לעילוי נשמת",
+    "what": "מה",
+    "myCampaigns": "הקמפיינים שלי",
+    "donations": "תרומות",
+    "notifications": "התראות",
+    "settings": "הגדרות"
+  },
+  "home": {
+    "itemsNeeded": "{{fulfilled}} מתוך {{needed}} ספרים",
+    "dollarTotal": "סה\"כ ${{amount}}",
+    "empty": "אין עדיין קמפיינים. היו הראשונים להתחיל אחד!",
+    "fulfilled": "הושלם"
+  },
+  "campaign": {
+    "create": "קמפיין חדש",
+    "selectWhere": "בחרו מוסד",
+    "selectWho": "הקדישו לעילוי נשמת",
+    "selectSeforim": "בחרו ספרים",
+    "shippingAddress": "כתובת למשלוח",
+    "publish": "פרסום הקמפיין",
+    "atLeastOne": "בחרו לפחות מוסד או נשמה",
+    "atLeastOneItem": "הוסיפו לפחות ספר אחד",
+    "titleOptional": "כותרת הקמפיין (אופציונלי)"
+  },
+  "neshama": {
+    "name": "שם",
+    "hebrewName": "שם בעברית",
+    "relationship": "קרבה משפחתית (אופציונלי)",
+    "message": "הודעת הקדשה (אופציונלי)",
+    "liluyNishmat": "לעילוי נשמת"
+  },
+  "institution": {
+    "name": "שם המוסד",
+    "hebrewName": "שם בעברית",
+    "type": "סוג",
+    "shul": "בית כנסת",
+    "yeshiva": "ישיבה",
+    "school": "בית ספר",
+    "other": "אחר"
+  },
+  "sefer": {
+    "hebrewName": "שם בעברית",
+    "englishName": "שם באנגלית",
+    "phoneticName": "תעתיק פונטי",
+    "type": "סוג הספר",
+    "chumash": "חומש",
+    "gemara": "גמרא",
+    "siddur": "סידור",
+    "tehillim": "תהלים",
+    "mishnah": "משנה",
+    "halacha": "הלכה",
+    "machzor": "מחזור",
+    "haggadah": "הגדה",
+    "other": "אחר"
+  },
+  "donation": {
+    "browse": "עיינו בספרים",
+    "optionalWhere": "היכן (אופציונלי — השאירו ריק ואנחנו נשבץ)",
+    "optionalWho": "לעילוי נשמת (אופציונלי — השאירו ריק ואנחנו נשבץ)",
+    "message": "הודעה לעורך הקמפיין (אופציונלי)",
+    "checkout": "לתשלום",
+    "roundUp": "עגלו ${{amount}} לכיסוי עמלות סליקה",
+    "confirm": "אישור תרומה",
+    "total": "סה\"כ",
+    "confirmedTitle": "תודה רבה!",
+    "confirmedSubtitle": "התרומה שלכם אושרה.",
+    "share": "שיתוף כרטיס ההקדשה"
+  },
+  "vendor": {
+    "catalog": "הקטלוג שלי",
+    "orders": "הזמנות נכנסות",
+    "addSefer": "הוספת ספר",
+    "retailPrice": "מחיר קמעונאי",
+    "wholesalePrice": "מחיר סיטונאי (לא מוצג לתורמים)",
+    "inStock": "במלאי",
+    "image": "תמונה (אופציונלי)",
+    "save": "שמירה"
+  },
+  "settings": {
+    "language": "שפה",
+    "english": "אנגלית",
+    "hebrew": "עברית",
+    "both": "שתיהן",
+    "paymentMethods": "אמצעי תשלום",
+    "notificationPreferences": "העדפות התראות",
+    "personalInfo": "פרטים אישיים",
+    "signOut": "התנתקות"
+  },
+  "admin": {
+    "title": "ניהול",
+    "vendorApplications": "בקשות ספקים",
+    "approve": "אישור",
+    "reject": "דחייה",
+    "mergeSeforim": "מיזוג ספרים כפולים",
+    "campaigns": "קמפיינים",
+    "donations": "תרומות",
+    "orders": "הזמנות",
+    "neshamaDedup": "איחוד רשומות נשמה"
+  },
+  "auth": {
+    "signIn": "התחברות",
+    "signUp": "יצירת חשבון",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "displayName": "שם",
+    "phone": "מספר טלפון",
+    "continueWithGoogle": "המשך עם Google",
+    "continueWithPhone": "המשך עם טלפון"
+  },
+  "actions": {
+    "next": "הבא",
+    "back": "חזרה",
+    "cancel": "ביטול",
+    "add": "הוספה"
+  }
+}

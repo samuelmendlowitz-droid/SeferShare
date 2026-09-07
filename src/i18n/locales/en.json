@@ -1,0 +1,127 @@
+{
+  "app": {
+    "name": "Sefer Share"
+  },
+  "nav": {
+    "home": "Home",
+    "profile": "Profile",
+    "search": "Search",
+    "searchPlaceholder": "Search seforim, shuls, or names…",
+    "allCampaigns": "All Campaigns",
+    "where": "Where",
+    "who": "Who",
+    "what": "What",
+    "myCampaigns": "My Campaigns",
+    "donations": "Donations",
+    "notifications": "Notifications",
+    "settings": "Settings"
+  },
+  "home": {
+    "itemsNeeded": "{{fulfilled}} of {{needed}} seforim",
+    "dollarTotal": "${{amount}} total",
+    "empty": "No campaigns yet. Be the first to start one!",
+    "fulfilled": "Fulfilled"
+  },
+  "campaign": {
+    "create": "New Campaign",
+    "selectWhere": "Select an institution",
+    "selectWho": "Dedicate to a neshama",
+    "selectSeforim": "Select seforim",
+    "shippingAddress": "Shipping address",
+    "publish": "Publish campaign",
+    "atLeastOne": "Select at least an institution or a neshama",
+    "atLeastOneItem": "Add at least one sefer",
+    "titleOptional": "Campaign title (optional)"
+  },
+  "neshama": {
+    "name": "Name",
+    "hebrewName": "Hebrew name",
+    "relationship": "Relationship (optional)",
+    "message": "Dedication message (optional)",
+    "liluyNishmat": "L'iluy Nishmat"
+  },
+  "institution": {
+    "name": "Institution name",
+    "hebrewName": "Hebrew name",
+    "type": "Type",
+    "shul": "Shul",
+    "yeshiva": "Yeshiva",
+    "school": "School",
+    "other": "Other"
+  },
+  "sefer": {
+    "hebrewName": "Hebrew name",
+    "englishName": "English name",
+    "phoneticName": "Phonetic name",
+    "type": "Sefer type",
+    "chumash": "Chumash",
+    "gemara": "Gemara",
+    "siddur": "Siddur",
+    "tehillim": "Tehillim",
+    "mishnah": "Mishnah",
+    "halacha": "Halacha",
+    "machzor": "Machzor",
+    "haggadah": "Haggadah",
+    "other": "Other"
+  },
+  "donation": {
+    "browse": "Browse seforim",
+    "optionalWhere": "Where (optional — leave blank and we'll assign it)",
+    "optionalWho": "Who (optional — leave blank and we'll assign it)",
+    "message": "Message to campaigner (optional)",
+    "checkout": "Checkout",
+    "roundUp": "Round up ${{amount}} to cover processing fees",
+    "confirm": "Confirm donation",
+    "total": "Total",
+    "confirmedTitle": "Thank you!",
+    "confirmedSubtitle": "Your donation has been confirmed.",
+    "share": "Share dedication card"
+  },
+  "vendor": {
+    "catalog": "My Catalog",
+    "orders": "Incoming Orders",
+    "addSefer": "Add sefer",
+    "retailPrice": "Retail price",
+    "wholesalePrice": "Wholesale price (never shown to donors)",
+    "inStock": "In stock",
+    "image": "Image (optional)",
+    "save": "Save"
+  },
+  "settings": {
+    "language": "Language",
+    "english": "English",
+    "hebrew": "Hebrew",
+    "both": "Both",
+    "paymentMethods": "Payment methods",
+    "notificationPreferences": "Notification preferences",
+    "personalInfo": "Personal info",
+    "signOut": "Sign out"
+  },
+  "admin": {
+    "title": "Admin",
+    "vendorApplications": "Vendor Applications",
+    "approve": "Approve",
+    "reject": "Reject",
+    "mergeSeforim": "Merge Duplicate Seforim",
+    "campaigns": "Campaigns",
+    "donations": "Donations",
+    "orders": "Orders",
+    "neshamaDedup": "Neshama Deduplication"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Name",
+    "phone": "Phone number",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithPhone": "Continue with phone"
+  },
+  "actions": {
+    "next": "Next",
+    "back": "Back",
+    "cancel": "Cancel",
+    "add": "Add"
+  }
+}

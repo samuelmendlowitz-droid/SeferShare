@@ -1,0 +1,109 @@
+rules_version = '2';
+
+// TODO: replace "Sefer Share" with final platform name
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.isAdmin == true;
+    }
+
+    function isApprovedVendor(uid) {
+      return signedIn() &&
+        get(/databases/$(database)/documents/users/$(uid)).data.isVendor == true &&
+        get(/databases/$(database)/documents/users/$(uid)).data.vendorApproved == true;
+    }
+
+    // --- Users -----------------------------------------------------------
+    // wholesalePrice never lives here, but keep the profile itself locked down:
+    // owners can edit their own info; only Cloud Functions (Admin SDK, which
+    // bypasses these rules) or an admin may flip vendorApproved/isAdmin.
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if signedIn() && request.auth.uid == uid;
+      allow update: if signedIn() && request.auth.uid == uid &&
+        request.resource.data.vendorApproved == resource.data.vendorApproved &&
+        request.resource.data.get('isAdmin', false) == resource.data.get('isAdmin', false);
+      allow update: if isAdmin();
+    }
+
+    // --- Neshamos (shared dedication records) -----------------------------
+    match /neshamos/{neshamaId} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // --- Institutions ------------------------------------------------------
+    match /institutions/{institutionId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.createdByUid == request.auth.uid;
+      allow update: if signedIn() && resource.data.createdByUid == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // --- Sefarim catalog (public fields only — wholesalePrice lives elsewhere) --
+    match /sefarim/{seferId} {
+      allow read: if signedIn();
+      allow create, update: if isAdmin() || (
+        signedIn() &&
+        isApprovedVendor(request.auth.uid) &&
+        // every vendorListing entry must belong either to this vendor or already existed
+        request.resource.data.vendorListings.filter(
+          l => l.vendorId == request.auth.uid
+        ).size() > 0
+      );
+      allow delete: if isAdmin();
+    }
+
+    // --- Vendor-private pricing (wholesalePrice) — never client-readable except by owner/admin --
+    match /vendorPricing/{docId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.vendorId == request.auth.uid);
+      allow write: if isAdmin() || (
+        signedIn() &&
+        isApprovedVendor(request.auth.uid) &&
+        request.resource.data.vendorId == request.auth.uid
+      );
+    }
+
+    // --- Campaigns -----------------------------------------------------------
+    match /campaigns/{campaignId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.createdByUid == request.auth.uid;
+      // Campaigners can edit their own campaign, but fulfillment counters are
+      // owned by the server-side algorithm (Cloud Functions bypass these rules).
+      allow update: if isAdmin() || (
+        signedIn() &&
+        resource.data.createdByUid == request.auth.uid &&
+        request.resource.data.totalItemsFulfilled == resource.data.totalItemsFulfilled &&
+        request.resource.data.currentMilestone == resource.data.currentMilestone
+      );
+      allow delete: if isAdmin();
+    }
+
+    // --- Donations — created and mutated only by Cloud Functions --------------
+    match /donations/{donationId} {
+      allow read: if signedIn() && (resource.data.donorUid == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // --- Orders — vendor sees their own; only admin can change status ---------
+    match /orders/{orderId} {
+      allow read: if signedIn() && (resource.data.vendorId == request.auth.uid || isAdmin());
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+    }
+
+    // --- Notifications — created by Cloud Functions, recipient can mark read --
+    match /notifications/{notificationId} {
+      allow read: if signedIn() && resource.data.recipientUid == request.auth.uid;
+      allow update: if signedIn() && resource.data.recipientUid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create, delete: if isAdmin();
+    }
+  }
+}

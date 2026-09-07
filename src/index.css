@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-bg text-text font-sans;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+html[dir='rtl'] body {
+  @apply font-he;
+}
+
+/* Hide scrollbars on the horizontal filter/toggle rows without losing scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
