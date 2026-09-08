@@ -72,13 +72,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       clearTimeout(stuckTimer);
       setFirebaseUser(fbUser);
-      if (fbUser) {
-        const p = await ensureUserProfile(fbUser);
-        setProfile(p);
-      } else {
+      try {
+        if (fbUser) {
+          const p = await ensureUserProfile(fbUser);
+          setProfile(p);
+        } else {
+          setProfile(null);
+        }
+      } catch (err) {
+        // Without this, a failure here (e.g. writing the new user doc to Firestore)
+        // was an unhandled rejection: loading never cleared, so LoginPage's
+        // "redirect once loaded" effect never fired — silently stuck on login,
+        // no error shown, no way to tell what happened.
         setProfile(null);
+        setRedirectError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {
