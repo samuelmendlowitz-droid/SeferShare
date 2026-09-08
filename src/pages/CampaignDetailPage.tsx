@@ -50,6 +50,7 @@ export function CampaignDetailPage() {
           </p>
         )}
         {neshama?.message && <p className="mt-1 text-sm italic text-text-muted">"{neshama.message}"</p>}
+        {campaign.description && <p className="mt-3 text-sm text-text">{campaign.description}</p>}
 
         <div className="mt-4">
           <p className="text-xl font-bold text-accent">

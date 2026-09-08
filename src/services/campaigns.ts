@@ -39,6 +39,7 @@ export async function getCampaign(campaignId: string): Promise<Campaign | null> 
 export interface CreateCampaignInput {
   createdByUid: string;
   title?: string;
+  description?: string;
   institutionId?: string;
   neshamaId?: string;
   items: Omit<CampaignItem, 'quantityFulfilled'>[];
@@ -60,6 +61,7 @@ export async function createCampaign(input: CreateCampaignInput): Promise<string
   const docRef = await addDoc(campaignsRef, {
     createdByUid: input.createdByUid,
     title: input.title ?? null,
+    description: input.description ?? null,
     institutionId: input.institutionId ?? null,
     neshamaId: input.neshamaId ?? null,
     items,

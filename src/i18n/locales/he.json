@@ -31,7 +31,8 @@
     "publish": "פרסום הקמפיין",
     "atLeastOne": "בחרו לפחות מוסד או נשמה",
     "atLeastOneItem": "הוסיפו לפחות ספר אחד",
-    "titleOptional": "כותרת הקמפיין (אופציונלי)"
+    "titleOptional": "כותרת הקמפיין (אופציונלי)",
+    "descriptionOptional": "תיאור (אופציונלי)"
   },
   "neshama": {
     "name": "שם",
@@ -84,7 +85,8 @@
     "retailPrice": "מחיר קמעונאי",
     "wholesalePrice": "מחיר סיטונאי (לא מוצג לתורמים)",
     "inStock": "במלאי",
-    "image": "תמונה (אופציונלי)",
+    "images": "תמונות (עד {{max}}, אופציונלי)",
+    "addPhoto": "הוספת תמונה",
     "save": "שמירה"
   },
   "settings": {

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import { SEFER_TYPES, type SeferType } from '../../types';
+import { SEFER_TYPES, MAX_SEFER_IMAGES, type SeferType } from '../../types';
 import { upsertVendorListing } from '../../services/sefarim';
-import { uploadSeferImage } from '../../services/storage';
+import { uploadSeferImages } from '../../services/storage';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { CloseIcon } from '../ui/icons';
 
 interface SeferFormProps {
   onSaved: () => void;
@@ -21,16 +22,30 @@ export function SeferForm({ onSaved }: SeferFormProps) {
   const [retailPrice, setRetailPrice] = useState('');
   const [wholesalePrice, setWholesalePrice] = useState('');
   const [inStock, setInStock] = useState(true);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
+
+  const previewUrls = imageFiles.map((f) => URL.createObjectURL(f));
+  useEffect(() => {
+    return () => previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageFiles]);
+
+  function addFiles(files: FileList | null) {
+    if (!files) return;
+    setImageFiles((prev) => [...prev, ...Array.from(files)].slice(0, MAX_SEFER_IMAGES));
+  }
+
+  function removeFile(index: number) {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!profile) return;
     setSaving(true);
     try {
-      let imageUrl: string | undefined;
-      if (imageFile) imageUrl = await uploadSeferImage(profile.uid, imageFile);
+      const imageUrls = imageFiles.length ? await uploadSeferImages(profile.uid, imageFiles) : [];
 
       await upsertVendorListing({
         hebrewName,
@@ -42,7 +57,7 @@ export function SeferForm({ onSaved }: SeferFormProps) {
         retailPrice: Number(retailPrice),
         wholesalePrice: Number(wholesalePrice),
         inStock,
-        imageUrl,
+        imageUrls,
       });
 
       setHebrewName('');
@@ -50,7 +65,7 @@ export function SeferForm({ onSaved }: SeferFormProps) {
       setPhoneticName('');
       setRetailPrice('');
       setWholesalePrice('');
-      setImageFile(null);
+      setImageFiles([]);
       onSaved();
     } finally {
       setSaving(false);
@@ -116,12 +131,41 @@ export function SeferForm({ onSaved }: SeferFormProps) {
           <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} />
           {t('vendor.inStock')}
         </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-          className="w-full text-sm"
-        />
+
+        <div>
+          <p className="mb-2 text-sm text-text-muted">{t('vendor.images', { max: MAX_SEFER_IMAGES })}</p>
+          <div className="flex flex-wrap gap-2">
+            {previewUrls.map((url, index) => (
+              <div key={url} className="relative h-16 w-16 shrink-0">
+                <img src={url} alt="" className="h-16 w-16 rounded-btn object-cover" />
+                <button
+                  type="button"
+                  onClick={() => removeFile(index)}
+                  aria-label={t('actions.cancel')}
+                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white shadow-card"
+                >
+                  <CloseIcon width={12} height={12} />
+                </button>
+              </div>
+            ))}
+            {imageFiles.length < MAX_SEFER_IMAGES && (
+              <label className="flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center rounded-btn border border-dashed border-border text-xs text-text-muted">
+                {t('vendor.addPhoto')}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    addFiles(e.target.files);
+                    e.target.value = '';
+                  }}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+        </div>
+
         <Button type="submit" disabled={saving}>
           {t('vendor.save')}
         </Button>

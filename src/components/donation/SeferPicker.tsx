@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Sefer } from '../../types';
 import { listSefarim, searchSefarim } from '../../services/sefarim';
 import { Card } from '../ui/Card';
+import { SeferThumbnail } from '../ui/SeferThumbnail';
 
 export interface PickedItem {
   seferId: string;
@@ -12,6 +13,7 @@ export interface PickedItem {
   hebrewName: string;
   price: number;
   quantity: number;
+  imageUrl?: string;
 }
 
 interface SeferPickerProps {
@@ -44,6 +46,7 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
         hebrewName: sefer.hebrewName,
         price: inStockListing.price,
         quantity: 1,
+        imageUrl: inStockListing.imageUrls?.[0],
       },
     ]);
   }
@@ -70,9 +73,10 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
           const listing = sefer.vendorListings.find((l) => l.inStock);
           if (!listing) return null;
           return (
-            <Card key={sefer.seferId} className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold">
+            <Card key={sefer.seferId} className="flex items-center gap-3">
+              <SeferThumbnail imageUrl={listing.imageUrls?.[0]} alt={sefer.englishName} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">
                   {sefer.englishName} · {sefer.hebrewName}
                 </p>
                 <p className="text-xs text-text-muted">${listing.price.toFixed(2)}</p>
@@ -94,9 +98,10 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
           {picked.map((item) => (
             <div
               key={`${item.seferId}-${item.vendorId}`}
-              className="flex items-center justify-between rounded-btn border border-border px-3 py-2"
+              className="flex items-center gap-3 rounded-btn border border-border px-3 py-2"
             >
-              <span className="text-sm">
+              <SeferThumbnail imageUrl={item.imageUrl} alt={item.englishName} size={40} />
+              <span className="flex-1 truncate text-sm">
                 {item.englishName} · {item.hebrewName}
               </span>
               <input

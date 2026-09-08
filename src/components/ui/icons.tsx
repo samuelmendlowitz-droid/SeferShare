@@ -63,6 +63,15 @@ export function GiftIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function BookIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5v-17z" />
+      <path d="M4 19a2.5 2.5 0 0 1 2.5-2.5H20" />
+    </Icon>
+  );
+}
+
 export function CloseIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

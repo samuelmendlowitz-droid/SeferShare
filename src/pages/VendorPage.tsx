@@ -8,6 +8,7 @@ import type { Order, Sefer } from '../types';
 import { SeferForm } from '../components/vendor/SeferForm';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { SeferThumbnail } from '../components/ui/SeferThumbnail';
 
 type Tab = 'catalog' | 'orders';
 
@@ -60,14 +61,17 @@ export function VendorPage() {
           {sefarim.map((sefer) => {
             const listing = sefer.vendorListings.find((l) => l.vendorId === profile.uid);
             return (
-              <Card key={sefer.seferId}>
-                <p className="font-semibold">
-                  {sefer.englishName} · {sefer.hebrewName}
-                </p>
-                <p className="text-sm text-text-muted">{t(`sefer.${sefer.type}`)}</p>
-                <p className="text-sm">
-                  ${listing?.price.toFixed(2)} — {listing?.inStock ? t('vendor.inStock') : '—'}
-                </p>
+              <Card key={sefer.seferId} className="flex items-center gap-3">
+                <SeferThumbnail imageUrl={listing?.imageUrls?.[0]} alt={sefer.englishName} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">
+                    {sefer.englishName} · {sefer.hebrewName}
+                  </p>
+                  <p className="text-sm text-text-muted">{t(`sefer.${sefer.type}`)}</p>
+                  <p className="text-sm">
+                    ${listing?.price.toFixed(2)} — {listing?.inStock ? t('vendor.inStock') : '—'}
+                  </p>
+                </div>
               </Card>
             );
           })}

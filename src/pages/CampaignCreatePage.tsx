@@ -21,6 +21,7 @@ export function CampaignCreatePage() {
   const { language } = useLanguage();
 
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [institutionId, setInstitutionId] = useState<string>();
   const [neshamaId, setNeshamaId] = useState<string>();
   const [items, setItems] = useState<PickedItem[]>([]);
@@ -44,6 +45,7 @@ export function CampaignCreatePage() {
       const campaignId = await createCampaign({
         createdByUid: profile.uid,
         title: title || undefined,
+        description: description || undefined,
         institutionId,
         neshamaId,
         items: items.map((i) => ({
@@ -75,6 +77,14 @@ export function CampaignCreatePage() {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={t('campaign.titleOptional') ?? ''}
+        className="mb-3 w-full rounded-btn border border-border px-3 py-2 text-sm"
+      />
+
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder={t('campaign.descriptionOptional') ?? ''}
+        rows={4}
         className="mb-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
       />
 

@@ -31,7 +31,8 @@
     "publish": "Publish campaign",
     "atLeastOne": "Select at least an institution or a neshama",
     "atLeastOneItem": "Add at least one sefer",
-    "titleOptional": "Campaign title (optional)"
+    "titleOptional": "Campaign title (optional)",
+    "descriptionOptional": "Description (optional)"
   },
   "neshama": {
     "name": "Name",
@@ -84,7 +85,8 @@
     "retailPrice": "Retail price",
     "wholesalePrice": "Wholesale price (never shown to donors)",
     "inStock": "In stock",
-    "image": "Image (optional)",
+    "images": "Photos (up to {{max}}, optional)",
+    "addPhoto": "Add photo",
     "save": "Save"
   },
   "settings": {

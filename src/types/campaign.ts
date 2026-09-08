@@ -14,6 +14,7 @@ export interface Campaign {
   campaignId: string;
   createdByUid: string;
   title?: string;
+  description?: string;
 
   // At least one of institutionId or neshamaId must be set (enforced at write time)
   institutionId?: string; // Where

@@ -44,7 +44,7 @@ export interface UpsertVendorListingInput {
   retailPrice: number;
   wholesalePrice: number;
   inStock: boolean;
-  imageUrl?: string;
+  imageUrls?: string[];
 }
 
 /**
@@ -70,7 +70,9 @@ export async function upsertVendorListing(input: UpsertVendorListingInput): Prom
     vendorName: input.vendorName,
     price: input.retailPrice,
     inStock: input.inStock,
-    imageUrl: input.imageUrl,
+    // Firestore rejects a literal `undefined` field value outright — always write an
+    // array (possibly empty) rather than omitting it conditionally.
+    imageUrls: input.imageUrls ?? [],
   };
 
   const batch = writeBatch(db);
