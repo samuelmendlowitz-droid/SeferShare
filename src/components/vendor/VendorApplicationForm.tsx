@@ -22,11 +22,13 @@ export function VendorApplicationForm({ onSubmitted }: VendorApplicationFormProp
   const [email, setEmail] = useState(profile?.email ?? '');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!profile) return;
     setSubmitting(true);
+    setError(null);
     try {
       await applyToBeVendor(profile.uid, {
         companyName,
@@ -34,10 +36,12 @@ export function VendorApplicationForm({ onSubmitted }: VendorApplicationFormProp
         address,
         phone,
         email,
-        notes: notes || undefined,
+        ...(notes ? { notes } : {}),
         submittedAt: Date.now(),
       });
       onSubmitted();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }
@@ -83,6 +87,7 @@ export function VendorApplicationForm({ onSubmitted }: VendorApplicationFormProp
         rows={3}
         className="w-full rounded-btn border border-border px-3 py-2 text-sm"
       />
+      {error && <p className="text-sm text-error">{error}</p>}
       <Button type="submit" disabled={submitting} className="w-full">
         {t('vendor.submitApplication')}
       </Button>
