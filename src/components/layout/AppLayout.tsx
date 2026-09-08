@@ -1,13 +1,14 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import { CornerButton } from './CornerButton';
 import { FloatingToggleBar, type ToggleOption } from './FloatingToggleBar';
 import { TopSearchBar } from './TopSearchBar';
 import { GiftIcon, HomeIcon, PlusIcon, ProfileIcon } from '../ui/icons';
 
 export type HomeFilter = 'all' | 'where' | 'who' | 'what';
-export type ProfileTab = 'campaigns' | 'donations' | 'notifications' | 'settings';
+export type ProfileTab = 'campaigns' | 'donations' | 'notifications' | 'settings' | 'catalog';
 
 interface HomeLayoutProps {
   variant: 'home';
@@ -30,8 +31,10 @@ type AppLayoutProps = HomeLayoutProps | ProfileLayoutProps;
 export function AppLayout(props: AppLayoutProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { profile } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const isVendor = Boolean(profile?.isVendor && profile.vendorApproved);
 
   const homeOptions: ToggleOption[] = useMemo(
     () => [
@@ -48,9 +51,10 @@ export function AppLayout(props: AppLayoutProps) {
       { key: 'campaigns', label: t('nav.myCampaigns') },
       { key: 'donations', label: t('nav.donations') },
       { key: 'notifications', label: t('nav.notifications') },
+      ...(isVendor ? [{ key: 'catalog', label: t('nav.catalog') }] : []),
       { key: 'settings', label: t('nav.settings') },
     ],
-    [t],
+    [t, isVendor],
   );
 
   const isHome = props.variant === 'home';

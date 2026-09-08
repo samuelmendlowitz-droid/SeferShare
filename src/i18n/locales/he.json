@@ -14,6 +14,7 @@
     "myCampaigns": "הקמפיינים שלי",
     "donations": "תרומות",
     "notifications": "התראות",
+    "catalog": "קטלוג",
     "settings": "הגדרות"
   },
   "home": {
@@ -79,7 +80,6 @@
     "share": "שיתוף כרטיס ההקדשה"
   },
   "vendor": {
-    "catalog": "הקטלוג שלי",
     "orders": "הזמנות נכנסות",
     "addSefer": "הוספת ספר",
     "retailPrice": "מחיר קמעונאי",
@@ -95,6 +95,12 @@
     "applicationSubmitted": "הבקשה שלכם נשלחה לבדיקה.",
     "applicationPending": "בקשת הספק שלכם ממתינה לאישור.",
     "save": "שמירה"
+  },
+  "catalog": {
+    "moveUp": "הזזה למעלה",
+    "moveDown": "הזזה למטה",
+    "newGroupLabel": "שם הקבוצה",
+    "addGroup": "הוספת קבוצה"
   },
   "settings": {
     "language": "שפה",

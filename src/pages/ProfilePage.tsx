@@ -5,6 +5,7 @@ import { MyCampaignsTab } from '../components/profile/MyCampaignsTab';
 import { DonationsTab } from '../components/profile/DonationsTab';
 import { NotificationsTab } from '../components/profile/NotificationsTab';
 import { SettingsTab } from '../components/profile/SettingsTab';
+import { CatalogTab } from '../components/profile/CatalogTab';
 
 export function ProfilePage() {
   const { t } = useTranslation();
@@ -18,6 +19,7 @@ export function ProfilePage() {
       {tab === 'campaigns' && <MyCampaignsTab />}
       {tab === 'donations' && <DonationsTab />}
       {tab === 'notifications' && <NotificationsTab />}
+      {tab === 'catalog' && <CatalogTab />}
       {tab === 'settings' && <SettingsTab />}
 
       {searchQuery && tab === 'campaigns' && (

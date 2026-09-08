@@ -14,6 +14,7 @@
     "myCampaigns": "My Campaigns",
     "donations": "Donations",
     "notifications": "Notifications",
+    "catalog": "Catalog",
     "settings": "Settings"
   },
   "home": {
@@ -79,7 +80,6 @@
     "share": "Share dedication card"
   },
   "vendor": {
-    "catalog": "My Catalog",
     "orders": "Incoming Orders",
     "addSefer": "Add sefer",
     "retailPrice": "Retail price",
@@ -95,6 +95,12 @@
     "applicationSubmitted": "Your application has been submitted for review.",
     "applicationPending": "Your vendor application is pending approval.",
     "save": "Save"
+  },
+  "catalog": {
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "newGroupLabel": "Group name",
+    "addGroup": "Add group"
   },
   "settings": {
     "language": "Language",
