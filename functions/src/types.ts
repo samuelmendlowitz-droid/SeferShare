@@ -123,6 +123,7 @@ export interface User {
   vendorApproved: boolean;
   vendorApplication?: VendorApplication;
   isAdmin?: boolean;
+  blocked?: boolean;
   stripeCustomerId?: string;
 }
 

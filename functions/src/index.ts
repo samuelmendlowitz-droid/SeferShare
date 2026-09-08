@@ -7,3 +7,4 @@
 export { onCampaignUpdate } from './onCampaignUpdate';
 export { approveVendor } from './approveVendor';
 export { onVendorApplicationSubmitted } from './onVendorApplicationSubmitted';
+export { setUserBlocked, deleteUserAccount } from './manageUsers';

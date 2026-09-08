@@ -115,7 +115,15 @@
     "campaigns": "Campaigns",
     "donations": "Donations",
     "orders": "Orders",
-    "neshamaDedup": "Neshama Deduplication"
+    "neshamaDedup": "Neshama Deduplication",
+    "catalog": "Sefer Catalog",
+    "outOfStock": "out of stock",
+    "confirmDeleteCampaign": "Delete this campaign? This can't be undone.",
+    "users": "Users",
+    "blocked": "Blocked",
+    "block": "Block",
+    "unblock": "Unblock",
+    "confirmDeleteUser": "Permanently delete this account? This can't be undone."
   },
   "auth": {
     "signIn": "Sign in",
@@ -131,6 +139,7 @@
     "next": "Next",
     "back": "Back",
     "cancel": "Cancel",
-    "add": "Add"
+    "add": "Add",
+    "delete": "Delete"
   }
 }

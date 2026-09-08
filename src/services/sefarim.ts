@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import type { PublicVendorListing, Sefer, SeferType } from '../types';
 
@@ -105,6 +105,27 @@ export async function upsertVendorListing(input: UpsertVendorListingInput): Prom
 
   await batch.commit();
   return seferId;
+}
+
+/**
+ * Removes one vendor's listing from a sefer (and their pricing doc); if that was
+ * the only listing, deletes the catalog entry entirely. Admin-only per Firestore
+ * rules (whole-doc delete requires isAdmin()).
+ */
+export async function deleteVendorListing(seferId: string, vendorId: string): Promise<void> {
+  const snap = await getDoc(doc(db, 'sefarim', seferId));
+  if (!snap.exists()) return;
+  const sefer = snap.data() as Sefer;
+  const remaining = sefer.vendorListings.filter((l) => l.vendorId !== vendorId);
+
+  const batch = writeBatch(db);
+  if (remaining.length === 0) {
+    batch.delete(doc(db, 'sefarim', seferId));
+  } else {
+    batch.update(doc(db, 'sefarim', seferId), { vendorListings: remaining });
+  }
+  batch.delete(doc(db, 'vendorPricing', `${seferId}_${vendorId}`));
+  await batch.commit();
 }
 
 export interface VendorPricing {

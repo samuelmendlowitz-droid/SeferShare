@@ -1,6 +1,7 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -76,6 +77,11 @@ export async function createCampaign(input: CreateCampaignInput): Promise<string
     updatedAt: serverTimestamp(),
   });
   return docRef.id;
+}
+
+/** Admin-only per Firestore rules — used to remove any campaign, not just your own. */
+export async function deleteCampaign(campaignId: string): Promise<void> {
+  await deleteDoc(doc(db, 'campaigns', campaignId));
 }
 
 export async function addItemsToCampaign(campaignId: string, newItems: Omit<CampaignItem, 'quantityFulfilled'>[]) {

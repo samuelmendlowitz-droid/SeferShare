@@ -115,7 +115,15 @@
     "campaigns": "קמפיינים",
     "donations": "תרומות",
     "orders": "הזמנות",
-    "neshamaDedup": "איחוד רשומות נשמה"
+    "neshamaDedup": "איחוד רשומות נשמה",
+    "catalog": "קטלוג ספרים",
+    "outOfStock": "אזל מהמלאי",
+    "confirmDeleteCampaign": "למחוק את הקמפיין הזה? לא ניתן לבטל פעולה זו.",
+    "users": "משתמשים",
+    "blocked": "חסום",
+    "block": "חסימה",
+    "unblock": "ביטול חסימה",
+    "confirmDeleteUser": "למחוק לצמיתות את החשבון הזה? לא ניתן לבטל פעולה זו."
   },
   "auth": {
     "signIn": "התחברות",
@@ -131,6 +139,7 @@
     "next": "הבא",
     "back": "חזרה",
     "cancel": "ביטול",
-    "add": "הוספה"
+    "add": "הוספה",
+    "delete": "מחיקה"
   }
 }

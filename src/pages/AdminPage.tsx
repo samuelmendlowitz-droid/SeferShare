@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { approveVendor, listPendingVendorApplications } from '../services/users';
-import { listSefarim } from '../services/sefarim';
+import {
+  approveVendor,
+  deleteUserAccount,
+  listAllUsers,
+  listPendingVendorApplications,
+  setUserBlocked,
+} from '../services/users';
+import { deleteVendorListing, listSefarim } from '../services/sefarim';
 import { listNeshamos } from '../services/neshamos';
+import { deleteCampaign } from '../services/campaigns';
 import {
   listAllCampaignsAdmin,
   listAllDonationsAdmin,
@@ -16,8 +23,9 @@ import type { Campaign, Donation, Neshama, Order, OrderStatus, Sefer, User } fro
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { SeferForm } from '../components/vendor/SeferForm';
 
-type Section = 'vendors' | 'sefarim' | 'neshamos' | 'campaigns' | 'donations' | 'orders';
+type Section = 'vendors' | 'sefarim' | 'neshamos' | 'campaigns' | 'donations' | 'orders' | 'users';
 
 const ORDER_STATUSES: OrderStatus[] = ['pending', 'shipped', 'delivered'];
 
@@ -32,17 +40,20 @@ export function AdminPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [selectedSefarim, setSelectedSefarim] = useState<string[]>([]);
   const [selectedNeshamos, setSelectedNeshamos] = useState<string[]>([]);
+  const [showAddSefer, setShowAddSefer] = useState(false);
 
   async function reload() {
-    const [vendors, sef, nesh, camp, don, ord] = await Promise.all([
+    const [vendors, sef, nesh, camp, don, ord, allUsers] = await Promise.all([
       listPendingVendorApplications(),
       listSefarim(),
       listNeshamos(),
       listAllCampaignsAdmin(),
       listAllDonationsAdmin(),
       listAllOrdersAdmin(),
+      listAllUsers(),
     ]);
     setPendingVendors(vendors);
     setSefarim(sef);
@@ -50,6 +61,7 @@ export function AdminPage() {
     setCampaigns(camp);
     setDonations(don);
     setOrders(ord);
+    setUsers(allUsers);
   }
 
   useEffect(() => {
@@ -61,7 +73,7 @@ export function AdminPage() {
     return <div className="mx-auto max-w-2xl px-4 pt-6 text-text-muted">Not authorized.</div>;
   }
 
-  const sections: Section[] = ['vendors', 'sefarim', 'neshamos', 'campaigns', 'donations', 'orders'];
+  const sections: Section[] = ['vendors', 'sefarim', 'neshamos', 'campaigns', 'donations', 'orders', 'users'];
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
@@ -111,7 +123,46 @@ export function AdminPage() {
 
       {section === 'sefarim' && (
         <div className="space-y-3">
-          <h2 className="text-base font-semibold">{t('admin.mergeSeforim')}</h2>
+          <h2 className="text-base font-semibold">{t('admin.catalog')}</h2>
+          {sefarim.map((s) => (
+            <Card key={s.seferId}>
+              <p className="text-sm font-semibold">
+                {s.englishName} · {s.hebrewName} ({t(`sefer.${s.type}`)})
+              </p>
+              <div className="mt-2 space-y-1">
+                {s.vendorListings.map((l) => (
+                  <div key={l.vendorId} className="flex items-center justify-between text-sm">
+                    <span>
+                      {l.vendorName} — ${l.price.toFixed(2)} {l.inStock ? '' : `(${t('admin.outOfStock')})`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await deleteVendorListing(s.seferId, l.vendorId);
+                        reload();
+                      }}
+                      className="text-xs font-medium text-error"
+                    >
+                      {t('actions.delete')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ))}
+
+          {showAddSefer ? (
+            <SeferForm
+              onSaved={() => {
+                setShowAddSefer(false);
+                reload();
+              }}
+            />
+          ) : (
+            <Button onClick={() => setShowAddSefer(true)}>{t('vendor.addSefer')}</Button>
+          )}
+
+          <h2 className="pt-2 text-base font-semibold">{t('admin.mergeSeforim')}</h2>
           <p className="text-xs text-text-muted">Select exactly two to merge (the first stays canonical).</p>
           {sefarim.map((s) => (
             <label key={s.seferId} className="flex items-center gap-2 rounded-btn border border-border p-2 text-sm">
@@ -175,11 +226,23 @@ export function AdminPage() {
         <div className="space-y-3">
           <h2 className="text-base font-semibold">{t('admin.campaigns')}</h2>
           {campaigns.map((c) => (
-            <Card key={c.campaignId}>
-              <p className="text-sm font-semibold">{c.title ?? c.campaignId}</p>
-              <p className="text-xs text-text-muted">
-                {c.status} · {c.totalItemsFulfilled}/{c.totalItemsNeeded}
-              </p>
+            <Card key={c.campaignId} className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold">{c.title ?? c.campaignId}</p>
+                <p className="text-xs text-text-muted">
+                  {c.status} · {c.totalItemsFulfilled}/{c.totalItemsNeeded}
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  if (!window.confirm(t('admin.confirmDeleteCampaign') ?? '')) return;
+                  await deleteCampaign(c.campaignId);
+                  reload();
+                }}
+              >
+                {t('actions.delete')}
+              </Button>
             </Card>
           ))}
         </div>
@@ -222,6 +285,51 @@ export function AdminPage() {
               </select>
             </Card>
           ))}
+        </div>
+      )}
+
+      {section === 'users' && (
+        <div className="space-y-3">
+          <h2 className="text-base font-semibold">{t('admin.users')}</h2>
+          {users.map((u) => {
+            const isSelf = u.uid === profile.uid;
+            return (
+              <Card key={u.uid}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold">
+                      {u.displayName} {u.isAdmin && `(${t('admin.title')})`}
+                    </p>
+                    <p className="text-xs text-text-muted">{u.email}</p>
+                    {u.blocked && <p className="text-xs font-medium text-error">{t('admin.blocked')}</p>}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      disabled={isSelf}
+                      onClick={async () => {
+                        await setUserBlocked(u.uid, !u.blocked);
+                        reload();
+                      }}
+                    >
+                      {u.blocked ? t('admin.unblock') : t('admin.block')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      disabled={isSelf}
+                      onClick={async () => {
+                        if (!window.confirm(t('admin.confirmDeleteUser') ?? '')) return;
+                        await deleteUserAccount(u.uid);
+                        reload();
+                      }}
+                    >
+                      {t('actions.delete')}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

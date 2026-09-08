@@ -40,3 +40,21 @@ export async function approveVendor(input: ApproveVendorInput): Promise<void> {
   const call = httpsCallable<ApproveVendorInput, { success: boolean }>(functions, 'approveVendor');
   await call(input);
 }
+
+export async function listAllUsers(): Promise<User[]> {
+  const snap = await getDocs(collection(db, 'users'));
+  return snap.docs.map((d) => d.data() as User);
+}
+
+export async function setUserBlocked(uid: string, blocked: boolean): Promise<void> {
+  const call = httpsCallable<{ uid: string; blocked: boolean }, { success: boolean }>(
+    functions,
+    'setUserBlocked',
+  );
+  await call({ uid, blocked });
+}
+
+export async function deleteUserAccount(uid: string): Promise<void> {
+  const call = httpsCallable<{ uid: string }, { success: boolean }>(functions, 'deleteUserAccount');
+  await call({ uid });
+}
