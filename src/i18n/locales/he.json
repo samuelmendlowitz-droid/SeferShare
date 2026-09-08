@@ -87,6 +87,13 @@
     "inStock": "במלאי",
     "images": "תמונות (עד {{max}}, אופציונלי)",
     "addPhoto": "הוספת תמונה",
+    "becomeVendor": "הגשת בקשה להיות ספק",
+    "companyName": "שם החברה",
+    "contactName": "שם איש קשר",
+    "notesOptional": "מה אתם מוכרים? (אופציונלי)",
+    "submitApplication": "שליחת הבקשה",
+    "applicationSubmitted": "הבקשה שלכם נשלחה לבדיקה.",
+    "applicationPending": "בקשת הספק שלכם ממתינה לאישור.",
     "save": "שמירה"
   },
   "settings": {

@@ -87,6 +87,13 @@
     "inStock": "In stock",
     "images": "Photos (up to {{max}}, optional)",
     "addPhoto": "Add photo",
+    "becomeVendor": "Apply to become a vendor",
+    "companyName": "Company name",
+    "contactName": "Contact name",
+    "notesOptional": "What do you sell? (optional)",
+    "submitApplication": "Submit application",
+    "applicationSubmitted": "Your application has been submitted for review.",
+    "applicationPending": "Your vendor application is pending approval.",
     "save": "Save"
   },
   "settings": {

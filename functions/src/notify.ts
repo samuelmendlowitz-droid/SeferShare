@@ -9,6 +9,7 @@ interface NotifyInput {
   body: string;
   relatedCampaignId?: string;
   relatedDonationId?: string;
+  relatedVendorUid?: string;
 }
 
 export async function notify(input: NotifyInput): Promise<void> {

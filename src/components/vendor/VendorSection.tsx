@@ -1,22 +1,40 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { applyToBeVendor } from '../../services/users';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { VendorApplicationForm } from './VendorApplicationForm';
 
 export function VendorSection() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const [applying, setApplying] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   if (!profile) return null;
 
   if (!profile.isVendor) {
+    if (submitted) {
+      return (
+        <Card>
+          <p className="text-sm text-text-muted">{t('vendor.applicationSubmitted')}</p>
+        </Card>
+      );
+    }
+    if (applying) {
+      return (
+        <Card>
+          <h2 className="mb-3 text-sm font-semibold text-text-muted">{t('vendor.becomeVendor')}</h2>
+          <VendorApplicationForm onSubmitted={() => setSubmitted(true)} />
+        </Card>
+      );
+    }
     return (
       <Card>
-        <Button variant="secondary" onClick={() => applyToBeVendor(profile.uid)}>
-          Apply to become a vendor
+        <Button variant="secondary" onClick={() => setApplying(true)}>
+          {t('vendor.becomeVendor')}
         </Button>
       </Card>
     );
@@ -25,9 +43,7 @@ export function VendorSection() {
   if (!profile.vendorApproved) {
     return (
       <Card>
-        <p className="text-sm text-text-muted">
-          Your vendor application is pending approval.
-        </p>
+        <p className="text-sm text-text-muted">{t('vendor.applicationPending')}</p>
       </Card>
     );
   }

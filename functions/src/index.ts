@@ -6,3 +6,4 @@
 // export { confirmDonation } from './confirmDonation';
 export { onCampaignUpdate } from './onCampaignUpdate';
 export { approveVendor } from './approveVendor';
+export { onVendorApplicationSubmitted } from './onVendorApplicationSubmitted';

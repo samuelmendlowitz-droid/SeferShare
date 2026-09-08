@@ -8,7 +8,7 @@ export async function listMyNotifications(uid: string): Promise<Notification[]> 
   const snap = await getDocs(
     query(notificationsRef, where('recipientUid', '==', uid), orderBy('createdAt', 'desc')),
   );
-  return snap.docs.map((d) => d.data() as Notification);
+  return snap.docs.map((d) => ({ ...(d.data() as Notification), notificationId: d.id }));
 }
 
 export async function markNotificationRead(notificationId: string): Promise<void> {

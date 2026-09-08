@@ -1,5 +1,6 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db } from './lib/firebaseAdmin';
+import { notify } from './notify';
 
 interface ApproveVendorRequest {
   uid: string;
@@ -16,6 +17,15 @@ export const approveVendor = onCall<ApproveVendorRequest>(async (request) => {
   await db.collection('users').doc(uid).update({
     isVendor: approve,
     vendorApproved: approve,
+  });
+
+  await notify({
+    recipientUid: uid,
+    kind: approve ? 'vendor_application_approved' : 'vendor_application_declined',
+    title: approve ? "You're approved!" : 'Vendor application update',
+    body: approve
+      ? 'Your vendor application was approved — you can now manage your sefer catalog.'
+      : 'Your vendor application was not approved at this time.',
   });
 
   return { success: true };

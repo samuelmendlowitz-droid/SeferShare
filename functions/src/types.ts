@@ -93,7 +93,7 @@ export interface PublicVendorListing {
   vendorName: string;
   price: number;
   inStock: boolean;
-  imageUrl?: string;
+  imageUrls?: string[];
 }
 
 export interface Sefer {
@@ -105,12 +105,23 @@ export interface Sefer {
   vendorListings: PublicVendorListing[];
 }
 
+export interface VendorApplication {
+  companyName: string;
+  contactName: string;
+  address: Address;
+  phone: string;
+  email: string;
+  notes?: string;
+  submittedAt: number;
+}
+
 export interface User {
   uid: string;
   displayName: string;
   email: string;
   isVendor: boolean;
   vendorApproved: boolean;
+  vendorApplication?: VendorApplication;
   isAdmin?: boolean;
   stripeCustomerId?: string;
 }
@@ -119,4 +130,7 @@ export type NotificationKind =
   | 'donation_received'
   | 'campaign_fulfilled'
   | 'payment_confirmed'
-  | 'order_shipped';
+  | 'order_shipped'
+  | 'vendor_application_received'
+  | 'vendor_application_approved'
+  | 'vendor_application_declined';

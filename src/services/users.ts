@@ -1,15 +1,27 @@
-import { collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
-import type { Language, User } from '../types';
+import type { Language, User, VendorApplication } from '../types';
 
 export async function updatePreferredLanguage(uid: string, language: Language) {
   await updateDoc(doc(db, 'users', uid), { preferredLanguage: language });
 }
 
-/** Marks a user as wanting to become a vendor; requires manual admin approval (spec §4.3). */
-export async function applyToBeVendor(uid: string) {
-  await updateDoc(doc(db, 'users', uid), { isVendor: true, vendorApproved: false });
+export async function getUser(uid: string): Promise<User | null> {
+  const snap = await getDoc(doc(db, 'users', uid));
+  return snap.exists() ? (snap.data() as User) : null;
+}
+
+/**
+ * Submits the vendor questionnaire; requires manual admin approval (spec §4.3).
+ * A Cloud Function trigger on this write notifies every admin.
+ */
+export async function applyToBeVendor(uid: string, application: VendorApplication) {
+  await updateDoc(doc(db, 'users', uid), {
+    isVendor: true,
+    vendorApproved: false,
+    vendorApplication: application,
+  });
 }
 
 export async function listPendingVendorApplications(): Promise<User[]> {
