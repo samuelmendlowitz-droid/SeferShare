@@ -40,6 +40,22 @@ npm run build
    ```
    This also flips their Firestore `users/{uid}.isAdmin` field manually (used for UI gating) — the custom claim is what Firestore/Functions security actually checks.
 
+### CI/CD: auto-deploy to Firebase Hosting on push
+
+`.github/workflows/firebase-hosting-merge.yml` and `firebase-hosting-pull-request.yml` deploy to Firebase Hosting automatically — the live site on every push to `claude/sefershare-project-setup-65s1sy`, and a preview channel URL on every PR. These mirror what `firebase init hosting:github` generates; that wizard couldn't be run here because its GitHub authorization step needs a browser on the same machine running the CLI (a local `localhost` OAuth callback), which doesn't work from a remote/CI environment.
+
+One manual, one-time step is required — adding a repo secret the workflows deploy with:
+
+1. Open https://console.firebase.google.com/project/sefershare/settings/serviceaccounts/adminsdk
+2. Click **Generate new private key** → confirm → a JSON file downloads.
+3. Open that file and copy its entire contents.
+4. In the GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**.
+5. Name it exactly `FIREBASE_SERVICE_ACCOUNT_SEFERSHARE`, paste the JSON as the value, save.
+
+That key belongs to the project's default Admin SDK service account (broader than the narrowly-scoped one Firebase's own wizard would normally mint) — acceptable for now, but worth swapping for a dedicated `roles/firebasehosting.admin`-only service account later if this becomes a real production pipeline.
+
+No other secrets are needed for the build itself — `.env.production` already carries the (non-secret) Firebase web config, so Vite picks it up in CI the same as anywhere else.
+
 ### Cloudflare
 
 Build command: `npm run build`. Output directory: `dist`.
