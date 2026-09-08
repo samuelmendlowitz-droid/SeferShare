@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { CornerButton } from './CornerButton';
 import { FloatingToggleBar, type ToggleOption } from './FloatingToggleBar';
 import { TopSearchBar } from './TopSearchBar';
-import { HomeIcon, PlusIcon, ProfileIcon } from '../ui/icons';
+import { GiftIcon, HomeIcon, PlusIcon, ProfileIcon } from '../ui/icons';
 
 export type HomeFilter = 'all' | 'where' | 'who' | 'what';
 export type ProfileTab = 'campaigns' | 'donations' | 'notifications' | 'settings';
@@ -91,7 +91,7 @@ export function AppLayout(props: AppLayoutProps) {
             />
             <CornerButton
               label={isHome ? t('donation.browse') : t('campaign.create')}
-              icon={<PlusIcon />}
+              icon={isHome ? <GiftIcon /> : <PlusIcon />}
               onClick={() => navigate(isHome ? '/donate' : '/campaigns/new')}
             />
           </div>
