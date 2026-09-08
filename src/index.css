@@ -19,12 +19,14 @@ html[dir='rtl'] body {
 }
 
 /* iOS Safari auto-zooms on focusing any text input/select/textarea under 16px,
-   and doesn't reliably zoom back out afterward. Forcing 16px here (regardless of
-   any text-sm etc. applied elsewhere) stops that zoom from ever triggering. */
+   and doesn't reliably zoom back out afterward. !important is necessary here:
+   a plain element selector has lower specificity than Tailwind's text-sm etc.
+   classes (most of our inputs have one), so without it this rule silently loses
+   and the zoom bug comes right back. */
 input,
 select,
 textarea {
-  font-size: 16px;
+  font-size: 16px !important;
 }
 
 /* Hide scrollbars on the horizontal filter/toggle rows without losing scroll */
