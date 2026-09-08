@@ -10,6 +10,7 @@ import { campaignDollarTotal } from '../lib/campaignMath';
 import { ProgressBar } from '../components/campaign/ProgressBar';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 
 export function CampaignDetailPage() {
   const { t } = useTranslation();
@@ -32,7 +33,7 @@ export function CampaignDetailPage() {
     })();
   }, [campaignId]);
 
-  if (!campaign) return <div className="mx-auto max-w-2xl px-4 pt-6 text-text-muted">…</div>;
+  if (!campaign) return <LoadingSpinner fullScreen />;
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">

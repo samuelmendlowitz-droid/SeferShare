@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { listMyNotifications, markNotificationRead } from '../../services/notifications';
 import type { Notification } from '../../types';
 import { Card } from '../ui/Card';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 export function NotificationsTab() {
   const { t } = useTranslation();
@@ -18,7 +19,7 @@ export function NotificationsTab() {
       .finally(() => setLoading(false));
   }, [profile]);
 
-  if (loading) return <p className="text-text-muted">…</p>;
+  if (loading) return <LoadingSpinner />;
   if (notifications.length === 0) return <p className="text-text-muted">{t('home.empty')}</p>;
 
   return (

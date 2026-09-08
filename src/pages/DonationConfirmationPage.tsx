@@ -8,6 +8,7 @@ import { getNeshama } from '../services/neshamos';
 import { listSefarim } from '../services/sefarim';
 import type { Donation, Institution, Neshama, Sefer } from '../types';
 import { Card } from '../components/ui/Card';
+import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 
 export function DonationConfirmationPage() {
   const { t } = useTranslation();
@@ -32,7 +33,7 @@ export function DonationConfirmationPage() {
     })();
   }, [donationId]);
 
-  if (!donation) return <div className="mx-auto max-w-2xl px-4 pt-6 text-text-muted">…</div>;
+  if (!donation) return <LoadingSpinner fullScreen />;
 
   return (
     <div className="mx-auto max-w-2xl px-4 pt-6">

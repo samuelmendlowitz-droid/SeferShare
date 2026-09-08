@@ -15,6 +15,7 @@ import {
 import type { Campaign, Donation, Neshama, Order, OrderStatus, Sefer, User } from '../types';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 
 type Section = 'vendors' | 'sefarim' | 'neshamos' | 'campaigns' | 'donations' | 'orders';
 
@@ -55,7 +56,7 @@ export function AdminPage() {
     if (profile?.isAdmin) reload();
   }, [profile]);
 
-  if (loading) return <div className="mx-auto max-w-2xl px-4 pt-6 text-text-muted">…</div>;
+  if (loading) return <LoadingSpinner fullScreen />;
   if (!profile?.isAdmin) {
     return <div className="mx-auto max-w-2xl px-4 pt-6 text-text-muted">Not authorized.</div>;
   }

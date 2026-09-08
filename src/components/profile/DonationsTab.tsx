@@ -6,6 +6,7 @@ import { listMyDonations } from '../../services/donations';
 import type { Donation } from '../../types';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 export function DonationsTab() {
   const { t } = useTranslation();
@@ -21,7 +22,7 @@ export function DonationsTab() {
       .finally(() => setLoading(false));
   }, [profile]);
 
-  if (loading) return <p className="text-text-muted">…</p>;
+  if (loading) return <LoadingSpinner />;
   if (donations.length === 0) return <p className="text-text-muted">{t('home.empty')}</p>;
 
   return (

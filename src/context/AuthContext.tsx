@@ -21,6 +21,10 @@ interface AuthContextValue {
   profile: User | null;
   loading: boolean;
   redirectError: string | null;
+  /** Set when firebaseUser exists but loading its Firestore profile failed — never
+   *  silently let someone into the app with a signed-in-looking but blank/broken state. */
+  profileError: string | null;
+  retryProfile: () => void;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   registerWithEmail: (email: string, password: string, displayName: string) => Promise<void>;
@@ -56,6 +60,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [redirectError, setRedirectError] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+
+  async function loadProfile(fbUser: FirebaseUser) {
+    try {
+      const p = await ensureUserProfile(fbUser);
+      setProfile(p);
+      setProfileError(null);
+    } catch (err) {
+      // A signed-in Firebase user with no loadable Firestore profile must never be
+      // treated as "in" — RequireAuth checks profileError to block that half-signed-in,
+      // blank-looking state instead of showing empty personal info silently.
+      setProfile(null);
+      setProfileError(err instanceof Error ? err.message : String(err));
+    }
+  }
 
   useEffect(() => {
     // Surfaces errors from the signInWithRedirect round-trip (e.g. stale pending-auth
@@ -72,23 +91,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       clearTimeout(stuckTimer);
       setFirebaseUser(fbUser);
-      try {
-        if (fbUser) {
-          const p = await ensureUserProfile(fbUser);
-          setProfile(p);
-        } else {
-          setProfile(null);
-        }
-      } catch (err) {
-        // Without this, a failure here (e.g. writing the new user doc to Firestore)
-        // was an unhandled rejection: loading never cleared, so LoginPage's
-        // "redirect once loaded" effect never fired — silently stuck on login,
-        // no error shown, no way to tell what happened.
+      if (fbUser) {
+        await loadProfile(fbUser);
+      } else {
         setProfile(null);
-        setRedirectError(err instanceof Error ? err.message : String(err));
-      } finally {
-        setLoading(false);
+        setProfileError(null);
       }
+      setLoading(false);
     });
 
     return () => {
@@ -103,6 +112,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       loading,
       redirectError,
+      profileError,
+      retryProfile() {
+        if (firebaseUser) void loadProfile(firebaseUser);
+      },
       async signInWithGoogle() {
         // Popup sign-in depends on sessionStorage syncing between the popup and
         // opener window, which many browsers now block by default (Chrome storage
@@ -133,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await firebaseSignOut(auth);
       },
     }),
-    [firebaseUser, profile, loading, redirectError],
+    [firebaseUser, profile, loading, redirectError, profileError],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

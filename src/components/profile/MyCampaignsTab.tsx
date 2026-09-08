@@ -6,6 +6,7 @@ import { listInstitutions } from '../../services/institutions';
 import { listNeshamos } from '../../services/neshamos';
 import type { Campaign, Institution, Neshama } from '../../types';
 import { CampaignCard } from '../campaign/CampaignCard';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 export function MyCampaignsTab() {
   const { t } = useTranslation();
@@ -26,7 +27,7 @@ export function MyCampaignsTab() {
       .finally(() => setLoading(false));
   }, [profile]);
 
-  if (loading) return <p className="text-text-muted">…</p>;
+  if (loading) return <LoadingSpinner />;
   if (campaigns.length === 0) return <p className="text-text-muted">{t('home.empty')}</p>;
 
   return (
