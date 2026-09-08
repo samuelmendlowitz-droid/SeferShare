@@ -18,6 +18,15 @@ html[dir='rtl'] body {
   @apply font-he;
 }
 
+/* iOS Safari auto-zooms on focusing any text input/select/textarea under 16px,
+   and doesn't reliably zoom back out afterward. Forcing 16px here (regardless of
+   any text-sm etc. applied elsewhere) stops that zoom from ever triggering. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
 /* Hide scrollbars on the horizontal filter/toggle rows without losing scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
