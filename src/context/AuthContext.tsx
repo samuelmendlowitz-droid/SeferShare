@@ -44,7 +44,10 @@ async function ensureUserProfile(firebaseUser: FirebaseUser): Promise<User> {
     uid: firebaseUser.uid,
     displayName: firebaseUser.displayName ?? '',
     email: firebaseUser.email ?? '',
-    phone: firebaseUser.phoneNumber ?? undefined,
+    // Firestore rejects literal `undefined` field values — omit `phone` entirely
+    // rather than setting it to undefined when the provider didn't supply one
+    // (Google/email sign-in never do).
+    ...(firebaseUser.phoneNumber ? { phone: firebaseUser.phoneNumber } : {}),
     preferredLanguage: 'en',
     isVendor: false,
     vendorApproved: false,
