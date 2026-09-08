@@ -38,7 +38,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-4">
+    <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4">
       <h1 className="mb-6 text-center text-2xl font-bold text-accent">{t('app.name')}</h1>
       <Card>
         <form onSubmit={handleSubmit} className="space-y-3">

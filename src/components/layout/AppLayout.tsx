@@ -53,12 +53,16 @@ export function AppLayout(props: AppLayoutProps) {
   const isHome = props.variant === 'home';
 
   return (
-    <div className="min-h-screen pb-36">
+    <div className="min-h-dvh pb-36">
       <main className="mx-auto max-w-2xl px-4 pt-6">{props.children}</main>
 
-      {/* Fixed bottom cluster: same outer margin (px-4 / bottom-4) as `main`, and the
-          same gap (gap-4) between the button row and the nav bar below it. */}
-      <div className="fixed inset-x-0 bottom-4 z-40 mx-auto flex max-w-2xl flex-col gap-4 px-4">
+      {/* Fixed bottom cluster: same outer margin (px-4 / bottom-4, plus the safe-area
+          inset on notched/home-indicator devices) as `main`, and the same gap (gap-4)
+          between the button row and the nav bar below it. */}
+      <div
+        className="fixed inset-x-0 z-40 mx-auto flex max-w-2xl flex-col gap-4 px-4"
+        style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
+      >
         <div className="flex items-center justify-between">
           <CornerButton
             label={isHome ? t('nav.profile') : t('nav.home')}
