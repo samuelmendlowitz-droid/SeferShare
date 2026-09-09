@@ -7,7 +7,7 @@ const donationsRef = collection(db, 'donations');
 
 export async function listMyDonations(uid: string): Promise<Donation[]> {
   const snap = await getDocs(query(donationsRef, where('donorUid', '==', uid), orderBy('createdAt', 'desc')));
-  return snap.docs.map((d) => d.data() as Donation);
+  return snap.docs.map((d) => ({ ...(d.data() as Donation), donationId: d.id }));
 }
 
 export interface CreatePaymentIntentInput {

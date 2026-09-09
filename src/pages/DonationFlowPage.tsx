@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getInstitution } from '../services/institutions';
 import { getNeshama } from '../services/neshamos';
@@ -15,15 +15,27 @@ import { Card } from '../components/ui/Card';
 
 type Step = 'seforim' | 'dedication' | 'message' | 'checkout' | 'confirmation';
 
+interface IncomingState {
+  items?: PickedItem[];
+  institutionId?: string;
+  neshamaId?: string;
+}
+
 export function DonationFlowPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile } = useAuth();
 
-  const [step, setStep] = useState<Step>('seforim');
-  const [items, setItems] = useState<PickedItem[]>([]);
-  const [institutionId, setInstitutionId] = useState<string>();
-  const [neshamaId, setNeshamaId] = useState<string>();
+  // Arriving from a campaign's detail page hands us pre-picked items and that
+  // campaign's institution/neshama — skip straight past the steps it already answered.
+  const incoming = location.state as IncomingState | null;
+  const hasIncomingItems = Boolean(incoming?.items?.length);
+
+  const [step, setStep] = useState<Step>(hasIncomingItems ? 'message' : 'seforim');
+  const [items, setItems] = useState<PickedItem[]>(incoming?.items ?? []);
+  const [institutionId, setInstitutionId] = useState<string | undefined>(incoming?.institutionId);
+  const [neshamaId, setNeshamaId] = useState<string | undefined>(incoming?.neshamaId);
   const [donorMessage, setDonorMessage] = useState('');
   const [institution, setInstitution] = useState<Institution>();
   const [neshama, setNeshama] = useState<Neshama>();

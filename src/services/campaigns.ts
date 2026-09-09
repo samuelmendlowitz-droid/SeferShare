@@ -18,23 +18,23 @@ const campaignsRef = collection(db, 'campaigns');
 
 export async function listActiveCampaigns(): Promise<Campaign[]> {
   const snap = await getDocs(query(campaignsRef, where('status', '==', 'active'), orderBy('createdAt', 'desc')));
-  return snap.docs.map((d) => d.data() as Campaign);
+  return snap.docs.map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }));
 }
 
 /** Fulfilled campaigns are hidden from browse but still searchable (spec §6.2). */
 export async function searchCampaigns(): Promise<Campaign[]> {
   const snap = await getDocs(query(campaignsRef, orderBy('createdAt', 'desc')));
-  return snap.docs.map((d) => d.data() as Campaign);
+  return snap.docs.map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }));
 }
 
 export async function listMyCampaigns(uid: string): Promise<Campaign[]> {
   const snap = await getDocs(query(campaignsRef, where('createdByUid', '==', uid), orderBy('createdAt', 'desc')));
-  return snap.docs.map((d) => d.data() as Campaign);
+  return snap.docs.map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }));
 }
 
 export async function getCampaign(campaignId: string): Promise<Campaign | null> {
   const snap = await getDoc(doc(db, 'campaigns', campaignId));
-  return snap.exists() ? (snap.data() as Campaign) : null;
+  return snap.exists() ? { ...(snap.data() as Campaign), campaignId: snap.id } : null;
 }
 
 export interface CreateCampaignInput {

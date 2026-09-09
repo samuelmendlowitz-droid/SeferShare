@@ -6,12 +6,12 @@ const institutionsRef = collection(db, 'institutions');
 
 export async function listInstitutions(): Promise<Institution[]> {
   const snap = await getDocs(query(institutionsRef, orderBy('name')));
-  return snap.docs.map((d) => d.data() as Institution);
+  return snap.docs.map((d) => ({ ...(d.data() as Institution), institutionId: d.id }));
 }
 
 export async function getInstitution(institutionId: string): Promise<Institution | null> {
   const snap = await getDoc(doc(db, 'institutions', institutionId));
-  return snap.exists() ? (snap.data() as Institution) : null;
+  return snap.exists() ? { ...(snap.data() as Institution), institutionId: snap.id } : null;
 }
 
 export async function createInstitution(

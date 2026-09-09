@@ -33,7 +33,8 @@
     "atLeastOne": "Select at least an institution or a neshama",
     "atLeastOneItem": "Add at least one sefer",
     "titleOptional": "Campaign title (optional)",
-    "descriptionOptional": "Description (optional)"
+    "descriptionOptional": "Description (optional)",
+    "notFound": "This campaign couldn't be found."
   },
   "neshama": {
     "name": "Name",

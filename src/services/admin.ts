@@ -15,12 +15,12 @@ import type { Campaign, Donation, Order, OrderStatus, Sefer } from '../types';
 
 export async function listAllCampaignsAdmin(): Promise<Campaign[]> {
   const snap = await getDocs(query(collection(db, 'campaigns'), orderBy('createdAt', 'desc')));
-  return snap.docs.map((d) => d.data() as Campaign);
+  return snap.docs.map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }));
 }
 
 export async function listAllDonationsAdmin(): Promise<Donation[]> {
   const snap = await getDocs(query(collection(db, 'donations'), orderBy('createdAt', 'desc')));
-  return snap.docs.map((d) => d.data() as Donation);
+  return snap.docs.map((d) => ({ ...(d.data() as Donation), donationId: d.id }));
 }
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
@@ -68,5 +68,5 @@ export async function mergeNeshamos(primaryNeshamaId: string, duplicateNeshamaId
 
 export async function listAllOrdersAdmin(): Promise<Order[]> {
   const snap = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc')));
-  return snap.docs.map((d) => d.data() as Order);
+  return snap.docs.map((d) => ({ ...(d.data() as Order), orderId: d.id }));
 }

@@ -6,12 +6,12 @@ const neshamosRef = collection(db, 'neshamos');
 
 export async function listNeshamos(): Promise<Neshama[]> {
   const snap = await getDocs(query(neshamosRef, orderBy('name')));
-  return snap.docs.map((d) => d.data() as Neshama);
+  return snap.docs.map((d) => ({ ...(d.data() as Neshama), neshamaId: d.id }));
 }
 
 export async function getNeshama(neshamaId: string): Promise<Neshama | null> {
   const snap = await getDoc(doc(db, 'neshamos', neshamaId));
-  return snap.exists() ? (snap.data() as Neshama) : null;
+  return snap.exists() ? { ...(snap.data() as Neshama), neshamaId: snap.id } : null;
 }
 
 export async function createNeshama(

@@ -33,7 +33,8 @@
     "atLeastOne": "בחרו לפחות מוסד או נשמה",
     "atLeastOneItem": "הוסיפו לפחות ספר אחד",
     "titleOptional": "כותרת הקמפיין (אופציונלי)",
-    "descriptionOptional": "תיאור (אופציונלי)"
+    "descriptionOptional": "תיאור (אופציונלי)",
+    "notFound": "הקמפיין לא נמצא."
   },
   "neshama": {
     "name": "שם",
