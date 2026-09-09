@@ -5,10 +5,11 @@ import { useAuth } from '../../context/AuthContext';
 import { CornerButton } from './CornerButton';
 import { FloatingToggleBar, type ToggleOption } from './FloatingToggleBar';
 import { TopSearchBar } from './TopSearchBar';
-import { GiftIcon, HomeIcon, PlusIcon, ProfileIcon } from '../ui/icons';
+import { GiftIcon, HomeIcon, PlusIcon, ProfileIcon, StoreIcon } from '../ui/icons';
 
 export type HomeFilter = 'all' | 'where' | 'who' | 'what';
-export type ProfileTab = 'campaigns' | 'donations' | 'notifications' | 'settings' | 'catalog';
+export type ProfileTab = 'campaigns' | 'donations' | 'notifications' | 'settings';
+export type VendorTab = 'catalog' | 'orders' | 'sales';
 
 interface HomeLayoutProps {
   variant: 'home';
@@ -26,7 +27,15 @@ interface ProfileLayoutProps {
   children: ReactNode;
 }
 
-type AppLayoutProps = HomeLayoutProps | ProfileLayoutProps;
+interface VendorLayoutProps {
+  variant: 'vendor';
+  tab: VendorTab;
+  onTabChange: (tab: VendorTab) => void;
+  onSearch: (query: string) => void;
+  children: ReactNode;
+}
+
+type AppLayoutProps = HomeLayoutProps | ProfileLayoutProps | VendorLayoutProps;
 
 export function AppLayout(props: AppLayoutProps) {
   const navigate = useNavigate();
@@ -51,13 +60,41 @@ export function AppLayout(props: AppLayoutProps) {
       { key: 'campaigns', label: t('nav.myCampaigns') },
       { key: 'donations', label: t('nav.donations') },
       { key: 'notifications', label: t('nav.notifications') },
-      ...(isVendor ? [{ key: 'catalog', label: t('nav.catalog') }] : []),
       { key: 'settings', label: t('nav.settings') },
     ],
-    [t, isVendor],
+    [t],
   );
 
-  const isHome = props.variant === 'home';
+  const vendorOptions: ToggleOption[] = useMemo(
+    () => [
+      { key: 'catalog', label: t('vendor.catalog') },
+      { key: 'orders', label: t('vendor.orders') },
+      { key: 'sales', label: t('vendor.sales') },
+    ],
+    [t],
+  );
+
+  // Every reachable page (vendor only for approved vendor accounts), so the bottom-left
+  // cluster can always show "the other two" regardless of which page is active.
+  const pages = useMemo(() => {
+    const base: { key: 'home' | 'profile' | 'vendor'; label: string; icon: ReactNode; path: string }[] = [
+      { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
+      { key: 'profile', label: t('nav.profile'), icon: <ProfileIcon />, path: '/profile' },
+    ];
+    if (isVendor) {
+      base.push({ key: 'vendor', label: t('nav.vendor'), icon: <StoreIcon />, path: '/vendor' });
+    }
+    return base;
+  }, [t, isVendor]);
+
+  const otherPages = pages.filter((p) => p.key !== props.variant);
+
+  const actionButton =
+    props.variant === 'home' ? (
+      <CornerButton label={t('donation.browse')} icon={<GiftIcon />} onClick={() => navigate('/donate')} />
+    ) : props.variant === 'profile' ? (
+      <CornerButton label={t('campaign.create')} icon={<PlusIcon />} onClick={() => navigate('/campaigns/new')} />
+    ) : null;
 
   function handleQueryChange(next: string) {
     setQuery(next);
@@ -88,23 +125,26 @@ export function AppLayout(props: AppLayoutProps) {
           style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
         >
           <div className="flex items-center justify-between">
-            <CornerButton
-              label={isHome ? t('nav.profile') : t('nav.home')}
-              icon={isHome ? <ProfileIcon /> : <HomeIcon />}
-              onClick={() => navigate(isHome ? '/profile' : '/')}
-            />
-            <CornerButton
-              label={isHome ? t('donation.browse') : t('campaign.create')}
-              icon={isHome ? <GiftIcon /> : <PlusIcon />}
-              onClick={() => navigate(isHome ? '/donate' : '/campaigns/new')}
-            />
+            <div className="flex gap-2">
+              {otherPages.map((p) => (
+                <CornerButton key={p.key} label={p.label} icon={p.icon} onClick={() => navigate(p.path)} />
+              ))}
+            </div>
+            {actionButton}
           </div>
 
-          {isHome ? (
+          {props.variant === 'home' ? (
             <FloatingToggleBar
               options={homeOptions}
               activeKey={props.filter}
               onChange={(key) => props.onFilterChange(key as HomeFilter)}
+              onOpenSearch={() => setSearchOpen(true)}
+            />
+          ) : props.variant === 'vendor' ? (
+            <FloatingToggleBar
+              options={vendorOptions}
+              activeKey={props.tab}
+              onChange={(key) => props.onTabChange(key as VendorTab)}
               onOpenSearch={() => setSearchOpen(true)}
             />
           ) : (

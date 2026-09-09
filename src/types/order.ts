@@ -5,6 +5,7 @@ export type OrderStatus = 'pending' | 'shipped' | 'delivered';
 export interface OrderItem {
   seferId: string;
   quantity: number;
+  priceEach: number;
 }
 
 export interface Order {

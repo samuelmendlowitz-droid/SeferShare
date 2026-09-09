@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { deleteVendorListing, listSefarim } from '../../services/sefarim';
 import { updateCatalogLayout } from '../../services/users';
 import type { CatalogLayoutEntry, Sefer } from '../../types';
-import { SeferForm } from '../vendor/SeferForm';
+import { SeferForm } from './SeferForm';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { LoadingSpinner } from '../ui/LoadingSpinner';

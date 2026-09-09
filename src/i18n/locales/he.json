@@ -14,8 +14,8 @@
     "myCampaigns": "הקמפיינים שלי",
     "donations": "תרומות",
     "notifications": "התראות",
-    "catalog": "קטלוג",
-    "settings": "הגדרות"
+    "settings": "הגדרות",
+    "vendor": "ספק"
   },
   "home": {
     "itemsNeeded": "{{fulfilled}} מתוך {{needed}} ספרים",
@@ -80,7 +80,12 @@
     "share": "שיתוף כרטיס ההקדשה"
   },
   "vendor": {
-    "orders": "הזמנות נכנסות",
+    "catalog": "קטלוג",
+    "orders": "הזמנות",
+    "sales": "מכירות",
+    "markShipped": "סימון כנשלח",
+    "totalRevenue": "סך ההכנסות",
+    "itemsSold": "פריטים שנמכרו",
     "addSefer": "הוספת ספר",
     "retailPrice": "מחיר קמעונאי",
     "wholesalePrice": "מחיר סיטונאי (לא מוצג לתורמים)",

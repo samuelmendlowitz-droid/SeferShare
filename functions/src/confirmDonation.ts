@@ -78,7 +78,7 @@ export const confirmDonation = onRequest(
       const order: Omit<Order, 'orderId' | 'createdAt'> & { createdAt: FirebaseFirestore.FieldValue } = {
         donationId,
         vendorId,
-        items: items.map((i) => ({ seferId: i.seferId, quantity: i.quantity })),
+        items: items.map((i) => ({ seferId: i.seferId, quantity: i.quantity, priceEach: i.priceEach })),
         shippingAddress: {
           line1: '',
           city: '',

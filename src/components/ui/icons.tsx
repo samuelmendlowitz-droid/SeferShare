@@ -104,3 +104,14 @@ export function ChevronDownIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function StoreIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M3 9 4 4h16l1 5" />
+      <path d="M3 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0" />
+      <path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9" />
+      <path d="M9 20v-5h6v5" />
+    </Icon>
+  );
+}

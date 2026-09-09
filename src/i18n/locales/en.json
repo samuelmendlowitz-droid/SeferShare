@@ -14,8 +14,8 @@
     "myCampaigns": "My Campaigns",
     "donations": "Donations",
     "notifications": "Notifications",
-    "catalog": "Catalog",
-    "settings": "Settings"
+    "settings": "Settings",
+    "vendor": "Vendor"
   },
   "home": {
     "itemsNeeded": "{{fulfilled}} of {{needed}} seforim",
@@ -80,7 +80,12 @@
     "share": "Share dedication card"
   },
   "vendor": {
-    "orders": "Incoming Orders",
+    "catalog": "Catalog",
+    "orders": "Orders",
+    "sales": "Sales",
+    "markShipped": "Mark shipped",
+    "totalRevenue": "Total revenue",
+    "itemsSold": "Items sold",
     "addSefer": "Add sefer",
     "retailPrice": "Retail price",
     "wholesalePrice": "Wholesale price (never shown to donors)",

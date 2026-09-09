@@ -84,11 +84,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // --- Orders — vendor sees their own; only admin can change status ---------
+    // --- Orders — vendor sees their own and may mark a pending order shipped;
+    // any other status transition (e.g. delivered) is admin-only -----------------
     match /orders/{orderId} {
       allow read: if signedIn() && (resource.data.vendorId == request.auth.uid || isAdmin());
       allow create: if isAdmin();
-      allow update: if isAdmin();
+      allow update: if isAdmin() || (
+        signedIn() &&
+        resource.data.vendorId == request.auth.uid &&
+        resource.data.status == 'pending' &&
+        request.resource.data.status == 'shipped' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+      );
     }
 
     // --- Notifications — created by Cloud Functions, recipient can mark read --
