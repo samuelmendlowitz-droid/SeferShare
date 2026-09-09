@@ -34,7 +34,11 @@
     "atLeastOneItem": "הוסיפו לפחות ספר אחד",
     "titleOptional": "כותרת הקמפיין (אופציונלי)",
     "descriptionOptional": "תיאור (אופציונלי)",
-    "notFound": "הקמפיין לא נמצא."
+    "notFound": "הקמפיין לא נמצא.",
+    "edit": "עריכה",
+    "saveChanges": "שמירת שינויים",
+    "addMoreSeforim": "הוספת ספרים נוספים",
+    "alreadyFulfilled": "{{count}} כבר הושלמו — לא ניתן להסיר"
   },
   "neshama": {
     "name": "שם",

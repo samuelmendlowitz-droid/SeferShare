@@ -84,15 +84,44 @@ export async function deleteCampaign(campaignId: string): Promise<void> {
   await deleteDoc(doc(db, 'campaigns', campaignId));
 }
 
-export async function addItemsToCampaign(campaignId: string, newItems: Omit<CampaignItem, 'quantityFulfilled'>[]) {
-  const campaign = await getCampaign(campaignId);
-  if (!campaign) throw new Error('Campaign not found');
-  const items = [...campaign.items, ...newItems.map((i) => ({ ...i, quantityFulfilled: 0 }))];
-  const totalItemsNeeded = items.reduce((sum, i) => sum + i.quantity, 0);
+export interface UpdateCampaignInput {
+  title?: string;
+  description?: string;
+  institutionId?: string;
+  neshamaId?: string;
+  items: CampaignItem[];
+  shippingAddress: Campaign['shippingAddress'];
+  language: Campaign['language'];
+}
+
+/**
+ * Full edit of a campaign's own details by its owner. Deliberately never touches
+ * totalItemsFulfilled/currentMilestone — those are server/algorithm-owned, and the
+ * Firestore rule for campaigns rejects an owner update that changes them.
+ */
+export async function updateCampaign(campaignId: string, input: UpdateCampaignInput): Promise<void> {
+  if (!input.institutionId && !input.neshamaId) {
+    throw new Error('A campaign must have at least an institution or a neshama');
+  }
+  if (input.items.length === 0) {
+    throw new Error('A campaign must have at least one item');
+  }
+
+  const totalItemsNeeded = input.items.reduce((sum, i) => sum + i.quantity, 0);
+  const totalItemsFulfilled = input.items.reduce((sum, i) => sum + i.quantityFulfilled, 0);
+
   await updateDoc(doc(db, 'campaigns', campaignId), {
-    items,
+    title: input.title ?? null,
+    description: input.description ?? null,
+    institutionId: input.institutionId ?? null,
+    neshamaId: input.neshamaId ?? null,
+    items: input.items,
+    shippingAddress: input.shippingAddress,
     totalItemsNeeded,
-    status: 'active',
+    // Editing a fulfilled campaign to need more can un-hide it from browse again;
+    // it can never flip the other way (an owner edit can't mark items fulfilled).
+    ...(totalItemsNeeded > totalItemsFulfilled ? { status: 'active' } : {}),
+    language: input.language,
     updatedAt: serverTimestamp(),
   });
 }

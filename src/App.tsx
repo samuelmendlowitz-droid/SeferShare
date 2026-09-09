@@ -9,6 +9,7 @@ import { DonationFlowPage } from './pages/DonationFlowPage';
 import { DonationConfirmationPage } from './pages/DonationConfirmationPage';
 import { CampaignCreatePage } from './pages/CampaignCreatePage';
 import { CampaignDetailPage } from './pages/CampaignDetailPage';
+import { CampaignEditPage } from './pages/CampaignEditPage';
 import { VendorPage } from './pages/VendorPage';
 import { AdminPage } from './pages/AdminPage';
 
@@ -58,6 +59,14 @@ export default function App() {
               element={
                 <RequireAuth>
                   <CampaignDetailPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/campaigns/:campaignId/edit"
+              element={
+                <RequireAuth>
+                  <CampaignEditPage />
                 </RequireAuth>
               }
             />

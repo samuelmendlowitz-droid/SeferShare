@@ -34,7 +34,11 @@
     "atLeastOneItem": "Add at least one sefer",
     "titleOptional": "Campaign title (optional)",
     "descriptionOptional": "Description (optional)",
-    "notFound": "This campaign couldn't be found."
+    "notFound": "This campaign couldn't be found.",
+    "edit": "Edit",
+    "saveChanges": "Save changes",
+    "addMoreSeforim": "Add more seforim",
+    "alreadyFulfilled": "{{count}} already fulfilled — can't remove"
   },
   "neshama": {
     "name": "Name",

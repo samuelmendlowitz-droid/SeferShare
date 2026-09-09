@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { getCampaign } from '../services/campaigns';
 import { getInstitution } from '../services/institutions';
 import { getNeshama } from '../services/neshamos';
@@ -17,6 +18,7 @@ import { SeferThumbnail } from '../components/ui/SeferThumbnail';
 export function CampaignDetailPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const { campaignId } = useParams();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -94,9 +96,16 @@ export function CampaignDetailPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate('/')}>
-        {t('actions.back')}
-      </Button>
+      <div className="mb-4 flex items-center justify-between">
+        <Button variant="secondary" onClick={() => navigate('/')}>
+          {t('actions.back')}
+        </Button>
+        {profile?.uid === campaign.createdByUid && (
+          <Button variant="secondary" onClick={() => navigate(`/campaigns/${campaign.campaignId}/edit`)}>
+            {t('campaign.edit')}
+          </Button>
+        )}
+      </div>
 
       <Card>
         {campaign.title && <h1 className="mb-1 text-lg font-bold">{campaign.title}</h1>}
