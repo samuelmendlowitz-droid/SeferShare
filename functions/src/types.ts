@@ -93,7 +93,7 @@ export interface PublicVendorListing {
   vendorId: string;
   vendorName: string;
   price: number;
-  inStock: boolean;
+  stockQty: number;
   imageUrls?: string[];
 }
 

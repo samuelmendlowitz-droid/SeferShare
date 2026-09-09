@@ -90,7 +90,7 @@
     "addSefer": "Add sefer",
     "retailPrice": "Retail price",
     "wholesalePrice": "Wholesale price (never shown to donors)",
-    "inStock": "In stock",
+    "stockQty": "Stock quantity",
     "images": "Photos (up to {{max}}, optional)",
     "addPhoto": "Add photo",
     "becomeVendor": "Apply to become a vendor",
@@ -152,6 +152,50 @@
     "back": "Back",
     "cancel": "Cancel",
     "add": "Add",
-    "delete": "Delete"
+    "delete": "Delete",
+    "filterSort": "Filter & sort",
+    "sortBy": "Sort by",
+    "reset": "Reset",
+    "done": "Done"
+  },
+  "filterSort": {
+    "filterByInstitutionType": "Institution type",
+    "filterBySeferType": "Sefer type",
+    "filterByInstitution": "Institution",
+    "filterByNeshama": "Neshama",
+    "filterByStockStatus": "Stock status",
+    "filterByOrderStatus": "Order status",
+    "filterByDonationStatus": "Status",
+    "inStock": "In stock",
+    "lowStock": "Low stock",
+    "outOfStock": "Out of stock",
+    "sortRecommended": "Recommended",
+    "sortInstitutionAZ": "Institution A–Z",
+    "sortNeshamaAZ": "Neshama A–Z",
+    "sortSeferAZ": "Sefer A–Z",
+    "sortCampaignSize": "Campaign size",
+    "sortNameAZ": "Name A–Z",
+    "sortCostHighLow": "Cost: high to low",
+    "sortCostLowHigh": "Cost: low to high",
+    "sortStockHighLow": "Stock: high to low",
+    "sortStockLowHigh": "Stock: low to high",
+    "sortDateNewOld": "Newest first",
+    "sortDateOldNew": "Oldest first",
+    "sortAmountHighLow": "Amount: high to low",
+    "sortAmountLowHigh": "Amount: low to high",
+    "sortOrderSizeHighLow": "Order size: high to low",
+    "sortOrderSizeLowHigh": "Order size: low to high",
+    "sortSeferNameAZ": "Sefer name A–Z"
+  },
+  "orderStatus": {
+    "pending": "Pending",
+    "shipped": "Shipped",
+    "delivered": "Delivered"
+  },
+  "donationStatus": {
+    "pending": "Pending",
+    "paid": "Paid",
+    "fulfilled": "Fulfilled",
+    "refunded": "Refunded"
   }
 }

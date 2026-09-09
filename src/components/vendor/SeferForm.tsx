@@ -21,7 +21,7 @@ export function SeferForm({ onSaved }: SeferFormProps) {
   const [type, setType] = useState<SeferType>('chumash');
   const [retailPrice, setRetailPrice] = useState('');
   const [wholesalePrice, setWholesalePrice] = useState('');
-  const [inStock, setInStock] = useState(true);
+  const [stockQty, setStockQty] = useState('0');
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -56,7 +56,7 @@ export function SeferForm({ onSaved }: SeferFormProps) {
         vendorName: profile.displayName,
         retailPrice: Number(retailPrice),
         wholesalePrice: Number(wholesalePrice),
-        inStock,
+        stockQty: Number(stockQty),
         imageUrls,
       });
 
@@ -65,6 +65,7 @@ export function SeferForm({ onSaved }: SeferFormProps) {
       setPhoneticName('');
       setRetailPrice('');
       setWholesalePrice('');
+      setStockQty('0');
       setImageFiles([]);
       onSaved();
     } finally {
@@ -127,10 +128,16 @@ export function SeferForm({ onSaved }: SeferFormProps) {
           placeholder={t('vendor.wholesalePrice') ?? ''}
           className="w-full rounded-btn border border-border px-3 py-2 text-sm"
         />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} />
-          {t('vendor.inStock')}
-        </label>
+        <input
+          required
+          type="number"
+          min="0"
+          step="1"
+          value={stockQty}
+          onChange={(e) => setStockQty(e.target.value)}
+          placeholder={t('vendor.stockQty') ?? ''}
+          className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+        />
 
         <div>
           <p className="mb-2 text-sm text-text-muted">{t('vendor.images', { max: MAX_SEFER_IMAGES })}</p>

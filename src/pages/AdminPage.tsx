@@ -133,7 +133,8 @@ export function AdminPage() {
                 {s.vendorListings.map((l) => (
                   <div key={l.vendorId} className="flex items-center justify-between text-sm">
                     <span>
-                      {l.vendorName} — ${l.price.toFixed(2)} {l.inStock ? '' : `(${t('admin.outOfStock')})`}
+                      {l.vendorName} — ${l.price.toFixed(2)} ({l.stockQty} {t('vendor.stockQty')})
+                      {l.stockQty === 0 ? ` (${t('admin.outOfStock')})` : ''}
                     </span>
                     <button
                       type="button"

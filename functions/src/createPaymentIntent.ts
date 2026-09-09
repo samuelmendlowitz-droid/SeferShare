@@ -23,7 +23,7 @@ async function priceItems(items: DonationItem[]): Promise<number> {
     if (!snap.exists) throw new HttpsError('not-found', `Sefer ${item.seferId} not found`);
     const sefer = snap.data() as Sefer;
     const listing = sefer.vendorListings.find((l) => l.vendorId === item.vendorId);
-    if (!listing || !listing.inStock) {
+    if (!listing || listing.stockQty <= 0) {
       throw new HttpsError('failed-precondition', `Vendor listing unavailable for ${item.seferId}`);
     }
     total += listing.price * item.quantity;

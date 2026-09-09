@@ -2,6 +2,8 @@ import type { Address } from './common';
 
 export type OrderStatus = 'pending' | 'shipped' | 'delivered';
 
+export const ORDER_STATUSES: OrderStatus[] = ['pending', 'shipped', 'delivered'];
+
 export interface OrderItem {
   seferId: string;
   quantity: number;

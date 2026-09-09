@@ -105,6 +105,16 @@ export function ChevronDownIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function FilterIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M4 6h16" />
+      <path d="M7 12h10" />
+      <path d="M10 18h4" />
+    </Icon>
+  );
+}
+
 export function StoreIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

@@ -90,7 +90,7 @@
     "addSefer": "הוספת ספר",
     "retailPrice": "מחיר קמעונאי",
     "wholesalePrice": "מחיר סיטונאי (לא מוצג לתורמים)",
-    "inStock": "במלאי",
+    "stockQty": "כמות במלאי",
     "images": "תמונות (עד {{max}}, אופציונלי)",
     "addPhoto": "הוספת תמונה",
     "becomeVendor": "הגשת בקשה להיות ספק",
@@ -152,6 +152,50 @@
     "back": "חזרה",
     "cancel": "ביטול",
     "add": "הוספה",
-    "delete": "מחיקה"
+    "delete": "מחיקה",
+    "filterSort": "סינון ומיון",
+    "sortBy": "מיון לפי",
+    "reset": "איפוס",
+    "done": "סיום"
+  },
+  "filterSort": {
+    "filterByInstitutionType": "סוג מוסד",
+    "filterBySeferType": "סוג הספר",
+    "filterByInstitution": "מוסד",
+    "filterByNeshama": "נשמה",
+    "filterByStockStatus": "סטטוס מלאי",
+    "filterByOrderStatus": "סטטוס הזמנה",
+    "filterByDonationStatus": "סטטוס",
+    "inStock": "במלאי",
+    "lowStock": "מלאי נמוך",
+    "outOfStock": "אזל מהמלאי",
+    "sortRecommended": "מומלץ",
+    "sortInstitutionAZ": "מוסד א-ת",
+    "sortNeshamaAZ": "נשמה א-ת",
+    "sortSeferAZ": "ספר א-ת",
+    "sortCampaignSize": "גודל הקמפיין",
+    "sortNameAZ": "שם א-ת",
+    "sortCostHighLow": "מחיר: מהגבוה לנמוך",
+    "sortCostLowHigh": "מחיר: מהנמוך לגבוה",
+    "sortStockHighLow": "מלאי: מהגבוה לנמוך",
+    "sortStockLowHigh": "מלאי: מהנמוך לגבוה",
+    "sortDateNewOld": "החדש ביותר",
+    "sortDateOldNew": "הישן ביותר",
+    "sortAmountHighLow": "סכום: מהגבוה לנמוך",
+    "sortAmountLowHigh": "סכום: מהנמוך לגבוה",
+    "sortOrderSizeHighLow": "גודל הזמנה: מהגבוה לנמוך",
+    "sortOrderSizeLowHigh": "גודל הזמנה: מהנמוך לגבוה",
+    "sortSeferNameAZ": "שם הספר א-ת"
+  },
+  "orderStatus": {
+    "pending": "ממתין",
+    "shipped": "נשלח",
+    "delivered": "נמסר"
+  },
+  "donationStatus": {
+    "pending": "ממתין",
+    "paid": "שולם",
+    "fulfilled": "הושלם",
+    "refunded": "זוכה"
   }
 }

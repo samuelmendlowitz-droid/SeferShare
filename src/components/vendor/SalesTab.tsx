@@ -1,24 +1,15 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../context/AuthContext';
-import { listVendorOrders } from '../../services/orders';
 import type { Order } from '../../types';
 import { Card } from '../ui/Card';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 
-export function SalesTab() {
-  const { t } = useTranslation();
-  const { profile } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+interface SalesTabProps {
+  loading: boolean;
+  orders: Order[];
+}
 
-  useEffect(() => {
-    if (!profile) return;
-    listVendorOrders(profile.uid).then((o) => {
-      setOrders(o);
-      setLoading(false);
-    });
-  }, [profile]);
+export function SalesTab({ loading, orders }: SalesTabProps) {
+  const { t } = useTranslation();
 
   if (loading) return <LoadingSpinner />;
 

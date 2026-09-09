@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { CornerButton } from './CornerButton';
-import { FloatingToggleBar, type ToggleOption } from './FloatingToggleBar';
+import { FloatingToggleBar, type FilterSortButtonProps, type ToggleOption } from './FloatingToggleBar';
 import { TopSearchBar } from './TopSearchBar';
 import { GiftIcon, HomeIcon, PlusIcon, ProfileIcon, StoreIcon } from '../ui/icons';
 
@@ -16,6 +16,7 @@ interface HomeLayoutProps {
   filter: HomeFilter;
   onFilterChange: (filter: HomeFilter) => void;
   onSearch: (query: string) => void;
+  filterSort?: FilterSortButtonProps;
   children: ReactNode;
 }
 
@@ -24,6 +25,7 @@ interface ProfileLayoutProps {
   tab: ProfileTab;
   onTabChange: (tab: ProfileTab) => void;
   onSearch: (query: string) => void;
+  filterSort?: FilterSortButtonProps;
   children: ReactNode;
 }
 
@@ -32,6 +34,7 @@ interface VendorLayoutProps {
   tab: VendorTab;
   onTabChange: (tab: VendorTab) => void;
   onSearch: (query: string) => void;
+  filterSort?: FilterSortButtonProps;
   children: ReactNode;
 }
 
@@ -139,6 +142,7 @@ export function AppLayout(props: AppLayoutProps) {
               activeKey={props.filter}
               onChange={(key) => props.onFilterChange(key as HomeFilter)}
               onOpenSearch={() => setSearchOpen(true)}
+              filterSort={props.filterSort}
             />
           ) : props.variant === 'vendor' ? (
             <FloatingToggleBar
@@ -146,6 +150,7 @@ export function AppLayout(props: AppLayoutProps) {
               activeKey={props.tab}
               onChange={(key) => props.onTabChange(key as VendorTab)}
               onOpenSearch={() => setSearchOpen(true)}
+              filterSort={props.filterSort}
             />
           ) : (
             <FloatingToggleBar
@@ -153,6 +158,7 @@ export function AppLayout(props: AppLayoutProps) {
               activeKey={props.tab}
               onChange={(key) => props.onTabChange(key as ProfileTab)}
               onOpenSearch={() => setSearchOpen(true)}
+              filterSort={props.filterSort}
             />
           )}
         </div>

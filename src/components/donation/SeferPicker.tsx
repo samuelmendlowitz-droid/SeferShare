@@ -33,7 +33,7 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
   const results = searchSefarim(allSefarim, query);
 
   function addSefer(sefer: Sefer) {
-    const inStockListing = sefer.vendorListings.find((l) => l.inStock);
+    const inStockListing = sefer.vendorListings.find((l) => l.stockQty > 0);
     if (!inStockListing) return;
     if (picked.some((p) => p.seferId === sefer.seferId && p.vendorId === inStockListing.vendorId)) return;
     onChange([
@@ -70,7 +70,7 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
 
       <div className="mb-4 space-y-2">
         {results.map((sefer) => {
-          const listing = sefer.vendorListings.find((l) => l.inStock);
+          const listing = sefer.vendorListings.find((l) => l.stockQty > 0);
           if (!listing) return null;
           return (
             <Card key={sefer.seferId} className="flex items-center gap-3">

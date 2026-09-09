@@ -6,11 +6,14 @@ import type { SeferType } from './common';
  */
 export const MAX_SEFER_IMAGES = 4;
 
+/** stockQty at or below this (but above 0) counts as "low stock" for filtering. */
+export const LOW_STOCK_THRESHOLD = 5;
+
 export interface PublicVendorListing {
   vendorId: string;
   vendorName: string;
   price: number;
-  inStock: boolean;
+  stockQty: number;
   /** Up to MAX_SEFER_IMAGES photos, shown shopping-site style wherever this listing appears. */
   imageUrls?: string[];
 }
@@ -22,4 +25,12 @@ export interface Sefer {
   phoneticName: string;
   type: SeferType;
   vendorListings: PublicVendorListing[];
+}
+
+export type StockStatus = 'in' | 'low' | 'out';
+
+export function classifyStockStatus(stockQty: number): StockStatus {
+  if (stockQty <= 0) return 'out';
+  if (stockQty <= LOW_STOCK_THRESHOLD) return 'low';
+  return 'in';
 }

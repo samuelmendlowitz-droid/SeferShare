@@ -1,9 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { SearchIcon } from '../ui/icons';
+import { FilterIcon, SearchIcon } from '../ui/icons';
 
 export interface ToggleOption {
   key: string;
   label: string;
+}
+
+export interface FilterSortButtonProps {
+  active: boolean;
+  onClick: () => void;
 }
 
 interface FloatingToggleBarProps {
@@ -11,9 +16,10 @@ interface FloatingToggleBarProps {
   activeKey: string;
   onChange: (key: string) => void;
   onOpenSearch: () => void;
+  filterSort?: FilterSortButtonProps;
 }
 
-export function FloatingToggleBar({ options, activeKey, onChange, onOpenSearch }: FloatingToggleBarProps) {
+export function FloatingToggleBar({ options, activeKey, onChange, onOpenSearch, filterSort }: FloatingToggleBarProps) {
   const { t } = useTranslation();
 
   return (
@@ -49,6 +55,21 @@ export function FloatingToggleBar({ options, activeKey, onChange, onOpenSearch }
           </button>
         ))}
       </div>
+
+      {filterSort && (
+        <button
+          type="button"
+          aria-label={t('actions.filterSort')}
+          onClick={filterSort.onClick}
+          className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-pill
+            transition-colors duration-200 hover:bg-white/60 ${
+              filterSort.active ? 'text-accent' : 'text-text-muted'
+            }`}
+        >
+          <FilterIcon width={18} height={18} />
+          {filterSort.active && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-accent" />}
+        </button>
+      )}
     </div>
   );
 }

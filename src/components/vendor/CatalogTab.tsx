@@ -1,15 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { deleteVendorListing, listSefarim } from '../../services/sefarim';
 import { updateCatalogLayout } from '../../services/users';
-import type { CatalogLayoutEntry, Sefer } from '../../types';
+import { classifyStockStatus, type CatalogLayoutEntry, type Sefer, type SeferType, type StockStatus } from '../../types';
 import { SeferForm } from './SeferForm';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { SeferThumbnail } from '../ui/SeferThumbnail';
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon } from '../ui/icons';
+
+export type CatalogSortKey = 'custom' | 'name-az' | 'cost-high' | 'cost-low' | 'stock-high' | 'stock-low';
+
+export interface CatalogFilters {
+  seferTypes: SeferType[];
+  stockStatuses: StockStatus[];
+}
 
 function reconcileLayout(existing: CatalogLayoutEntry[], mine: Sefer[]): CatalogLayoutEntry[] {
   const mineIds = new Set(mine.map((s) => s.seferId));
@@ -23,7 +30,12 @@ function reconcileLayout(existing: CatalogLayoutEntry[], mine: Sefer[]): Catalog
   return [...pruned, ...additions];
 }
 
-export function CatalogTab() {
+interface CatalogTabProps {
+  filters: CatalogFilters;
+  sortKey: CatalogSortKey;
+}
+
+export function CatalogTab({ filters, sortKey }: CatalogTabProps) {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const [sefarim, setSefarim] = useState<Sefer[]>([]);
@@ -88,7 +100,66 @@ export function CatalogTab() {
     persist(reconcileLayout(layout, mine));
   }
 
+  const isBrowsing = filters.seferTypes.length > 0 || filters.stockStatuses.length > 0 || sortKey !== 'custom';
+
+  const browseItems = useMemo(() => {
+    let items = sefarim
+      .map((sefer) => ({ sefer, listing: sefer.vendorListings.find((l) => l.vendorId === profile?.uid) }))
+      .filter((x): x is { sefer: Sefer; listing: NonNullable<typeof x.listing> } => Boolean(x.listing));
+
+    if (filters.seferTypes.length > 0) {
+      items = items.filter((x) => filters.seferTypes.includes(x.sefer.type));
+    }
+    if (filters.stockStatuses.length > 0) {
+      items = items.filter((x) => filters.stockStatuses.includes(classifyStockStatus(x.listing.stockQty)));
+    }
+
+    return [...items].sort((a, b) => {
+      if (sortKey === 'cost-high') return b.listing.price - a.listing.price;
+      if (sortKey === 'cost-low') return a.listing.price - b.listing.price;
+      if (sortKey === 'stock-high') return b.listing.stockQty - a.listing.stockQty;
+      if (sortKey === 'stock-low') return a.listing.stockQty - b.listing.stockQty;
+      return a.sefer.englishName.localeCompare(b.sefer.englishName); // name-az (and fallback)
+    });
+  }, [sefarim, filters, sortKey, profile?.uid]);
+
   if (loading) return <LoadingSpinner />;
+
+  if (isBrowsing) {
+    return (
+      <div className="space-y-3">
+        {browseItems.length === 0 && <p className="text-text-muted">{t('home.empty')}</p>}
+        {browseItems.map(({ sefer, listing }) => (
+          <Card key={sefer.seferId} className="flex items-center gap-3">
+            <SeferThumbnail imageUrl={listing.imageUrls?.[0]} alt={sefer.englishName} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold">
+                {sefer.englishName} · {sefer.hebrewName}
+              </p>
+              <p className="text-sm text-text-muted">{t(`sefer.${sefer.type}`)}</p>
+              <p className="text-sm">
+                ${listing.price.toFixed(2)} — {listing.stockQty} {t('vendor.stockQty')}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => removeSefer(sefer.seferId)}
+              aria-label={t('actions.delete') ?? ''}
+              className="shrink-0 self-start text-xs font-medium text-error"
+            >
+              {t('actions.delete')}
+            </button>
+          </Card>
+        ))}
+
+        {showAddForm ? (
+          <SeferForm onSaved={reloadAfterAdd} />
+        ) : (
+          <Button onClick={() => setShowAddForm(true)}>{t('vendor.addSefer')}</Button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
@@ -152,7 +223,7 @@ export function CatalogTab() {
               </p>
               <p className="text-sm text-text-muted">{t(`sefer.${sefer.type}`)}</p>
               <p className="text-sm">
-                ${listing?.price.toFixed(2)} — {listing?.inStock ? t('vendor.inStock') : '—'}
+                ${listing?.price.toFixed(2)} — {listing?.stockQty ?? 0} {t('vendor.stockQty')}
               </p>
             </div>
             <button

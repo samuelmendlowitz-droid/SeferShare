@@ -1,5 +1,7 @@
 export type DonationStatus = 'pending' | 'paid' | 'fulfilled' | 'refunded';
 
+export const DONATION_STATUSES: DonationStatus[] = ['pending', 'paid', 'fulfilled', 'refunded'];
+
 export interface DonationItem {
   seferId: string;
   vendorId: string;
