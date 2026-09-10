@@ -66,7 +66,13 @@ export function CheckoutStep({ items, institutionId, neshamaId, donorMessage, on
     setLoading(true);
     try {
       const result = await createPaymentIntent({
-        items: items.map((i) => ({ seferId: i.seferId, vendorId: i.vendorId, quantity: i.quantity, priceEach: i.price })),
+        items: items.map((i) => ({
+          seferId: i.seferId,
+          vendorId: i.vendorId,
+          quantity: i.quantity,
+          priceEach: i.price,
+          ...(i.campaignId ? { campaignId: i.campaignId } : {}),
+        })),
         requestedInstitutionId: institutionId,
         requestedNeshamaId: neshamaId,
         donorMessage,

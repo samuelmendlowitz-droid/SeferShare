@@ -36,11 +36,13 @@
     "titleRequired": "כותרת הקמפיין היא שדה חובה",
     "descriptionOptional": "תיאור (אופציונלי)",
     "notFound": "הקמפיין לא נמצא.",
+    "untitled": "קמפיין ללא כותרת",
     "edit": "עריכה",
     "saveChanges": "שמירת שינויים",
     "addMoreSeforim": "הוספת ספרים נוספים",
     "alreadyFulfilled": "{{count}} כבר הושלמו — לא ניתן להסיר",
-    "shippingAddressDiffers": "כתובת המשלוח שונה ממיקום המוסד"
+    "shippingAddressDiffers": "כתובת המשלוח שונה ממיקום המוסד",
+    "view": "צפייה בקמפיין"
   },
   "neshama": {
     "name": "שם",
@@ -199,6 +201,16 @@
     "sortOrderSizeHighLow": "גודל הזמנה: מהגבוה לנמוך",
     "sortOrderSizeLowHigh": "גודל הזמנה: מהנמוך לגבוה",
     "sortSeferNameAZ": "שם הספר א-ת"
+  },
+  "pushka": {
+    "title": "פושקע",
+    "empty": "הפושקע שלכם ריקה. הוסיפו ספרים מקמפיין כדי להתחיל.",
+    "addToPushka": "הוספה לפושקע",
+    "inPushka": "{{count}} בפושקע שלכם",
+    "completeDonation": "השלמת תרומה ({{count}} · ${{amount}})",
+    "otherSeforim": "ספרים נוספים",
+    "increaseQuantity": "הגדלת כמות",
+    "decreaseQuantity": "הקטנת כמות"
   },
   "orderStatus": {
     "pending": "ממתין",

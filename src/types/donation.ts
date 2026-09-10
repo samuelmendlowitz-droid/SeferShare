@@ -7,6 +7,8 @@ export interface DonationItem {
   vendorId: string;
   quantity: number;
   priceEach: number;
+  /** Set when added to the pushka straight from a campaign's page. */
+  campaignId?: string;
 }
 
 export interface CampaignAssignment {

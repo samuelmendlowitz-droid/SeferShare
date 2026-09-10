@@ -72,9 +72,16 @@ export async function assignDonationToCampaigns(
   input: AssignDonationInput,
 ): Promise<CampaignAssignment[]> {
   const available = new Map<string, number>();
+  const taggedByCampaign = new Map<string, Map<string, number>>();
   for (const item of input.items) {
     const key = keyFor(item.seferId, item.vendorId);
-    available.set(key, (available.get(key) ?? 0) + item.quantity);
+    if (item.campaignId) {
+      const bucket = taggedByCampaign.get(item.campaignId) ?? new Map<string, number>();
+      bucket.set(key, (bucket.get(key) ?? 0) + item.quantity);
+      taggedByCampaign.set(item.campaignId, bucket);
+    } else {
+      available.set(key, (available.get(key) ?? 0) + item.quantity);
+    }
   }
 
   const activeSnap = await db
@@ -87,6 +94,7 @@ export async function assignDonationToCampaigns(
     id: d.id,
     ...(d.data() as Campaign),
   }));
+  const campaignsById = new Map(campaigns.map((c) => [c.id, c]));
 
   const assignedByCampaign = new Map<string, number>();
 
@@ -94,6 +102,26 @@ export async function assignDonationToCampaigns(
     let sum = 0;
     for (const v of available.values()) sum += v;
     return sum;
+  }
+
+  // Pass 0: items added to the pushka straight from a specific campaign's page go
+  // there directly, uncapped by the milestone algorithm — the donor already chose
+  // the exact campaign, same reasoning as an explicit institution/neshama target
+  // below, just aimed at one campaign instead of "any campaign at this address."
+  // Anything that campaign can't currently absorb (already fulfilled, paused, or
+  // gone) still gets donated — it falls through into the general pool below rather
+  // than vanishing.
+  for (const [campaignId, bucket] of taggedByCampaign) {
+    const campaign = campaignsById.get(campaignId);
+    if (campaign) {
+      const assigned = applyToCampaign(campaign, bucket, Infinity);
+      if (assigned > 0) {
+        assignedByCampaign.set(campaign.id, (assignedByCampaign.get(campaign.id) ?? 0) + assigned);
+      }
+    }
+    for (const [key, qty] of bucket) {
+      if (qty > 0) available.set(key, (available.get(key) ?? 0) + qty);
+    }
   }
 
   // Pass 1: honor an explicit donor-chosen institution/neshama with no milestone cap.

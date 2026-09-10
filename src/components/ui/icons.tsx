@@ -115,6 +115,24 @@ export function FilterIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function MinusIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M5 12h14" />
+    </Icon>
+  );
+}
+
+export function PushkaIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x="4" y="8" width="16" height="13" rx="1.5" />
+      <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+      <line x1="8.5" y1="13" x2="15.5" y2="13" />
+    </Icon>
+  );
+}
+
 export function StoreIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

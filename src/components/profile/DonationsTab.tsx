@@ -30,9 +30,9 @@ export function DonationsTab({ loading, donations }: DonationsTabProps) {
             <Button
               variant="secondary"
               className="mt-2"
-              onClick={() => navigate(`/donate?campaignId=${donation.campaignAssignments[0].campaignId}`)}
+              onClick={() => navigate(`/campaigns/${donation.campaignAssignments[0].campaignId}`)}
             >
-              {t('donation.browse')}
+              {t('campaign.view')}
             </Button>
           )}
         </Card>

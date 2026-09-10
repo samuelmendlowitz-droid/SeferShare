@@ -36,11 +36,13 @@
     "titleRequired": "Campaign title is required",
     "descriptionOptional": "Description (optional)",
     "notFound": "This campaign couldn't be found.",
+    "untitled": "Untitled campaign",
     "edit": "Edit",
     "saveChanges": "Save changes",
     "addMoreSeforim": "Add more seforim",
     "alreadyFulfilled": "{{count}} already fulfilled — can't remove",
-    "shippingAddressDiffers": "Shipping address is different than the institution's location"
+    "shippingAddressDiffers": "Shipping address is different than the institution's location",
+    "view": "View campaign"
   },
   "neshama": {
     "name": "Name",
@@ -199,6 +201,16 @@
     "sortOrderSizeHighLow": "Order size: high to low",
     "sortOrderSizeLowHigh": "Order size: low to high",
     "sortSeferNameAZ": "Sefer name A–Z"
+  },
+  "pushka": {
+    "title": "Pushka",
+    "empty": "Your pushka is empty. Add some seforim from a campaign to get started.",
+    "addToPushka": "Add to pushka",
+    "inPushka": "{{count}} in your pushka",
+    "completeDonation": "Complete Donation ({{count}} · ${{amount}})",
+    "otherSeforim": "Other seforim",
+    "increaseQuantity": "Increase quantity",
+    "decreaseQuantity": "Decrease quantity"
   },
   "orderStatus": {
     "pending": "Pending",

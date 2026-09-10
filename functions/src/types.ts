@@ -42,6 +42,9 @@ export interface DonationItem {
   vendorId: string;
   quantity: number;
   priceEach: number;
+  /** Set when added to the pushka straight from a campaign's page — credited to
+   *  that exact campaign first, uncapped by the milestone algorithm (see algorithm.ts). */
+  campaignId?: string;
 }
 
 export interface CampaignAssignment {

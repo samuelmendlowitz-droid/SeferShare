@@ -2,10 +2,11 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { usePushka } from '../../context/PushkaContext';
 import { CornerButton } from './CornerButton';
 import { FloatingToggleBar, type FilterSortButtonProps, type ToggleOption } from './FloatingToggleBar';
 import { TopSearchBar } from './TopSearchBar';
-import { GiftIcon, HomeIcon, PlusIcon, ProfileIcon, StoreIcon } from '../ui/icons';
+import { GiftIcon, HomeIcon, PlusIcon, ProfileIcon, PushkaIcon, StoreIcon } from '../ui/icons';
 
 export type HomeFilter = 'all' | 'where' | 'who' | 'what';
 export type ProfileTab = 'campaigns' | 'donations' | 'notifications' | 'settings';
@@ -44,6 +45,7 @@ export function AppLayout(props: AppLayoutProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const pushka = usePushka();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const isVendor = Boolean(profile?.isVendor && profile.vendorApproved);
@@ -94,10 +96,20 @@ export function AppLayout(props: AppLayoutProps) {
 
   const actionButton =
     props.variant === 'home' ? (
-      <CornerButton label={t('donation.browse')} icon={<GiftIcon />} onClick={() => navigate('/donate')} />
+      <CornerButton label={t('donation.browse')} icon={<GiftIcon />} onClick={() => navigate('/pushka')} />
     ) : props.variant === 'profile' ? (
       <CornerButton label={t('campaign.create')} icon={<PlusIcon />} onClick={() => navigate('/campaigns/new')} />
     ) : null;
+
+  // The pushka (donation cart) is reachable from every page, regardless of variant.
+  const pushkaButton = (
+    <CornerButton
+      label={t('pushka.title')}
+      icon={<PushkaIcon />}
+      badge={pushka.totalCount}
+      onClick={() => navigate('/pushka')}
+    />
+  );
 
   function handleQueryChange(next: string) {
     setQuery(next);
@@ -133,7 +145,10 @@ export function AppLayout(props: AppLayoutProps) {
                 <CornerButton key={p.key} label={p.label} icon={p.icon} onClick={() => navigate(p.path)} />
               ))}
             </div>
-            {actionButton}
+            <div className="flex gap-2">
+              {actionButton}
+              {pushkaButton}
+            </div>
           </div>
 
           {props.variant === 'home' ? (
