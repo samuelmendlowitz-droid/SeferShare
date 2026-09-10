@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { createCampaign } from '../services/campaigns';
-import type { Address } from '../types';
+import type { Address, Institution } from '../types';
 import { SeferPicker, type PickedItem } from '../components/donation/SeferPicker';
 import { InstitutionPicker } from '../components/shared/InstitutionPicker';
 import { NeshamaPicker } from '../components/shared/NeshamaPicker';
@@ -23,15 +23,32 @@ export function CampaignCreatePage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [institutionId, setInstitutionId] = useState<string>();
+  const [institution, setInstitution] = useState<Institution>();
   const [neshamaId, setNeshamaId] = useState<string>();
   const [items, setItems] = useState<PickedItem[]>([]);
-  const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
+  const [addressDiffers, setAddressDiffers] = useState(false);
+  const [customAddress, setCustomAddress] = useState<Address>(EMPTY_ADDRESS);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  function handleInstitutionChange(id: string | undefined, inst?: Institution) {
+    setInstitutionId(id);
+    setInstitution(inst);
+  }
+
+  function handleNeshamaChange(id: string | undefined) {
+    setNeshamaId(id);
+  }
+
+  const showAddressForm = addressDiffers || !institution;
 
   async function handlePublish() {
     if (!profile) return;
     setError(null);
+    if (!title.trim()) {
+      setError(t('campaign.titleRequired'));
+      return;
+    }
     if (!institutionId && !neshamaId) {
       setError(t('campaign.atLeastOne'));
       return;
@@ -42,9 +59,10 @@ export function CampaignCreatePage() {
     }
     setSaving(true);
     try {
+      const shippingAddress = institution && !addressDiffers ? institution.address : customAddress;
       const campaignId = await createCampaign({
         createdByUid: profile.uid,
-        title: title || undefined,
+        title: title.trim(),
         description: description || undefined,
         institutionId,
         neshamaId,
@@ -54,7 +72,7 @@ export function CampaignCreatePage() {
           quantity: i.quantity,
           retailPrice: i.price,
         })),
-        shippingAddress: address,
+        shippingAddress,
         language,
       });
       navigate(`/campaigns/${campaignId}`);
@@ -74,9 +92,10 @@ export function CampaignCreatePage() {
       <h1 className="mb-4 text-lg font-bold">{t('campaign.create')}</h1>
 
       <input
+        required
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder={t('campaign.titleOptional') ?? ''}
+        placeholder={t('campaign.titlePlaceholder') ?? ''}
         className="mb-3 w-full rounded-btn border border-border px-3 py-2 text-sm"
       />
 
@@ -88,22 +107,35 @@ export function CampaignCreatePage() {
         className="mb-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
       />
 
-      <Card className="mb-3">
-        <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWhere')}</p>
-        <InstitutionPicker value={institutionId} onChange={setInstitutionId} allowCreate />
-      </Card>
+      <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWhere')}</p>
+      <div className="mb-4">
+        <InstitutionPicker value={institutionId} onChange={handleInstitutionChange} />
+      </div>
 
-      <Card className="mb-4">
-        <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWho')}</p>
-        <NeshamaPicker value={neshamaId} onChange={setNeshamaId} allowCreate />
-      </Card>
+      <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWho')}</p>
+      <div className="mb-4">
+        <NeshamaPicker value={neshamaId} onChange={handleNeshamaChange} />
+      </div>
 
       <h2 className="mb-2 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
       <SeferPicker picked={items} onChange={setItems} />
 
-      <Card className="my-4">
-        <AddressForm value={address} onChange={setAddress} />
-      </Card>
+      {institution && (
+        <label className="my-4 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={addressDiffers}
+            onChange={(e) => setAddressDiffers(e.target.checked)}
+          />
+          {t('campaign.shippingAddressDiffers')}
+        </label>
+      )}
+
+      {showAddressForm && (
+        <Card className="my-4">
+          <AddressForm value={customAddress} onChange={setCustomAddress} />
+        </Card>
+      )}
 
       {error && <p className="mb-3 text-sm text-error">{error}</p>}
 

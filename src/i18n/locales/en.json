@@ -32,20 +32,24 @@
     "publish": "Publish campaign",
     "atLeastOne": "Select at least an institution or a neshama",
     "atLeastOneItem": "Add at least one sefer",
-    "titleOptional": "Campaign title (optional)",
+    "titlePlaceholder": "Campaign title",
+    "titleRequired": "Campaign title is required",
     "descriptionOptional": "Description (optional)",
     "notFound": "This campaign couldn't be found.",
     "edit": "Edit",
     "saveChanges": "Save changes",
     "addMoreSeforim": "Add more seforim",
-    "alreadyFulfilled": "{{count}} already fulfilled — can't remove"
+    "alreadyFulfilled": "{{count}} already fulfilled — can't remove",
+    "shippingAddressDiffers": "Shipping address is different than the institution's location"
   },
   "neshama": {
     "name": "Name",
     "hebrewName": "Hebrew name",
     "relationship": "Relationship (optional)",
     "message": "Dedication message (optional)",
-    "liluyNishmat": "L'iluy Nishmat"
+    "liluyNishmat": "L'iluy Nishmat",
+    "addNew": "Add neshama",
+    "searchPlaceholder": "Search neshamos…"
   },
   "institution": {
     "name": "Institution name",
@@ -54,7 +58,9 @@
     "shul": "Shul",
     "yeshiva": "Yeshiva",
     "school": "School",
-    "other": "Other"
+    "other": "Other",
+    "addNew": "Add institution",
+    "searchPlaceholder": "Search institutions…"
   },
   "sefer": {
     "hebrewName": "Hebrew name",
@@ -160,7 +166,8 @@
     "filterSort": "Filter & sort",
     "sortBy": "Sort by",
     "reset": "Reset",
-    "done": "Done"
+    "done": "Done",
+    "noResults": "No results"
   },
   "filterSort": {
     "filterByInstitutionType": "Institution type",
@@ -174,6 +181,8 @@
     "lowStock": "Low stock",
     "outOfStock": "Out of stock",
     "sortRecommended": "Recommended",
+    "sortAZ": "A–Z",
+    "sortZA": "Z–A",
     "sortInstitutionAZ": "Institution A–Z",
     "sortNeshamaAZ": "Neshama A–Z",
     "sortSeferAZ": "Sefer A–Z",

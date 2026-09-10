@@ -32,20 +32,24 @@
     "publish": "פרסום הקמפיין",
     "atLeastOne": "בחרו לפחות מוסד או נשמה",
     "atLeastOneItem": "הוסיפו לפחות ספר אחד",
-    "titleOptional": "כותרת הקמפיין (אופציונלי)",
+    "titlePlaceholder": "כותרת הקמפיין",
+    "titleRequired": "כותרת הקמפיין היא שדה חובה",
     "descriptionOptional": "תיאור (אופציונלי)",
     "notFound": "הקמפיין לא נמצא.",
     "edit": "עריכה",
     "saveChanges": "שמירת שינויים",
     "addMoreSeforim": "הוספת ספרים נוספים",
-    "alreadyFulfilled": "{{count}} כבר הושלמו — לא ניתן להסיר"
+    "alreadyFulfilled": "{{count}} כבר הושלמו — לא ניתן להסיר",
+    "shippingAddressDiffers": "כתובת המשלוח שונה ממיקום המוסד"
   },
   "neshama": {
     "name": "שם",
     "hebrewName": "שם בעברית",
     "relationship": "קרבה משפחתית (אופציונלי)",
     "message": "הודעת הקדשה (אופציונלי)",
-    "liluyNishmat": "לעילוי נשמת"
+    "liluyNishmat": "לעילוי נשמת",
+    "addNew": "הוספת נשמה",
+    "searchPlaceholder": "חיפוש נשמות…"
   },
   "institution": {
     "name": "שם המוסד",
@@ -54,7 +58,9 @@
     "shul": "בית כנסת",
     "yeshiva": "ישיבה",
     "school": "בית ספר",
-    "other": "אחר"
+    "other": "אחר",
+    "addNew": "הוספת מוסד",
+    "searchPlaceholder": "חיפוש מוסדות…"
   },
   "sefer": {
     "hebrewName": "שם בעברית",
@@ -160,7 +166,8 @@
     "filterSort": "סינון ומיון",
     "sortBy": "מיון לפי",
     "reset": "איפוס",
-    "done": "סיום"
+    "done": "סיום",
+    "noResults": "אין תוצאות"
   },
   "filterSort": {
     "filterByInstitutionType": "סוג מוסד",
@@ -174,6 +181,8 @@
     "lowStock": "מלאי נמוך",
     "outOfStock": "אזל מהמלאי",
     "sortRecommended": "מומלץ",
+    "sortAZ": "א-ת",
+    "sortZA": "ת-א",
     "sortInstitutionAZ": "מוסד א-ת",
     "sortNeshamaAZ": "נשמה א-ת",
     "sortSeferAZ": "ספר א-ת",

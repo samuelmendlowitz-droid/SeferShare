@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getCampaign, updateCampaign } from '../services/campaigns';
+import { getInstitution } from '../services/institutions';
 import { listSefarim } from '../services/sefarim';
-import type { Address, Campaign, CampaignItem, Sefer } from '../types';
+import type { Address, Campaign, CampaignItem, Institution, Sefer } from '../types';
 import { SeferPicker, type PickedItem } from '../components/donation/SeferPicker';
 import { InstitutionPicker } from '../components/shared/InstitutionPicker';
 import { NeshamaPicker } from '../components/shared/NeshamaPicker';
@@ -13,6 +14,17 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
+
+function addressesEqual(a: Address, b: Address): boolean {
+  return (
+    a.line1 === b.line1 &&
+    (a.line2 ?? '') === (b.line2 ?? '') &&
+    a.city === b.city &&
+    a.state === b.state &&
+    a.postalCode === b.postalCode &&
+    a.country === b.country
+  );
+}
 
 export function CampaignEditPage() {
   const { t } = useTranslation();
@@ -27,10 +39,18 @@ export function CampaignEditPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [institutionId, setInstitutionId] = useState<string>();
+  const [institution, setInstitution] = useState<Institution>();
   const [neshamaId, setNeshamaId] = useState<string>();
   const [existingItems, setExistingItems] = useState<CampaignItem[]>([]);
   const [newItems, setNewItems] = useState<PickedItem[]>([]);
-  const [address, setAddress] = useState<Address>({ line1: '', city: '', state: '', postalCode: '', country: '' });
+  const [addressDiffers, setAddressDiffers] = useState(false);
+  const [customAddress, setCustomAddress] = useState<Address>({
+    line1: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: '',
+  });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -49,7 +69,15 @@ export function CampaignEditPage() {
       setInstitutionId(c.institutionId ?? undefined);
       setNeshamaId(c.neshamaId ?? undefined);
       setExistingItems(c.items);
-      setAddress(c.shippingAddress);
+      setCustomAddress(c.shippingAddress);
+
+      if (c.institutionId) {
+        const inst = await getInstitution(c.institutionId);
+        if (inst) {
+          setInstitution(inst);
+          setAddressDiffers(!addressesEqual(c.shippingAddress, inst.address));
+        }
+      }
     })();
   }, [campaignId]);
 
@@ -74,6 +102,15 @@ export function CampaignEditPage() {
     );
   }
 
+  function handleInstitutionChange(id: string | undefined, inst?: Institution) {
+    setInstitutionId(id);
+    setInstitution(inst);
+  }
+
+  function handleNeshamaChange(id: string | undefined) {
+    setNeshamaId(id);
+  }
+
   function updateExistingQuantity(index: number, quantity: number) {
     setExistingItems((prev) =>
       prev.map((item, i) => (i === index ? { ...item, quantity: Math.max(item.quantityFulfilled, quantity) } : item)),
@@ -84,9 +121,15 @@ export function CampaignEditPage() {
     setExistingItems((prev) => prev.filter((_, i) => i !== index));
   }
 
+  const showAddressForm = addressDiffers || !institution;
+
   async function handleSave() {
     if (!campaign) return;
     setError(null);
+    if (!title.trim()) {
+      setError(t('campaign.titleRequired'));
+      return;
+    }
     if (!institutionId && !neshamaId) {
       setError(t('campaign.atLeastOne'));
       return;
@@ -115,13 +158,15 @@ export function CampaignEditPage() {
         }
       }
 
+      const shippingAddress = institution && !addressDiffers ? institution.address : customAddress;
+
       await updateCampaign(campaign.campaignId, {
-        title: title || undefined,
+        title: title.trim(),
         description: description || undefined,
         institutionId,
         neshamaId,
         items: merged,
-        shippingAddress: address,
+        shippingAddress,
         language: campaign.language,
       });
       navigate(`/campaigns/${campaign.campaignId}`);
@@ -141,9 +186,10 @@ export function CampaignEditPage() {
       <h1 className="mb-4 text-lg font-bold">{t('campaign.edit')}</h1>
 
       <input
+        required
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder={t('campaign.titleOptional') ?? ''}
+        placeholder={t('campaign.titlePlaceholder') ?? ''}
         className="mb-3 w-full rounded-btn border border-border px-3 py-2 text-sm"
       />
 
@@ -155,15 +201,15 @@ export function CampaignEditPage() {
         className="mb-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
       />
 
-      <Card className="mb-3">
-        <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWhere')}</p>
-        <InstitutionPicker value={institutionId} onChange={setInstitutionId} allowCreate />
-      </Card>
+      <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWhere')}</p>
+      <div className="mb-4">
+        <InstitutionPicker value={institutionId} onChange={handleInstitutionChange} />
+      </div>
 
-      <Card className="mb-4">
-        <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWho')}</p>
-        <NeshamaPicker value={neshamaId} onChange={setNeshamaId} allowCreate />
-      </Card>
+      <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWho')}</p>
+      <div className="mb-4">
+        <NeshamaPicker value={neshamaId} onChange={handleNeshamaChange} />
+      </div>
 
       <h2 className="mb-2 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
       <div className="mb-4 space-y-2">
@@ -208,9 +254,22 @@ export function CampaignEditPage() {
       <p className="mb-2 text-sm text-text-muted">{t('campaign.addMoreSeforim')}</p>
       <SeferPicker picked={newItems} onChange={setNewItems} />
 
-      <Card className="my-4">
-        <AddressForm value={address} onChange={setAddress} />
-      </Card>
+      {institution && (
+        <label className="my-4 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={addressDiffers}
+            onChange={(e) => setAddressDiffers(e.target.checked)}
+          />
+          {t('campaign.shippingAddressDiffers')}
+        </label>
+      )}
+
+      {showAddressForm && (
+        <Card className="my-4">
+          <AddressForm value={customAddress} onChange={setCustomAddress} />
+        </Card>
+      )}
 
       {error && <p className="mb-3 text-sm text-error">{error}</p>}
 

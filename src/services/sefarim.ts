@@ -9,17 +9,6 @@ export async function listSefarim(): Promise<Sefer[]> {
   return snap.docs.map((d) => ({ ...(d.data() as Sefer), seferId: d.id }));
 }
 
-export function searchSefarim(all: Sefer[], queryStr: string): Sefer[] {
-  const q = queryStr.trim().toLowerCase();
-  if (!q) return all;
-  return all.filter(
-    (s) =>
-      s.hebrewName.includes(q) ||
-      s.englishName.toLowerCase().includes(q) ||
-      s.phoneticName.toLowerCase().includes(q),
-  );
-}
-
 /**
  * Matches an existing catalog entry by (englishName, type) so vendor submissions
  * for the same sefer merge into one master record instead of duplicating it (spec §11).
