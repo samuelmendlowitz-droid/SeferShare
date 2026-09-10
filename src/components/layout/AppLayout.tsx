@@ -96,7 +96,7 @@ export function AppLayout(props: AppLayoutProps) {
 
   const actionButton =
     props.variant === 'home' ? (
-      <CornerButton label={t('donation.browse')} icon={<GiftIcon />} onClick={() => navigate('/pushka')} />
+      <CornerButton label={t('donation.browse')} icon={<GiftIcon />} onClick={() => navigate('/donate')} />
     ) : props.variant === 'profile' ? (
       <CornerButton label={t('campaign.create')} icon={<PlusIcon />} onClick={() => navigate('/campaigns/new')} />
     ) : null;

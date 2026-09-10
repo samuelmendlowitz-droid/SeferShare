@@ -3,10 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePushka, type PushkaItem } from '../context/PushkaContext';
-import type { Institution, Neshama } from '../types';
-import { SeferPicker, type PickedItem } from '../components/donation/SeferPicker';
-import { InstitutionPicker } from '../components/shared/InstitutionPicker';
-import { NeshamaPicker } from '../components/shared/NeshamaPicker';
+import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
 import { VirtualDedicationCard } from '../components/donation/VirtualDedicationCard';
 import { Button } from '../components/ui/Button';
@@ -35,10 +32,6 @@ export function PushkaPage() {
   const pushka = usePushka();
 
   const [step, setStep] = useState<'cart' | 'checkout' | 'confirmation'>('cart');
-  const [institutionId, setInstitutionId] = useState<string>();
-  const [institution, setInstitution] = useState<Institution>();
-  const [neshamaId, setNeshamaId] = useState<string>();
-  const [neshama, setNeshama] = useState<Neshama>();
   const [donorMessage, setDonorMessage] = useState('');
   const [paidItems, setPaidItems] = useState<PushkaItem[]>([]);
 
@@ -57,23 +50,6 @@ export function PushkaPage() {
     return { byCampaign, untagged };
   }, [pushka.items]);
 
-  const untaggedPicked = groups.untagged.map(toPickedItem);
-
-  function handleUntaggedChange(next: PickedItem[]) {
-    pushka.replaceUntagged(
-      next.map((i) => ({
-        seferId: i.seferId,
-        vendorId: i.vendorId,
-        vendorName: i.vendorName,
-        englishName: i.englishName,
-        hebrewName: i.hebrewName,
-        price: i.price,
-        quantity: i.quantity,
-        imageUrl: i.imageUrl,
-      })),
-    );
-  }
-
   async function handlePaid() {
     setPaidItems(pushka.items);
     pushka.clear();
@@ -83,12 +59,7 @@ export function PushkaPage() {
   if (step === 'confirmation') {
     return (
       <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-        <VirtualDedicationCard
-          donorName={profile?.displayName ?? ''}
-          items={paidItems.map(toPickedItem)}
-          institution={institution}
-          neshama={neshama}
-        />
+        <VirtualDedicationCard donorName={profile?.displayName ?? ''} items={paidItems.map(toPickedItem)} />
         <Button className="mt-4 w-full" onClick={() => navigate('/')}>
           {t('actions.done')}
         </Button>
@@ -105,91 +76,67 @@ export function PushkaPage() {
       <h1 className="mb-4 text-lg font-bold">{t('pushka.title')}</h1>
 
       {pushka.items.length === 0 ? (
-        <p className="text-text-muted">{t('pushka.empty')}</p>
+        <div className="text-center">
+          <p className="mb-4 text-text-muted">{t('pushka.empty')}</p>
+          <Button onClick={() => navigate('/')}>{t('pushka.goHome')}</Button>
+        </div>
       ) : (
-        <div className="space-y-4">
-          {[...groups.byCampaign.entries()].map(([campaignId, items]) => (
-            <div key={campaignId}>
-              <button
-                type="button"
-                onClick={() => navigate(`/campaigns/${campaignId}`)}
-                className="mb-2 text-sm font-semibold text-accent hover:underline"
-              >
-                {items[0].campaignTitle || t('campaign.untitled')}
-              </button>
-              <div className="space-y-2">
-                {items.map((item) => (
-                  <PushkaRow key={pushka.keyFor(item)} item={item} />
-                ))}
+        <>
+          <div className="space-y-4">
+            {[...groups.byCampaign.entries()].map(([campaignId, items]) => (
+              <div key={campaignId}>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/campaigns/${campaignId}`)}
+                  className="mb-2 text-sm font-semibold text-accent hover:underline"
+                >
+                  {items[0].campaignTitle || t('campaign.untitled')}
+                </button>
+                <div className="space-y-2">
+                  {items.map((item) => (
+                    <PushkaRow key={pushka.keyFor(item)} item={item} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {groups.untagged.length > 0 && (
-            <div>
-              <p className="mb-2 text-sm font-semibold text-text-muted">{t('pushka.otherSeforim')}</p>
-              <div className="space-y-2">
-                {groups.untagged.map((item) => (
-                  <PushkaRow key={pushka.keyFor(item)} item={item} />
-                ))}
+            {groups.untagged.length > 0 && (
+              <div>
+                <p className="mb-2 text-sm font-semibold text-text-muted">{t('pushka.otherSeforim')}</p>
+                <div className="space-y-2">
+                  {groups.untagged.map((item) => (
+                    <PushkaRow key={pushka.keyFor(item)} item={item} />
+                  ))}
+                </div>
               </div>
+            )}
+          </div>
+
+          {step === 'cart' && (
+            <>
+              <textarea
+                value={donorMessage}
+                onChange={(e) => setDonorMessage(e.target.value)}
+                placeholder={t('donation.message') ?? ''}
+                className="mb-4 mt-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
+                rows={3}
+              />
+              <p className="mb-3 text-sm text-text-muted">
+                {t('donation.total')}: ${pushka.totalPrice.toFixed(2)}
+              </p>
+              <Button className="w-full" onClick={() => setStep('checkout')}>
+                {t('pushka.donate')}
+              </Button>
+            </>
+          )}
+
+          {step === 'checkout' && (
+            <div className="mt-4">
+              <h2 className="mb-4 text-base font-semibold">{t('donation.checkout')}</h2>
+              <CheckoutStep items={pushka.items.map(toPickedItem)} donorMessage={donorMessage} onPaid={handlePaid} />
             </div>
           )}
-        </div>
-      )}
-
-      {step === 'cart' && (
-        <>
-          <h2 className="mb-2 mt-6 text-base font-semibold">{t('campaign.addMoreSeforim')}</h2>
-          <SeferPicker picked={untaggedPicked} onChange={handleUntaggedChange} />
-
-          <p className="mb-2 mt-4 text-sm text-text-muted">{t('donation.optionalWhere')}</p>
-          <div className="mb-4">
-            <InstitutionPicker
-              value={institutionId}
-              onChange={(id, inst) => {
-                setInstitutionId(id);
-                setInstitution(inst);
-              }}
-            />
-          </div>
-
-          <p className="mb-2 text-sm text-text-muted">{t('donation.optionalWho')}</p>
-          <div className="mb-4">
-            <NeshamaPicker
-              value={neshamaId}
-              onChange={(id, n) => {
-                setNeshamaId(id);
-                setNeshama(n);
-              }}
-            />
-          </div>
-
-          <textarea
-            value={donorMessage}
-            onChange={(e) => setDonorMessage(e.target.value)}
-            placeholder={t('donation.message') ?? ''}
-            className="mb-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
-            rows={3}
-          />
-
-          <Button className="w-full" disabled={pushka.items.length === 0} onClick={() => setStep('checkout')}>
-            {t('donation.checkout')}
-          </Button>
         </>
-      )}
-
-      {step === 'checkout' && (
-        <div className="mt-4">
-          <h2 className="mb-4 text-base font-semibold">{t('donation.checkout')}</h2>
-          <CheckoutStep
-            items={pushka.items.map(toPickedItem)}
-            institutionId={institutionId}
-            neshamaId={neshamaId}
-            donorMessage={donorMessage}
-            onPaid={handlePaid}
-          />
-        </div>
       )}
     </div>
   );

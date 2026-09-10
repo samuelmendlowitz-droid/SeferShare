@@ -204,7 +204,9 @@
   },
   "pushka": {
     "title": "Pushka",
-    "empty": "Your pushka is empty. Add some seforim from a campaign to get started.",
+    "empty": "Nothing in your pushka yet.",
+    "goHome": "Go to Home",
+    "donate": "Donate",
     "addToPushka": "Add to pushka",
     "inPushka": "{{count}} in your pushka",
     "completeDonation": "Complete Donation ({{count}} · ${{amount}})",
