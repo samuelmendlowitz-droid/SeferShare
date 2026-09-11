@@ -1,7 +1,7 @@
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
-import type { Donation, DonationItem } from '../types';
+import type { Donation, DonationAd, DonationDedication, DonationItem } from '../types';
 
 const donationsRef = collection(db, 'donations');
 
@@ -15,6 +15,9 @@ export interface CreatePaymentIntentInput {
   requestedInstitutionId?: string;
   requestedNeshamaId?: string;
   donorMessage?: string;
+  donorDedication?: DonationDedication;
+  additionalDedications?: DonationDedication[];
+  ad?: DonationAd;
   roundedUpFee: boolean;
 }
 

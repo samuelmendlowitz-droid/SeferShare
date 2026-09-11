@@ -52,6 +52,20 @@ export interface CampaignAssignment {
   itemsFulfilled: number;
 }
 
+/** A named LI"N dedication the donor adds at checkout. */
+export interface DonationDedication {
+  name: string;
+  hebrewName?: string;
+  relationship?: string;
+  message?: string;
+}
+
+/** A small ad sticker for the donor's own business, included alongside the dedication. */
+export interface DonationAd {
+  businessName: string;
+  message?: string;
+}
+
 export interface Donation {
   donationId: string;
   donorUid: string;
@@ -61,6 +75,10 @@ export interface Donation {
   requestedNeshamaId?: string | null;
   campaignAssignments: CampaignAssignment[];
   donorMessage?: string | null;
+  // Sticker dedication for items whose campaign has no neshama of its own.
+  donorDedication?: DonationDedication | null;
+  additionalDedications?: DonationDedication[];
+  ad?: DonationAd | null;
   roundedUpFee: boolean;
   totalCharged: number;
   status: DonationStatus;

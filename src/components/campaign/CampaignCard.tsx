@@ -37,16 +37,21 @@ export function CampaignCard({ campaign, institution, neshama, sefarimById }: Ca
     >
       {campaign.title && <p className="mb-1 text-base font-semibold">{campaign.title}</p>}
 
-      {institution && (
+      {(institution || neshama) && (
         <p className="text-sm text-text">
-          {institution.name}
-          {showBilingual && institution.hebrewName ? ` · ${institution.hebrewName}` : ''}
-        </p>
-      )}
-      {neshama && (
-        <p className="text-sm text-text-muted">
-          {t('neshama.liluyNishmat')} {neshama.name}
-          {showBilingual && neshama.hebrewName ? ` · ${neshama.hebrewName}` : ''}
+          {institution && (
+            <span>
+              {institution.name}
+              {showBilingual && institution.hebrewName ? ` · ${institution.hebrewName}` : ''}
+            </span>
+          )}
+          {institution && neshama && ' • '}
+          {neshama && (
+            <span className={institution ? 'text-text-muted' : ''}>
+              {t('neshama.liluyNishmat')} {neshama.name}
+              {showBilingual && neshama.hebrewName ? ` · ${neshama.hebrewName}` : ''}
+            </span>
+          )}
         </p>
       )}
 

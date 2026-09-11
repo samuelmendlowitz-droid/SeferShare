@@ -88,7 +88,19 @@
     "total": "סה\"כ",
     "confirmedTitle": "תודה רבה!",
     "confirmedSubtitle": "התרומה שלכם אושרה.",
-    "share": "שיתוף כרטיס ההקדשה"
+    "share": "שיתוף כרטיס ההקדשה",
+    "dedicationsTitle": "הקדשות",
+    "stickerAuto": "{{campaignTitle}}: {{liluyNishmat}} {{name}} — יודפס על המדבקה",
+    "yourDedicationTitle": "ההקדשה שלכם (למדבקה)",
+    "yourDedicationHint": "שם זה יודפס על המדבקה עבור ספרים שהקמפיין שלהם עדיין ללא הקדשה משלו.",
+    "addDedication": "הוספת הקדשה נוספת",
+    "additionalDedicationTitle": "הקדשה נוספת",
+    "additionalDedicationHint": "לא תודפס על מדבקה, אך תיזכר כלע\"נ.",
+    "removeDedication": "הסרת הקדשה",
+    "includeAd": "הוספת מדבקת פרסום קטנה לעסק שלכם",
+    "adBusinessName": "שם העסק",
+    "adMessagePlaceholder": "הודעת פרסום קצרה (אופציונלי)",
+    "adSectionTitle": "פרסומת"
   },
   "vendor": {
     "catalog": "קטלוג",
@@ -204,7 +216,6 @@
     "title": "פושקע",
     "empty": "אין עדיין כלום בפושקע שלכם.",
     "goHome": "לדף הבית",
-    "donate": "תרומה",
     "addToPushka": "הוספה לפושקע",
     "inPushka": "{{count}} בפושקע שלכם",
     "completeDonation": "השלמת תרומה ({{count}} · ${{amount}})",

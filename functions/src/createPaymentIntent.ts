@@ -2,13 +2,16 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from './lib/firebaseAdmin';
 import { getStripe, stripeSecretKey } from './lib/stripe';
-import type { DonationItem, Sefer } from './types';
+import type { DonationAd, DonationDedication, DonationItem, Sefer } from './types';
 
 interface CreatePaymentIntentRequest {
   items: DonationItem[];
   requestedInstitutionId?: string;
   requestedNeshamaId?: string;
   donorMessage?: string;
+  donorDedication?: DonationDedication;
+  additionalDedications?: DonationDedication[];
+  ad?: DonationAd;
   roundedUpFee: boolean;
 }
 
@@ -41,7 +44,16 @@ export const createPaymentIntent = onCall<CreatePaymentIntentRequest>(
     const uid = request.auth?.uid;
     if (!uid) throw new HttpsError('unauthenticated', 'Sign in required');
 
-    const { items, requestedInstitutionId, requestedNeshamaId, donorMessage, roundedUpFee } = request.data;
+    const {
+      items,
+      requestedInstitutionId,
+      requestedNeshamaId,
+      donorMessage,
+      donorDedication,
+      additionalDedications,
+      ad,
+      roundedUpFee,
+    } = request.data;
     if (!items?.length) throw new HttpsError('invalid-argument', 'No items provided');
 
     const subtotal = await priceItems(items);
@@ -56,6 +68,9 @@ export const createPaymentIntent = onCall<CreatePaymentIntentRequest>(
       requestedNeshamaId: requestedNeshamaId ?? null,
       campaignAssignments: [],
       donorMessage: donorMessage ?? null,
+      donorDedication: donorDedication ?? null,
+      additionalDedications: additionalDedications ?? [],
+      ad: ad ?? null,
       roundedUpFee,
       totalCharged,
       status: 'pending',

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { stripePromise, estimateStripeFee } from '../../lib/stripe';
 import { createPaymentIntent } from '../../services/donations';
+import type { DonationAd, DonationDedication } from '../../types';
 import type { PickedItem } from './SeferPicker';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -12,6 +13,9 @@ interface CheckoutStepProps {
   institutionId?: string;
   neshamaId?: string;
   donorMessage?: string;
+  donorDedication?: DonationDedication;
+  additionalDedications?: DonationDedication[];
+  ad?: DonationAd;
   onPaid: (donationId: string) => void;
 }
 
@@ -51,7 +55,16 @@ function PaymentForm({ onPaid, donationId }: { onPaid: (donationId: string) => v
   );
 }
 
-export function CheckoutStep({ items, institutionId, neshamaId, donorMessage, onPaid }: CheckoutStepProps) {
+export function CheckoutStep({
+  items,
+  institutionId,
+  neshamaId,
+  donorMessage,
+  donorDedication,
+  additionalDedications,
+  ad,
+  onPaid,
+}: CheckoutStepProps) {
   const { t } = useTranslation();
   const [roundUp, setRoundUp] = useState(false);
   const [intent, setIntent] = useState<{ clientSecret: string; donationId: string; totalCharged: number } | null>(
@@ -76,6 +89,9 @@ export function CheckoutStep({ items, institutionId, neshamaId, donorMessage, on
         requestedInstitutionId: institutionId,
         requestedNeshamaId: neshamaId,
         donorMessage,
+        donorDedication,
+        additionalDedications,
+        ad,
         roundedUpFee: roundUp,
       });
       setIntent(result);

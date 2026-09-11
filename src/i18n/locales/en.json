@@ -88,7 +88,19 @@
     "total": "Total",
     "confirmedTitle": "Thank you!",
     "confirmedSubtitle": "Your donation has been confirmed.",
-    "share": "Share dedication card"
+    "share": "Share dedication card",
+    "dedicationsTitle": "Dedications",
+    "stickerAuto": "{{campaignTitle}}: {{liluyNishmat}} {{name}} — printed on the sticker",
+    "yourDedicationTitle": "Your dedication (for the sticker)",
+    "yourDedicationHint": "This name is printed on the sticker for seforim whose campaign doesn't already have one.",
+    "addDedication": "Add another dedication",
+    "additionalDedicationTitle": "Additional dedication",
+    "additionalDedicationHint": "Not printed on a sticker, but remembered as LI\"N.",
+    "removeDedication": "Remove dedication",
+    "includeAd": "Add a small ad sticker for your business",
+    "adBusinessName": "Business name",
+    "adMessagePlaceholder": "Short ad message (optional)",
+    "adSectionTitle": "Ad"
   },
   "vendor": {
     "catalog": "Catalog",
@@ -204,7 +216,6 @@
     "title": "Pushka",
     "empty": "Nothing in your pushka yet.",
     "goHome": "Go to Home",
-    "donate": "Donate",
     "addToPushka": "Add to pushka",
     "inPushka": "{{count}} in your pushka",
     "completeDonation": "Complete Donation ({{count}} · ${{amount}})",

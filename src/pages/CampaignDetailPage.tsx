@@ -115,10 +115,15 @@ export function CampaignDetailPage() {
 
       <Card>
         {campaign.title && <h1 className="mb-1 text-lg font-bold">{campaign.title}</h1>}
-        {institution && <p className="text-sm">{institution.name}</p>}
-        {neshama && (
-          <p className="text-sm text-text-muted">
-            {t('neshama.liluyNishmat')} {neshama.name}
+        {(institution || neshama) && (
+          <p className="text-sm">
+            {institution && <span>{institution.name}</span>}
+            {institution && neshama && ' • '}
+            {neshama && (
+              <span className={institution ? 'text-text-muted' : ''}>
+                {t('neshama.liluyNishmat')} {neshama.name}
+              </span>
+            )}
           </p>
         )}
         {neshama?.message && <p className="mt-1 text-sm italic text-text-muted">"{neshama.message}"</p>}

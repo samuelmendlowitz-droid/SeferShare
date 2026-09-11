@@ -40,8 +40,32 @@ export function DonationConfirmationPage() {
       <Card className="border-2 border-accent/20 text-center">
         <p className="text-lg font-bold text-accent">{t('donation.confirmedTitle')}</p>
         <p className="text-sm text-text-muted">{t('donation.confirmedSubtitle')}</p>
-        {institution && <p className="mt-2 text-sm">{institution.name}</p>}
-        {neshama && <p className="mt-1 text-sm">{t('neshama.liluyNishmat')} {neshama.name}</p>}
+        {(institution || neshama) && (
+          <p className="mt-2 text-sm">
+            {institution && <span>{institution.name}</span>}
+            {institution && neshama && ' • '}
+            {neshama && (
+              <span className={institution ? 'text-text-muted' : ''}>
+                {t('neshama.liluyNishmat')} {neshama.name}
+              </span>
+            )}
+          </p>
+        )}
+        {donation.donorDedication?.name && (
+          <p className="mt-1 text-sm">
+            {t('neshama.liluyNishmat')} {donation.donorDedication.name}
+          </p>
+        )}
+        {donation.additionalDedications && donation.additionalDedications.length > 0 && (
+          <div className="mt-2 text-left">
+            <p className="text-xs font-medium text-text-muted">{t('donation.additionalDedicationTitle')}</p>
+            {donation.additionalDedications.map((dedication, idx) => (
+              <p key={idx} className="text-sm">
+                {t('neshama.liluyNishmat')} {dedication.name}
+              </p>
+            ))}
+          </div>
+        )}
         <div className="mt-3 space-y-1 text-left">
           {donation.items.map((item, idx) => (
             <p key={idx} className="text-sm">
@@ -49,6 +73,13 @@ export function DonationConfirmationPage() {
             </p>
           ))}
         </div>
+        {donation.ad && (
+          <div className="mt-3 rounded-btn border border-dashed border-border p-2 text-left">
+            <p className="text-xs font-medium text-text-muted">{t('donation.adSectionTitle')}</p>
+            <p className="text-sm font-semibold">{donation.ad.businessName}</p>
+            {donation.ad.message && <p className="text-xs text-text-muted">{donation.ad.message}</p>}
+          </div>
+        )}
       </Card>
     </div>
   );

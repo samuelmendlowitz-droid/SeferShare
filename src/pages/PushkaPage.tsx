@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePushka, type PushkaItem } from '../context/PushkaContext';
+import { getNeshama } from '../services/neshamos';
+import type { DonationAd, DonationDedication, Neshama } from '../types';
 import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
-import { VirtualDedicationCard } from '../components/donation/VirtualDedicationCard';
+import { VirtualDedicationCard, type StickerInfo } from '../components/donation/VirtualDedicationCard';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
@@ -25,15 +27,56 @@ function toPickedItem(item: PushkaItem): PickedItem {
   };
 }
 
+const emptyDedication: DonationDedication = { name: '', hebrewName: '', relationship: '', message: '' };
+
+function DedicationFields({ value, onChange }: { value: DonationDedication; onChange: (next: DonationDedication) => void }) {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-2">
+      <input
+        value={value.name}
+        onChange={(e) => onChange({ ...value, name: e.target.value })}
+        placeholder={t('neshama.name') ?? ''}
+        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+      />
+      <input
+        value={value.hebrewName ?? ''}
+        onChange={(e) => onChange({ ...value, hebrewName: e.target.value })}
+        placeholder={t('neshama.hebrewName') ?? ''}
+        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+      />
+      <input
+        value={value.relationship ?? ''}
+        onChange={(e) => onChange({ ...value, relationship: e.target.value })}
+        placeholder={t('neshama.relationship') ?? ''}
+        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+      />
+      <textarea
+        value={value.message ?? ''}
+        onChange={(e) => onChange({ ...value, message: e.target.value })}
+        placeholder={t('neshama.message') ?? ''}
+        rows={2}
+        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+      />
+    </div>
+  );
+}
+
 export function PushkaPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useAuth();
   const pushka = usePushka();
 
-  const [step, setStep] = useState<'cart' | 'checkout' | 'confirmation'>('cart');
+  const [step, setStep] = useState<'form' | 'confirmation'>('form');
   const [donorMessage, setDonorMessage] = useState('');
+  const [donorDedication, setDonorDedication] = useState<DonationDedication>(emptyDedication);
+  const [extraDedications, setExtraDedications] = useState<DonationDedication[]>([]);
+  const [includeAd, setIncludeAd] = useState(false);
+  const [ad, setAd] = useState<DonationAd>({ businessName: '', message: '' });
+  const [neshamosById, setNeshamosById] = useState<Map<string, Neshama>>(new Map());
   const [paidItems, setPaidItems] = useState<PushkaItem[]>([]);
+  const [paidStickers, setPaidStickers] = useState<StickerInfo[]>([]);
 
   const groups = useMemo(() => {
     const byCampaign = new Map<string, PushkaItem[]>();
@@ -50,8 +93,65 @@ export function PushkaPage() {
     return { byCampaign, untagged };
   }, [pushka.items]);
 
+  useEffect(() => {
+    const ids = [...new Set(pushka.items.map((i) => i.neshamaId).filter((id): id is string => Boolean(id)))];
+    if (ids.length === 0) {
+      setNeshamosById(new Map());
+      return;
+    }
+    Promise.all(ids.map((id) => getNeshama(id))).then((results) => {
+      const map = new Map<string, Neshama>();
+      results.forEach((n, idx) => {
+        if (n) map.set(ids[idx], n);
+      });
+      setNeshamosById(map);
+    });
+  }, [pushka.items]);
+
+  // Campaigns already dedicated to a neshama always print that neshama on the sticker.
+  const campaignStickerGroups = useMemo(
+    () =>
+      [...groups.byCampaign.entries()]
+        .map(([campaignId, items]) => ({
+          campaignId,
+          campaignTitle: items[0].campaignTitle,
+          neshama: items[0].neshamaId ? neshamosById.get(items[0].neshamaId) : undefined,
+        }))
+        .filter((g): g is typeof g & { neshama: Neshama } => Boolean(g.neshama)),
+    [groups.byCampaign, neshamosById],
+  );
+
+  // Everything else (untagged items, or campaigns with no neshama of their own) shares
+  // the donor's own dedication on its sticker.
+  const hasDonorStickerItems = useMemo(
+    () => groups.untagged.length > 0 || [...groups.byCampaign.values()].some((items) => !items[0].neshamaId),
+    [groups],
+  );
+
+  function addExtraDedication() {
+    setExtraDedications((prev) => [...prev, { ...emptyDedication }]);
+  }
+
+  function updateExtraDedication(idx: number, next: DonationDedication) {
+    setExtraDedications((prev) => prev.map((d, i) => (i === idx ? next : d)));
+  }
+
+  function removeExtraDedication(idx: number) {
+    setExtraDedications((prev) => prev.filter((_, i) => i !== idx));
+  }
+
   async function handlePaid() {
     setPaidItems(pushka.items);
+    const stickers: StickerInfo[] = campaignStickerGroups.map((g) => ({
+      label: g.campaignTitle || t('campaign.untitled'),
+      name: g.neshama.name,
+      hebrewName: g.neshama.hebrewName,
+      message: g.neshama.message,
+    }));
+    if (donorDedication.name.trim()) {
+      stickers.push({ label: t('donation.yourDedicationTitle'), ...donorDedication });
+    }
+    setPaidStickers(stickers);
     pushka.clear();
     setStep('confirmation');
   }
@@ -59,7 +159,13 @@ export function PushkaPage() {
   if (step === 'confirmation') {
     return (
       <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-        <VirtualDedicationCard donorName={profile?.displayName ?? ''} items={paidItems.map(toPickedItem)} />
+        <VirtualDedicationCard
+          donorName={profile?.displayName ?? ''}
+          items={paidItems.map(toPickedItem)}
+          stickers={paidStickers}
+          additionalDedications={extraDedications.filter((d) => d.name.trim())}
+          ad={includeAd && ad.businessName.trim() ? ad : undefined}
+        />
         <Button className="mt-4 w-full" onClick={() => navigate('/')}>
           {t('actions.done')}
         </Button>
@@ -112,30 +218,95 @@ export function PushkaPage() {
             )}
           </div>
 
-          {step === 'cart' && (
-            <>
-              <textarea
-                value={donorMessage}
-                onChange={(e) => setDonorMessage(e.target.value)}
-                placeholder={t('donation.message') ?? ''}
-                className="mb-4 mt-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
-                rows={3}
-              />
-              <p className="mb-3 text-sm text-text-muted">
-                {t('donation.total')}: ${pushka.totalPrice.toFixed(2)}
-              </p>
-              <Button className="w-full" onClick={() => setStep('checkout')}>
-                {t('pushka.donate')}
-              </Button>
-            </>
-          )}
+          <Card className="mt-4">
+            <h2 className="mb-3 text-base font-semibold">{t('donation.dedicationsTitle')}</h2>
 
-          {step === 'checkout' && (
-            <div className="mt-4">
-              <h2 className="mb-4 text-base font-semibold">{t('donation.checkout')}</h2>
-              <CheckoutStep items={pushka.items.map(toPickedItem)} donorMessage={donorMessage} onPaid={handlePaid} />
-            </div>
-          )}
+            {campaignStickerGroups.length > 0 && (
+              <div className="mb-3 space-y-2">
+                {campaignStickerGroups.map((g) => (
+                  <p key={g.campaignId} className="text-sm text-text-muted">
+                    {t('donation.stickerAuto', {
+                      campaignTitle: g.campaignTitle || t('campaign.untitled'),
+                      liluyNishmat: t('neshama.liluyNishmat'),
+                      name: g.neshama.name,
+                    })}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {hasDonorStickerItems && (
+              <div className="mb-4 rounded-btn border border-border p-3">
+                <p className="mb-1 text-sm font-medium">{t('donation.yourDedicationTitle')}</p>
+                <p className="mb-2 text-xs text-text-muted">{t('donation.yourDedicationHint')}</p>
+                <DedicationFields value={donorDedication} onChange={setDonorDedication} />
+              </div>
+            )}
+
+            {extraDedications.map((dedication, idx) => (
+              <div key={idx} className="mb-3 rounded-btn border border-border p-3">
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">{t('donation.additionalDedicationTitle')}</p>
+                    <p className="text-xs text-text-muted">{t('donation.additionalDedicationHint')}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeExtraDedication(idx)}
+                    aria-label={t('donation.removeDedication') ?? ''}
+                    className="shrink-0 text-text-muted"
+                  >
+                    <CloseIcon width={16} height={16} />
+                  </button>
+                </div>
+                <DedicationFields value={dedication} onChange={(next) => updateExtraDedication(idx, next)} />
+              </div>
+            ))}
+
+            <Button variant="secondary" className="w-full" onClick={addExtraDedication}>
+              {t('donation.addDedication')}
+            </Button>
+          </Card>
+
+          <Card className="mt-4">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input type="checkbox" checked={includeAd} onChange={(e) => setIncludeAd(e.target.checked)} />
+              {t('donation.includeAd')}
+            </label>
+            {includeAd && (
+              <div className="mt-3 space-y-2">
+                <input
+                  value={ad.businessName}
+                  onChange={(e) => setAd({ ...ad, businessName: e.target.value })}
+                  placeholder={t('donation.adBusinessName') ?? ''}
+                  className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+                />
+                <input
+                  value={ad.message ?? ''}
+                  onChange={(e) => setAd({ ...ad, message: e.target.value })}
+                  placeholder={t('donation.adMessagePlaceholder') ?? ''}
+                  className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+                />
+              </div>
+            )}
+          </Card>
+
+          <textarea
+            value={donorMessage}
+            onChange={(e) => setDonorMessage(e.target.value)}
+            placeholder={t('donation.message') ?? ''}
+            className="mb-4 mt-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
+            rows={3}
+          />
+
+          <CheckoutStep
+            items={pushka.items.map(toPickedItem)}
+            donorMessage={donorMessage}
+            donorDedication={donorDedication.name.trim() ? donorDedication : undefined}
+            additionalDedications={extraDedications.filter((d) => d.name.trim())}
+            ad={includeAd && ad.businessName.trim() ? ad : undefined}
+            onPaid={handlePaid}
+          />
         </>
       )}
     </div>
