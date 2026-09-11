@@ -7,7 +7,6 @@ import { HomePage } from './pages/HomePage';
 import { ProfilePage } from './pages/ProfilePage';
 import { LoginPage } from './pages/LoginPage';
 import { PushkaPage } from './pages/PushkaPage';
-import { DonationFlowPage } from './pages/DonationFlowPage';
 import { DonationConfirmationPage } from './pages/DonationConfirmationPage';
 import { CampaignCreatePage } from './pages/CampaignCreatePage';
 import { CampaignDetailPage } from './pages/CampaignDetailPage';
@@ -45,14 +44,6 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <PushkaPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/donate"
-                element={
-                  <RequireAuth>
-                    <DonationFlowPage />
                   </RequireAuth>
                 }
               />

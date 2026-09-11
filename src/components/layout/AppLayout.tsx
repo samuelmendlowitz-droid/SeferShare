@@ -6,7 +6,7 @@ import { usePushka } from '../../context/PushkaContext';
 import { CornerButton } from './CornerButton';
 import { FloatingToggleBar, type FilterSortButtonProps, type ToggleOption } from './FloatingToggleBar';
 import { TopSearchBar } from './TopSearchBar';
-import { GiftIcon, HomeIcon, PlusIcon, ProfileIcon, PushkaIcon, StoreIcon } from '../ui/icons';
+import { HomeIcon, PlusIcon, ProfileIcon, PushkaIcon, StoreIcon } from '../ui/icons';
 
 export type HomeFilter = 'all' | 'where' | 'who' | 'what';
 export type ProfileTab = 'campaigns' | 'donations' | 'notifications' | 'settings';
@@ -95,9 +95,7 @@ export function AppLayout(props: AppLayoutProps) {
   const otherPages = pages.filter((p) => p.key !== props.variant);
 
   const actionButton =
-    props.variant === 'home' ? (
-      <CornerButton label={t('donation.browse')} icon={<GiftIcon />} onClick={() => navigate('/donate')} />
-    ) : props.variant === 'profile' ? (
+    props.variant === 'profile' ? (
       <CornerButton label={t('campaign.create')} icon={<PlusIcon />} onClick={() => navigate('/campaigns/new')} />
     ) : null;
 

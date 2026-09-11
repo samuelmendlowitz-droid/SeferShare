@@ -80,9 +80,6 @@
     "other": "Other"
   },
   "donation": {
-    "browse": "Browse seforim",
-    "optionalWhere": "Mekomos (optional — leave blank and we'll assign it)",
-    "optionalWho": "Neshamas (optional — leave blank and we'll assign it)",
     "message": "Message to campaigner (optional)",
     "checkout": "Checkout",
     "roundUp": "Round up ${{amount}} to cover processing fees",
