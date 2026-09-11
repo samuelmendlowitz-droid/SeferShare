@@ -19,9 +19,6 @@ export interface VendorApplication {
   submittedAt: number;
 }
 
-/** A vendor's catalog display order: sefer listings interleaved with named group dividers. */
-export type CatalogLayoutEntry = { kind: 'sefer'; seferId: string } | { kind: 'divider'; id: string; label: string };
-
 export interface User {
   uid: string;
   displayName: string;
@@ -31,7 +28,6 @@ export interface User {
   isVendor: boolean;
   vendorApproved: boolean;
   vendorApplication?: VendorApplication;
-  catalogLayout?: CatalogLayoutEntry[];
   isAdmin?: boolean;
   blocked?: boolean;
   stripeCustomerId?: string;

@@ -70,7 +70,13 @@ export async function upsertVendorListing(input: UpsertVendorListingInput): Prom
     const otherListings = existing.vendorListings.filter((l) => l.vendorId !== input.vendorId);
     batch.set(
       doc(db, 'sefarim', seferId),
-      { vendorListings: [...otherListings, publicListing] },
+      {
+        hebrewName: input.hebrewName,
+        englishName: input.englishName,
+        phoneticName: input.phoneticName,
+        type: input.type,
+        vendorListings: [...otherListings, publicListing],
+      },
       { merge: true },
     );
   } else {

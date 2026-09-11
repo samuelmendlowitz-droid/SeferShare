@@ -122,13 +122,8 @@
     "submitApplication": "Submit application",
     "applicationSubmitted": "Your application has been submitted for review.",
     "applicationPending": "Your vendor application is pending approval.",
-    "save": "Save"
-  },
-  "catalog": {
-    "moveUp": "Move up",
-    "moveDown": "Move down",
-    "newGroupLabel": "Group name",
-    "addGroup": "Add group"
+    "save": "Save",
+    "editSefer": "Edit sefer"
   },
   "settings": {
     "language": "Language",
@@ -179,7 +174,8 @@
     "sortBy": "Sort by",
     "reset": "Reset",
     "done": "Done",
-    "noResults": "No results"
+    "noResults": "No results",
+    "groupBy": "Group by"
   },
   "filterSort": {
     "filterByInstitutionType": "Institution type",
@@ -210,7 +206,10 @@
     "sortAmountLowHigh": "Amount: low to high",
     "sortOrderSizeHighLow": "Order size: high to low",
     "sortOrderSizeLowHigh": "Order size: low to high",
-    "sortSeferNameAZ": "Sefer name A–Z"
+    "sortSeferNameAZ": "Sefer name A–Z",
+    "groupBySeferType": "Sefer type",
+    "groupByStock": "Stock status",
+    "groupByNone": "None"
   },
   "pushka": {
     "title": "Pushka",

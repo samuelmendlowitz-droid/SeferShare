@@ -1,7 +1,7 @@
 import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
-import type { CatalogLayoutEntry, Language, User, VendorApplication } from '../types';
+import type { Language, User, VendorApplication } from '../types';
 
 export async function updatePreferredLanguage(uid: string, language: Language) {
   await updateDoc(doc(db, 'users', uid), { preferredLanguage: language });
@@ -22,10 +22,6 @@ export async function applyToBeVendor(uid: string, application: VendorApplicatio
     vendorApproved: false,
     vendorApplication: application,
   });
-}
-
-export async function updateCatalogLayout(uid: string, layout: CatalogLayoutEntry[]): Promise<void> {
-  await updateDoc(doc(db, 'users', uid), { catalogLayout: layout });
 }
 
 export async function listPendingVendorApplications(): Promise<User[]> {

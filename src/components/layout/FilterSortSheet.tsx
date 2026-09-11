@@ -18,12 +18,20 @@ export interface SortOption {
   label: string;
 }
 
+export interface GroupOption {
+  value: string;
+  label: string;
+}
+
 interface FilterSortSheetProps {
   open: boolean;
   onClose: () => void;
   filterGroups: FilterGroup[];
   selectedFilters: Record<string, string[]>;
   onToggleFilter: (groupKey: string, value: string) => void;
+  groupOptions?: GroupOption[];
+  groupValue?: string;
+  onGroupChange?: (value: string) => void;
   sortOptions: SortOption[];
   sortValue: string;
   onSortChange: (value: string) => void;
@@ -61,6 +69,9 @@ export function FilterSortSheet({
   filterGroups,
   selectedFilters,
   onToggleFilter,
+  groupOptions,
+  groupValue,
+  onGroupChange,
   sortOptions,
   sortValue,
   onSortChange,
@@ -101,6 +112,17 @@ export function FilterSortSheet({
             </div>
           </div>
         ))}
+
+        {groupOptions && groupOptions.length > 0 && onGroupChange && (
+          <div className="mb-4">
+            <p className="mb-2 text-sm font-semibold text-text-muted">{t('actions.groupBy')}</p>
+            <div className="flex flex-wrap gap-2">
+              {groupOptions.map((opt) => (
+                <Chip key={opt.value} label={opt.label} active={groupValue === opt.value} onClick={() => onGroupChange(opt.value)} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {sortOptions.length > 0 && (
           <div className="mb-4">

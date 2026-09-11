@@ -122,13 +122,8 @@
     "submitApplication": "שליחת הבקשה",
     "applicationSubmitted": "הבקשה שלכם נשלחה לבדיקה.",
     "applicationPending": "בקשת הספק שלכם ממתינה לאישור.",
-    "save": "שמירה"
-  },
-  "catalog": {
-    "moveUp": "הזזה למעלה",
-    "moveDown": "הזזה למטה",
-    "newGroupLabel": "שם הקבוצה",
-    "addGroup": "הוספת קבוצה"
+    "save": "שמירה",
+    "editSefer": "עריכת ספר"
   },
   "settings": {
     "language": "שפה",
@@ -179,7 +174,8 @@
     "sortBy": "מיון לפי",
     "reset": "איפוס",
     "done": "סיום",
-    "noResults": "אין תוצאות"
+    "noResults": "אין תוצאות",
+    "groupBy": "קיבוץ לפי"
   },
   "filterSort": {
     "filterByInstitutionType": "סוג מוסד",
@@ -210,7 +206,10 @@
     "sortAmountLowHigh": "סכום: מהנמוך לגבוה",
     "sortOrderSizeHighLow": "גודל הזמנה: מהגבוה לנמוך",
     "sortOrderSizeLowHigh": "גודל הזמנה: מהנמוך לגבוה",
-    "sortSeferNameAZ": "שם הספר א-ת"
+    "sortSeferNameAZ": "שם הספר א-ת",
+    "groupBySeferType": "סוג הספר",
+    "groupByStock": "סטטוס מלאי",
+    "groupByNone": "ללא"
   },
   "pushka": {
     "title": "פושקע",

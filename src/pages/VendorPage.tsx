@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { AppLayout, type VendorTab } from '../components/layout/AppLayout';
-import { FilterSortSheet, type FilterGroup, type SortOption } from '../components/layout/FilterSortSheet';
-import { CatalogTab, type CatalogSortKey } from '../components/vendor/CatalogTab';
+import { FilterSortSheet, type FilterGroup, type GroupOption, type SortOption } from '../components/layout/FilterSortSheet';
+import { CatalogTab, type CatalogGroupKey, type CatalogSortKey } from '../components/vendor/CatalogTab';
 import { VendorOrdersTab } from '../components/vendor/VendorOrdersTab';
 import { SalesTab } from '../components/vendor/SalesTab';
 import { useVendorOrdersData } from '../hooks/useVendorOrdersData';
@@ -19,10 +19,11 @@ export function VendorPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  // Catalog filter/sort
+  // Catalog filter/sort/group
   const [catalogSeferTypes, setCatalogSeferTypes] = useState<SeferType[]>([]);
   const [catalogStockStatuses, setCatalogStockStatuses] = useState<StockStatus[]>([]);
-  const [catalogSort, setCatalogSort] = useState<CatalogSortKey>('custom');
+  const [catalogSort, setCatalogSort] = useState<CatalogSortKey>('name-az');
+  const [catalogGroup, setCatalogGroup] = useState<CatalogGroupKey>('seferType');
 
   // Orders filter/sort
   const [orderSeferTypes, setOrderSeferTypes] = useState<SeferType[]>([]);
@@ -66,6 +67,11 @@ export function VendorPage() {
     { value: 'cost-low', label: t('filterSort.sortCostLowHigh') },
     { value: 'stock-high', label: t('filterSort.sortStockHighLow') },
     { value: 'stock-low', label: t('filterSort.sortStockLowHigh') },
+  ];
+  const catalogGroupOptions: GroupOption[] = [
+    { value: 'seferType', label: t('filterSort.groupBySeferType') },
+    { value: 'stock', label: t('filterSort.groupByStock') },
+    { value: 'none', label: t('filterSort.groupByNone') },
   ];
 
   const orderFilterGroups: FilterGroup[] = [
@@ -115,7 +121,8 @@ export function VendorPage() {
   function resetCatalogFilters() {
     setCatalogSeferTypes([]);
     setCatalogStockStatuses([]);
-    setCatalogSort('custom');
+    setCatalogSort('name-az');
+    setCatalogGroup('seferType');
   }
 
   function toggleOrderFilter(groupKey: string, value: string) {
@@ -158,7 +165,10 @@ export function VendorPage() {
   }
 
   const catalogFiltersActive =
-    catalogSeferTypes.length > 0 || catalogStockStatuses.length > 0 || catalogSort !== 'custom';
+    catalogSeferTypes.length > 0 ||
+    catalogStockStatuses.length > 0 ||
+    catalogSort !== 'name-az' ||
+    catalogGroup !== 'seferType';
   const orderFiltersActive = orderSeferTypes.length > 0 || orderStatuses.length > 0 || orderSort !== 'date-new';
   const salesFiltersActive = salesSeferTypes.length > 0 || salesSort !== 'date-new';
 
@@ -175,7 +185,11 @@ export function VendorPage() {
         <h1 className="mb-4 text-xl font-bold">{t(`vendor.${tab}`)}</h1>
 
         {tab === 'catalog' && (
-          <CatalogTab filters={{ seferTypes: catalogSeferTypes, stockStatuses: catalogStockStatuses }} sortKey={catalogSort} />
+          <CatalogTab
+            filters={{ seferTypes: catalogSeferTypes, stockStatuses: catalogStockStatuses }}
+            sortKey={catalogSort}
+            groupKey={catalogGroup}
+          />
         )}
         {tab === 'orders' && <VendorOrdersTab loading={ordersData.loading} orders={filteredOrders} />}
         {tab === 'sales' && <SalesTab loading={ordersData.loading} orders={filteredSales} />}
@@ -188,6 +202,9 @@ export function VendorPage() {
           filterGroups={catalogFilterGroups}
           selectedFilters={{ seferType: catalogSeferTypes, stockStatus: catalogStockStatuses }}
           onToggleFilter={toggleCatalogFilter}
+          groupOptions={catalogGroupOptions}
+          groupValue={catalogGroup}
+          onGroupChange={(v) => setCatalogGroup(v as CatalogGroupKey)}
           sortOptions={catalogSortOptions}
           sortValue={catalogSort}
           onSortChange={(v) => setCatalogSort(v as CatalogSortKey)}
