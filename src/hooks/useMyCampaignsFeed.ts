@@ -18,6 +18,7 @@ interface UseMyCampaignsFeedResult {
   campaigns: Campaign[];
   institutionsById: Map<string, Institution>;
   neshamosById: Map<string, Neshama>;
+  sefarimById: Map<string, Sefer>;
   availableInstitutions: Institution[];
   availableNeshamas: Neshama[];
   availableSeferTypes: SeferType[];
@@ -124,6 +125,7 @@ export function useMyCampaignsFeed(
     campaigns,
     institutionsById,
     neshamosById,
+    sefarimById,
     availableInstitutions,
     availableNeshamas,
     availableSeferTypes,

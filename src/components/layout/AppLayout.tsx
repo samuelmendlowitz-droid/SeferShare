@@ -99,15 +99,16 @@ export function AppLayout(props: AppLayoutProps) {
       <CornerButton label={t('campaign.create')} icon={<PlusIcon />} onClick={() => navigate('/campaigns/new')} />
     ) : null;
 
-  // The pushka (donation cart) is reachable from every page, regardless of variant.
-  const pushkaButton = (
-    <CornerButton
-      label={t('pushka.title')}
-      icon={<PushkaIcon />}
-      badge={pushka.totalCount}
-      onClick={() => navigate('/pushka')}
-    />
-  );
+  // The pushka (donation cart) is only relevant to browsing/giving, which lives on Home.
+  const pushkaButton =
+    props.variant === 'home' ? (
+      <CornerButton
+        label={t('pushka.title')}
+        icon={<PushkaIcon />}
+        badge={pushka.totalCount}
+        onClick={() => navigate('/pushka')}
+      />
+    ) : null;
 
   function handleQueryChange(next: string) {
     setQuery(next);

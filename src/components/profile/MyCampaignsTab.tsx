@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { Campaign, Institution, Neshama } from '../../types';
+import type { Campaign, Institution, Neshama, Sefer } from '../../types';
 import { CampaignCard } from '../campaign/CampaignCard';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 
@@ -8,9 +8,10 @@ interface MyCampaignsTabProps {
   campaigns: Campaign[];
   institutionsById: Map<string, Institution>;
   neshamosById: Map<string, Neshama>;
+  sefarimById: Map<string, Sefer>;
 }
 
-export function MyCampaignsTab({ loading, campaigns, institutionsById, neshamosById }: MyCampaignsTabProps) {
+export function MyCampaignsTab({ loading, campaigns, institutionsById, neshamosById, sefarimById }: MyCampaignsTabProps) {
   const { t } = useTranslation();
 
   if (loading) return <LoadingSpinner />;
@@ -24,6 +25,7 @@ export function MyCampaignsTab({ loading, campaigns, institutionsById, neshamosB
           campaign={c}
           institution={c.institutionId ? institutionsById.get(c.institutionId) : undefined}
           neshama={c.neshamaId ? neshamosById.get(c.neshamaId) : undefined}
+          sefarimById={sefarimById}
         />
       ))}
     </div>

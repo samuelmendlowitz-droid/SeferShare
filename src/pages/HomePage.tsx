@@ -16,7 +16,7 @@ export function HomePage() {
   const [seferTypes, setSeferTypes] = useState<SeferType[]>([]);
   const [sortKey, setSortKey] = useState<HomeSortKey>('recommended');
 
-  const { loading, campaigns, institutionsById, neshamosById } = useCampaignFeed(filter, searchQuery, {
+  const { loading, campaigns, institutionsById, neshamosById, sefarimById } = useCampaignFeed(filter, searchQuery, {
     institutionTypes,
     seferTypes,
     sortKey,
@@ -84,6 +84,7 @@ export function HomePage() {
               campaign={campaign}
               institution={campaign.institutionId ? institutionsById.get(campaign.institutionId) : undefined}
               neshama={campaign.neshamaId ? neshamosById.get(campaign.neshamaId) : undefined}
+              sefarimById={sefarimById}
             />
           ))
         )}

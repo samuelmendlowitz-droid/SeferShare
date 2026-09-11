@@ -148,6 +148,7 @@ export function ProfilePage() {
             campaigns={campaignsFeed.campaigns}
             institutionsById={campaignsFeed.institutionsById}
             neshamosById={campaignsFeed.neshamosById}
+            sefarimById={campaignsFeed.sefarimById}
           />
         )}
         {tab === 'donations' && <DonationsTab loading={donationsFeed.loading} donations={donationsFeed.donations} />}

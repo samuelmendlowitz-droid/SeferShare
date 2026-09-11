@@ -20,6 +20,7 @@
   "home": {
     "itemsNeeded": "{{fulfilled}} מתוך {{needed}} ספרים",
     "dollarTotal": "סה\"כ ${{amount}}",
+    "dollarProgress": "${{fulfilled}} מתוך ${{total}} נאספו",
     "empty": "אין עדיין קמפיינים. היו הראשונים להתחיל אחד!",
     "fulfilled": "הושלם"
   },

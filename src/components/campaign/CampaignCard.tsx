@@ -1,8 +1,9 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import type { Campaign, Institution, Neshama } from '../../types';
+import type { Campaign, Institution, Neshama, Sefer } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
-import { campaignDollarTotal } from '../../lib/campaignMath';
+import { campaignDollarFulfilled, campaignDollarTotal } from '../../lib/campaignMath';
 import { Card } from '../ui/Card';
 import { ProgressBar } from './ProgressBar';
 
@@ -10,13 +11,24 @@ interface CampaignCardProps {
   campaign: Campaign;
   institution?: Institution;
   neshama?: Neshama;
+  sefarimById: Map<string, Sefer>;
 }
 
-export function CampaignCard({ campaign, institution, neshama }: CampaignCardProps) {
+export function CampaignCard({ campaign, institution, neshama, sefarimById }: CampaignCardProps) {
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
   const navigate = useNavigate();
   const dollarTotal = campaignDollarTotal(campaign);
+  const dollarFulfilled = campaignDollarFulfilled(campaign);
+
+  const seferTypesText = useMemo(() => {
+    const types = new Set<string>();
+    campaign.items.forEach((item) => {
+      const type = sefarimById.get(item.seferId)?.type;
+      if (type) types.add(t(`sefer.${type}`));
+    });
+    return [...types].join(', ');
+  }, [campaign.items, sefarimById, t]);
 
   return (
     <Card
@@ -45,13 +57,14 @@ export function CampaignCard({ campaign, institution, neshama }: CampaignCardPro
             needed: campaign.totalItemsNeeded,
           })}
         </p>
-        <p className="text-sm text-text-muted">
-          {t('home.dollarTotal', { amount: dollarTotal.toFixed(2) })}
-        </p>
+        {seferTypesText && <p className="text-xs text-text-muted">{seferTypesText}</p>}
       </div>
 
       <div className="mt-2">
-        <ProgressBar fulfilled={campaign.totalItemsFulfilled} needed={campaign.totalItemsNeeded} />
+        <p className="mb-1 text-xs text-text-muted">
+          {t('home.dollarProgress', { fulfilled: dollarFulfilled.toFixed(2), total: dollarTotal.toFixed(2) })}
+        </p>
+        <ProgressBar fulfilled={dollarFulfilled} needed={dollarTotal} />
       </div>
 
       {campaign.status === 'fulfilled' && (
