@@ -106,6 +106,7 @@
     "share": "Share dedication card",
     "dedicationsTitle": "Dedications",
     "stickerAuto": "{{campaignTitle}}: {{liluyNishmat}} {{name}} — printed on the sticker",
+    "stickerAutoPlain": "{{liluyNishmat}} {{name}} — printed on the sticker",
     "yourDedicationTitle": "Your dedication (for the sticker)",
     "yourDedicationHint": "This name is printed on the sticker for seforim whose campaign doesn't already have one.",
     "addDedication": "Add another dedication",
@@ -117,8 +118,7 @@
     "adMessagePlaceholder": "Short ad message (optional)",
     "adSectionTitle": "Ad",
     "makeADonation": "Make a donation",
-    "whichInstitutionTitle": "Which institution should get these?",
-    "whichInstitutionHint": "Pick one per sefer, or let the algorithm choose where it's needed most.",
+    "whichInstitutionTitle": "Which institution should get this?",
     "algorithmChoice": "Let the algorithm choose",
     "noCampaignNeedsThis": "No campaign currently needs this — it'll go to the general pool."
   },

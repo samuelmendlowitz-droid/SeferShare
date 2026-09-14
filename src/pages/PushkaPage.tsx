@@ -30,6 +30,17 @@ function toPickedItem(item: PushkaItem, requestedInstitutionId?: string): Picked
   };
 }
 
+/** Institutions (deduped) with an active campaign still needing any sefer in `items`. */
+function matchesForItems(items: PushkaItem[], institutionsForSefer: Map<string, Institution[]>): Institution[] {
+  const byId = new Map<string, Institution>();
+  for (const item of items) {
+    for (const inst of institutionsForSefer.get(item.seferId) ?? []) {
+      byId.set(inst.institutionId, inst);
+    }
+  }
+  return [...byId.values()];
+}
+
 const emptyDedication: DonationDedication = { name: '', hebrewName: '', relationship: '', message: '' };
 
 function DedicationFields({ value, onChange }: { value: DonationDedication; onChange: (next: DonationDedication) => void }) {
@@ -65,6 +76,50 @@ function DedicationFields({ value, onChange }: { value: DonationDedication; onCh
   );
 }
 
+function InstitutionChoicePicker({
+  matches,
+  chosen,
+  onChoose,
+}: {
+  matches: Institution[];
+  chosen: string | undefined;
+  onChoose: (institutionId: string) => void;
+}) {
+  const { t } = useTranslation();
+  if (matches.length === 0) {
+    return <p className="text-xs text-text-muted">{t('donation.noCampaignNeedsThis')}</p>;
+  }
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={() => onChoose('')}
+        className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+          !chosen
+            ? 'border-accent bg-accent text-white'
+            : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
+        }`}
+      >
+        {t('donation.algorithmChoice')}
+      </button>
+      {matches.map((inst) => (
+        <button
+          key={inst.institutionId}
+          type="button"
+          onClick={() => onChoose(inst.institutionId)}
+          className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+            chosen === inst.institutionId
+              ? 'border-accent bg-accent text-white'
+              : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
+          }`}
+        >
+          {inst.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function PushkaPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -73,8 +128,7 @@ export function PushkaPage() {
 
   const [step, setStep] = useState<'form' | 'confirmation'>('form');
   const [donorMessage, setDonorMessage] = useState('');
-  const [donorDedication, setDonorDedication] = useState<DonationDedication>(emptyDedication);
-  const [extraDedications, setExtraDedications] = useState<DonationDedication[]>([]);
+  const [dedications, setDedications] = useState<DonationDedication[]>([]);
   const [includeAd, setIncludeAd] = useState(false);
   const [ad, setAd] = useState<DonationAd>({ businessName: '', message: '' });
   const [neshamosById, setNeshamosById] = useState<Map<string, Neshama>>(new Map());
@@ -87,6 +141,7 @@ export function PushkaPage() {
     const byCampaign = new Map<string, PushkaItem[]>();
     // No campaign, but dedicated to a neshama — added from a neshama's "donate in
     // their name" page, with the mokom already picked there (see NeshamaDonatePage).
+    // Always has an institution, since that page requires picking one.
     const neshamaDedicated = new Map<string, PushkaItem[]>();
     // Truly generic items from the Seforim shopping tab — no campaign or dedication yet.
     const plainUntagged: PushkaItem[] = [];
@@ -103,7 +158,11 @@ export function PushkaPage() {
         plainUntagged.push(item);
       }
     }
-    return { byCampaign, neshamaDedicated, plainUntagged };
+    // A campaign needs at least an institution or a neshama, so one missing an
+    // institution is guaranteed to already carry a neshama (see Campaign model).
+    const readyCampaignGroups = [...byCampaign.entries()].filter(([, items]) => items[0].institutionId);
+    const pendingCampaignGroups = [...byCampaign.entries()].filter(([, items]) => !items[0].institutionId);
+    return { byCampaign, neshamaDedicated, plainUntagged, readyCampaignGroups, pendingCampaignGroups };
   }, [pushka.items]);
 
   useEffect(() => {
@@ -122,9 +181,7 @@ export function PushkaPage() {
   }, [pushka.items]);
 
   useEffect(() => {
-    const seferIds = [
-      ...new Set(pushka.items.filter((i) => !i.campaignId && !i.neshamaId).map((i) => i.seferId)),
-    ];
+    const seferIds = [...new Set(pushka.items.filter((i) => !i.institutionId).map((i) => i.seferId))];
     if (seferIds.length === 0) {
       setInstitutionsForSefer(new Map());
       return;
@@ -149,7 +206,8 @@ export function PushkaPage() {
     })();
   }, [pushka.items]);
 
-  // Campaigns already dedicated to a neshama always print that neshama on the sticker.
+  // Campaigns already dedicated to a neshama always print that neshama on the sticker
+  // (true whether or not that campaign also has an institution).
   const campaignStickerGroups = useMemo(
     () =>
       [...groups.byCampaign.entries()]
@@ -173,23 +231,39 @@ export function PushkaPage() {
   );
 
   // Everything else (plain untagged items, or campaigns with no neshama of their own)
-  // shares the donor's own dedication on its sticker.
+  // needs a dedication from the donor — the first one added becomes its sticker.
   const hasDonorStickerItems = useMemo(
     () => groups.plainUntagged.length > 0 || [...groups.byCampaign.values()].some((items) => !items[0].neshamaId),
     [groups],
   );
 
-  function addExtraDedication() {
-    setExtraDedications((prev) => [...prev, { ...emptyDedication }]);
+  // Keep one (possibly blank) dedication field visible whenever a sticker slot is open.
+  useEffect(() => {
+    if (hasDonorStickerItems && dedications.length === 0) {
+      setDedications([{ ...emptyDedication }]);
+    }
+  }, [hasDonorStickerItems, dedications.length]);
+
+  function addDedication() {
+    setDedications((prev) => [...prev, { ...emptyDedication }]);
   }
 
-  function updateExtraDedication(idx: number, next: DonationDedication) {
-    setExtraDedications((prev) => prev.map((d, i) => (i === idx ? next : d)));
+  function updateDedication(idx: number, next: DonationDedication) {
+    setDedications((prev) => prev.map((d, i) => (i === idx ? next : d)));
   }
 
-  function removeExtraDedication(idx: number) {
-    setExtraDedications((prev) => prev.filter((_, i) => i !== idx));
+  function removeDedication(idx: number) {
+    setDedications((prev) => prev.filter((_, i) => i !== idx));
   }
+
+  function requestedInstitutionFor(item: PushkaItem): string | undefined {
+    if (item.institutionId) return item.institutionId;
+    if (item.campaignId) return institutionChoices[`campaign:${item.campaignId}`] || undefined;
+    return institutionChoices[`sefer:${pushka.keyFor(item)}`] || undefined;
+  }
+
+  const stickerDedication = hasDonorStickerItems ? dedications[0] : undefined;
+  const extraDedications = hasDonorStickerItems ? dedications.slice(1) : dedications;
 
   async function handlePaid() {
     setPaidItems(pushka.items);
@@ -207,12 +281,13 @@ export function PushkaPage() {
         message: g.neshama.message,
       })),
     ];
-    if (donorDedication.name.trim()) {
-      stickers.push({ label: t('donation.yourDedicationTitle'), ...donorDedication });
+    if (stickerDedication?.name.trim()) {
+      stickers.push({ label: t('donation.yourDedicationTitle'), ...stickerDedication });
     }
     setPaidStickers(stickers);
     pushka.clear();
     setInstitutionChoices({});
+    setDedications([]);
     setStep('confirmation');
   }
 
@@ -249,7 +324,7 @@ export function PushkaPage() {
       ) : (
         <>
           <div className="space-y-4">
-            {[...groups.byCampaign.entries()].map(([campaignId, items]) => (
+            {groups.readyCampaignGroups.map(([campaignId, items]) => (
               <div key={campaignId}>
                 <button
                   type="button"
@@ -279,69 +354,60 @@ export function PushkaPage() {
               </div>
             ))}
 
+            {groups.pendingCampaignGroups.map(([campaignId, items]) => {
+              const key = `campaign:${campaignId}`;
+              return (
+                <div key={campaignId}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/campaigns/${campaignId}`)}
+                    className="mb-2 text-sm font-semibold text-accent hover:underline"
+                  >
+                    {items[0].campaignTitle || t('campaign.untitled')}
+                  </button>
+                  <div className="space-y-2">
+                    {items.map((item) => (
+                      <PushkaRow key={pushka.keyFor(item)} item={item} />
+                    ))}
+                  </div>
+                  <div className="mt-2 rounded-btn border border-border p-3">
+                    <p className="mb-2 text-xs font-medium text-text-muted">{t('donation.whichInstitutionTitle')}</p>
+                    <InstitutionChoicePicker
+                      matches={matchesForItems(items, institutionsForSefer)}
+                      chosen={institutionChoices[key]}
+                      onChoose={(id) => setInstitutionChoices((prev) => ({ ...prev, [key]: id }))}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+
             {groups.plainUntagged.length > 0 && (
               <div>
                 <p className="mb-2 text-sm font-semibold text-text-muted">{t('pushka.otherSeforim')}</p>
-                <div className="space-y-2">
-                  {groups.plainUntagged.map((item) => (
-                    <PushkaRow key={pushka.keyFor(item)} item={item} />
-                  ))}
+                <div className="space-y-3">
+                  {groups.plainUntagged.map((item) => {
+                    const key = `sefer:${pushka.keyFor(item)}`;
+                    return (
+                      <div key={pushka.keyFor(item)}>
+                        <PushkaRow item={item} />
+                        <div className="mt-2 rounded-btn border border-border p-3">
+                          <p className="mb-2 text-xs font-medium text-text-muted">
+                            {t('donation.whichInstitutionTitle')}
+                          </p>
+                          <InstitutionChoicePicker
+                            matches={institutionsForSefer.get(item.seferId) ?? []}
+                            chosen={institutionChoices[key]}
+                            onChoose={(id) => setInstitutionChoices((prev) => ({ ...prev, [key]: id }))}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
-
-          {groups.plainUntagged.length > 0 && (
-            <Card className="mt-4">
-              <h2 className="mb-1 text-base font-semibold">{t('donation.whichInstitutionTitle')}</h2>
-              <p className="mb-3 text-xs text-text-muted">{t('donation.whichInstitutionHint')}</p>
-              <div className="space-y-4">
-                {groups.plainUntagged.map((item) => {
-                  const key = pushka.keyFor(item);
-                  const matches = institutionsForSefer.get(item.seferId) ?? [];
-                  const chosen = institutionChoices[key];
-                  return (
-                    <div key={key}>
-                      <p className="mb-2 text-sm font-medium">
-                        {item.englishName} · {item.hebrewName}
-                      </p>
-                      {matches.length === 0 ? (
-                        <p className="text-xs text-text-muted">{t('donation.noCampaignNeedsThis')}</p>
-                      ) : (
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setInstitutionChoices((prev) => ({ ...prev, [key]: '' }))}
-                            className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
-                              !chosen
-                                ? 'border-accent bg-accent text-white'
-                                : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
-                            }`}
-                          >
-                            {t('donation.algorithmChoice')}
-                          </button>
-                          {matches.map((inst) => (
-                            <button
-                              key={inst.institutionId}
-                              type="button"
-                              onClick={() => setInstitutionChoices((prev) => ({ ...prev, [key]: inst.institutionId }))}
-                              className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
-                                chosen === inst.institutionId
-                                  ? 'border-accent bg-accent text-white'
-                                  : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
-                              }`}
-                            >
-                              {inst.name}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          )}
 
           <Card className="mt-4">
             <h2 className="mb-3 text-base font-semibold">{t('donation.dedicationsTitle')}</h2>
@@ -360,35 +426,44 @@ export function PushkaPage() {
               </div>
             )}
 
-            {hasDonorStickerItems && (
-              <div className="mb-4 rounded-btn border border-border p-3">
-                <p className="mb-1 text-sm font-medium">{t('donation.yourDedicationTitle')}</p>
-                <p className="mb-2 text-xs text-text-muted">{t('donation.yourDedicationHint')}</p>
-                <DedicationFields value={donorDedication} onChange={setDonorDedication} />
+            {neshamaDedicatedStickerGroups.length > 0 && (
+              <div className="mb-3 space-y-2">
+                {neshamaDedicatedStickerGroups.map((g) => (
+                  <p key={g.neshamaId} className="text-sm text-text-muted">
+                    {t('donation.stickerAutoPlain', { liluyNishmat: t('neshama.liluyNishmat'), name: g.neshama.name })}
+                  </p>
+                ))}
               </div>
             )}
 
-            {extraDedications.map((dedication, idx) => (
-              <div key={idx} className="mb-3 rounded-btn border border-border p-3">
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium">{t('donation.additionalDedicationTitle')}</p>
-                    <p className="text-xs text-text-muted">{t('donation.additionalDedicationHint')}</p>
+            {dedications.map((dedication, idx) => {
+              const isSticker = hasDonorStickerItems && idx === 0;
+              return (
+                <div key={idx} className="mb-3 rounded-btn border border-border p-3">
+                  <div className="mb-2 flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium">
+                        {isSticker ? t('donation.yourDedicationTitle') : t('donation.additionalDedicationTitle')}
+                      </p>
+                      <p className="text-xs text-text-muted">
+                        {isSticker ? t('donation.yourDedicationHint') : t('donation.additionalDedicationHint')}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeDedication(idx)}
+                      aria-label={t('donation.removeDedication') ?? ''}
+                      className="shrink-0 text-text-muted"
+                    >
+                      <CloseIcon width={16} height={16} />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeExtraDedication(idx)}
-                    aria-label={t('donation.removeDedication') ?? ''}
-                    className="shrink-0 text-text-muted"
-                  >
-                    <CloseIcon width={16} height={16} />
-                  </button>
+                  <DedicationFields value={dedication} onChange={(next) => updateDedication(idx, next)} />
                 </div>
-                <DedicationFields value={dedication} onChange={(next) => updateExtraDedication(idx, next)} />
-              </div>
-            ))}
+              );
+            })}
 
-            <Button variant="secondary" className="w-full" onClick={addExtraDedication}>
+            <Button variant="secondary" className="w-full" onClick={addDedication}>
               {t('donation.addDedication')}
             </Button>
           </Card>
@@ -425,19 +500,9 @@ export function PushkaPage() {
           />
 
           <CheckoutStep
-            items={pushka.items.map((item) => {
-              // Campaign-tagged items are already fully resolved (Pass 0). Neshama-
-              // dedicated items already have their mokom fixed from NeshamaDonatePage.
-              // Everything else uses whatever the picker above was set to.
-              const requestedInstitutionId = item.campaignId
-                ? undefined
-                : item.neshamaId
-                  ? item.institutionId
-                  : institutionChoices[pushka.keyFor(item)] || undefined;
-              return toPickedItem(item, requestedInstitutionId);
-            })}
+            items={pushka.items.map((item) => toPickedItem(item, requestedInstitutionFor(item)))}
             donorMessage={donorMessage}
-            donorDedication={donorDedication.name.trim() ? donorDedication : undefined}
+            donorDedication={stickerDedication?.name.trim() ? stickerDedication : undefined}
             additionalDedications={extraDedications.filter((d) => d.name.trim())}
             ad={includeAd && ad.businessName.trim() ? ad : undefined}
             onPaid={handlePaid}

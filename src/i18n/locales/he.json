@@ -106,6 +106,7 @@
     "share": "שיתוף כרטיס ההקדשה",
     "dedicationsTitle": "הקדשות",
     "stickerAuto": "{{campaignTitle}}: {{liluyNishmat}} {{name}} — יודפס על המדבקה",
+    "stickerAutoPlain": "{{liluyNishmat}} {{name}} — יודפס על המדבקה",
     "yourDedicationTitle": "ההקדשה שלכם (למדבקה)",
     "yourDedicationHint": "שם זה יודפס על המדבקה עבור ספרים שהקמפיין שלהם עדיין ללא הקדשה משלו.",
     "addDedication": "הוספת הקדשה נוספת",
@@ -117,8 +118,7 @@
     "adMessagePlaceholder": "הודעת פרסום קצרה (אופציונלי)",
     "adSectionTitle": "פרסומת",
     "makeADonation": "לתרומה",
-    "whichInstitutionTitle": "לאיזה מוסד להעביר את אלה?",
-    "whichInstitutionHint": "בחרו מוסד לכל ספר, או תנו לאלגוריתם לבחור היכן יש הכי הרבה צורך.",
+    "whichInstitutionTitle": "לאיזה מוסד להעביר את זה?",
     "algorithmChoice": "לתת לאלגוריתם לבחור",
     "noCampaignNeedsThis": "אף קמפיין לא זקוק לזה כרגע — זה יעבור לקופה הכללית."
   },
