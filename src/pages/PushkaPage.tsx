@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePushka, type PushkaItem } from '../context/PushkaContext';
 import { getNeshama } from '../services/neshamos';
-import type { DonationAd, DonationDedication, Neshama } from '../types';
+import { listActiveCampaigns } from '../services/campaigns';
+import { listInstitutions } from '../services/institutions';
+import type { DonationAd, DonationDedication, Institution, Neshama } from '../types';
 import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
 import { VirtualDedicationCard, type StickerInfo } from '../components/donation/VirtualDedicationCard';
@@ -13,7 +15,7 @@ import { Card } from '../components/ui/Card';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
 import { MinusIcon, PlusIcon, CloseIcon } from '../components/ui/icons';
 
-function toPickedItem(item: PushkaItem): PickedItem {
+function toPickedItem(item: PushkaItem, requestedInstitutionId?: string): PickedItem {
   return {
     seferId: item.seferId,
     vendorId: item.vendorId,
@@ -24,6 +26,7 @@ function toPickedItem(item: PushkaItem): PickedItem {
     quantity: item.quantity,
     imageUrl: item.imageUrl,
     campaignId: item.campaignId,
+    requestedInstitutionId,
   };
 }
 
@@ -75,6 +78,8 @@ export function PushkaPage() {
   const [includeAd, setIncludeAd] = useState(false);
   const [ad, setAd] = useState<DonationAd>({ businessName: '', message: '' });
   const [neshamosById, setNeshamosById] = useState<Map<string, Neshama>>(new Map());
+  const [institutionsForSefer, setInstitutionsForSefer] = useState<Map<string, Institution[]>>(new Map());
+  const [institutionChoices, setInstitutionChoices] = useState<Record<string, string>>({});
   const [paidItems, setPaidItems] = useState<PushkaItem[]>([]);
   const [paidStickers, setPaidStickers] = useState<StickerInfo[]>([]);
 
@@ -106,6 +111,32 @@ export function PushkaPage() {
       });
       setNeshamosById(map);
     });
+  }, [pushka.items]);
+
+  useEffect(() => {
+    const seferIds = [...new Set(pushka.items.filter((i) => !i.campaignId).map((i) => i.seferId))];
+    if (seferIds.length === 0) {
+      setInstitutionsForSefer(new Map());
+      return;
+    }
+    (async () => {
+      const [campaigns, institutions] = await Promise.all([listActiveCampaigns(), listInstitutions()]);
+      const institutionsById = new Map(institutions.map((inst) => [inst.institutionId, inst]));
+      const map = new Map<string, Institution[]>();
+      for (const seferId of seferIds) {
+        const matchingIds = new Set<string>();
+        for (const campaign of campaigns) {
+          if (!campaign.institutionId) continue;
+          const item = campaign.items.find((it) => it.seferId === seferId);
+          if (item && item.quantity > item.quantityFulfilled) matchingIds.add(campaign.institutionId);
+        }
+        const matches = [...matchingIds]
+          .map((id) => institutionsById.get(id))
+          .filter((inst): inst is Institution => Boolean(inst));
+        map.set(seferId, matches);
+      }
+      setInstitutionsForSefer(map);
+    })();
   }, [pushka.items]);
 
   // Campaigns already dedicated to a neshama always print that neshama on the sticker.
@@ -153,6 +184,7 @@ export function PushkaPage() {
     }
     setPaidStickers(stickers);
     pushka.clear();
+    setInstitutionChoices({});
     setStep('confirmation');
   }
 
@@ -161,7 +193,7 @@ export function PushkaPage() {
       <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
         <VirtualDedicationCard
           donorName={profile?.displayName ?? ''}
-          items={paidItems.map(toPickedItem)}
+          items={paidItems.map((item) => toPickedItem(item))}
           stickers={paidStickers}
           additionalDedications={extraDedications.filter((d) => d.name.trim())}
           ad={includeAd && ad.businessName.trim() ? ad : undefined}
@@ -217,6 +249,58 @@ export function PushkaPage() {
               </div>
             )}
           </div>
+
+          {groups.untagged.length > 0 && (
+            <Card className="mt-4">
+              <h2 className="mb-1 text-base font-semibold">{t('donation.whichInstitutionTitle')}</h2>
+              <p className="mb-3 text-xs text-text-muted">{t('donation.whichInstitutionHint')}</p>
+              <div className="space-y-4">
+                {groups.untagged.map((item) => {
+                  const key = pushka.keyFor(item);
+                  const matches = institutionsForSefer.get(item.seferId) ?? [];
+                  const chosen = institutionChoices[key];
+                  return (
+                    <div key={key}>
+                      <p className="mb-2 text-sm font-medium">
+                        {item.englishName} · {item.hebrewName}
+                      </p>
+                      {matches.length === 0 ? (
+                        <p className="text-xs text-text-muted">{t('donation.noCampaignNeedsThis')}</p>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setInstitutionChoices((prev) => ({ ...prev, [key]: '' }))}
+                            className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                              !chosen
+                                ? 'border-accent bg-accent text-white'
+                                : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
+                            }`}
+                          >
+                            {t('donation.algorithmChoice')}
+                          </button>
+                          {matches.map((inst) => (
+                            <button
+                              key={inst.institutionId}
+                              type="button"
+                              onClick={() => setInstitutionChoices((prev) => ({ ...prev, [key]: inst.institutionId }))}
+                              className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                                chosen === inst.institutionId
+                                  ? 'border-accent bg-accent text-white'
+                                  : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
+                              }`}
+                            >
+                              {inst.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          )}
 
           <Card className="mt-4">
             <h2 className="mb-3 text-base font-semibold">{t('donation.dedicationsTitle')}</h2>
@@ -300,7 +384,7 @@ export function PushkaPage() {
           />
 
           <CheckoutStep
-            items={pushka.items.map(toPickedItem)}
+            items={pushka.items.map((item) => toPickedItem(item, institutionChoices[pushka.keyFor(item)] || undefined))}
             donorMessage={donorMessage}
             donorDedication={donorDedication.name.trim() ? donorDedication : undefined}
             additionalDedications={extraDedications.filter((d) => d.name.trim())}

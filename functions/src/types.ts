@@ -45,6 +45,10 @@ export interface DonationItem {
   /** Set when added to the pushka straight from a campaign's page — credited to
    *  that exact campaign first, uncapped by the milestone algorithm (see algorithm.ts). */
   campaignId?: string;
+  /** Set when the donor picked a specific institution for this sefer at checkout
+   *  (items added generically from the Seforim shopping tab, not tied to a campaign) —
+   *  honored uncapped against that institution's active campaigns (see algorithm.ts). */
+  requestedInstitutionId?: string;
 }
 
 export interface CampaignAssignment {

@@ -22,10 +22,14 @@
     "dollarTotal": "${{amount}} total",
     "dollarProgress": "${{fulfilled}} of ${{total}} raised",
     "empty": "No campaigns yet. Be the first to start one!",
-    "fulfilled": "Fulfilled"
+    "fulfilled": "Fulfilled",
+    "mekomosEmpty": "No institutions are running campaigns yet.",
+    "neshamosEmpty": "No neshamas have been dedicated yet.",
+    "seforimEmpty": "No seforim available yet."
   },
   "campaign": {
     "create": "New Campaign",
+    "campaignsHeading": "Campaigns",
     "selectWhere": "Select an institution",
     "selectWho": "Dedicate to a neshama",
     "selectSeforim": "Select seforim",
@@ -52,7 +56,8 @@
     "message": "Dedication message (optional)",
     "liluyNishmat": "LI\"N",
     "addNew": "Add neshama",
-    "searchPlaceholder": "Search neshamos…"
+    "searchPlaceholder": "Search neshamos…",
+    "notFound": "This neshama couldn't be found."
   },
   "institution": {
     "name": "Institution name",
@@ -63,7 +68,8 @@
     "school": "School",
     "other": "Other",
     "addNew": "Add institution",
-    "searchPlaceholder": "Search institutions…"
+    "searchPlaceholder": "Search institutions…",
+    "notFound": "This institution couldn't be found."
   },
   "sefer": {
     "hebrewName": "Hebrew name",
@@ -100,7 +106,11 @@
     "includeAd": "Add a small ad sticker for your business",
     "adBusinessName": "Business name",
     "adMessagePlaceholder": "Short ad message (optional)",
-    "adSectionTitle": "Ad"
+    "adSectionTitle": "Ad",
+    "whichInstitutionTitle": "Which institution should get these?",
+    "whichInstitutionHint": "Pick one per sefer, or let the algorithm choose where it's needed most.",
+    "algorithmChoice": "Let the algorithm choose",
+    "noCampaignNeedsThis": "No campaign currently needs this — it'll go to the general pool."
   },
   "vendor": {
     "catalog": "Catalog",

@@ -4,12 +4,13 @@ import { listActiveCampaigns, searchCampaigns } from '../services/campaigns';
 import { listInstitutions } from '../services/institutions';
 import { listNeshamos } from '../services/neshamos';
 import { listSefarim } from '../services/sefarim';
-import type { HomeFilter } from '../components/layout/AppLayout';
 
 export type HomeSortKey = 'recommended' | 'institution-az' | 'neshama-az' | 'sefer-az';
 
-interface CampaignFeedState {
+export interface CampaignFeedBase {
   loading: boolean;
+  /** Search-matched, and with fulfilled campaigns hidden unless actively searching —
+   *  not yet filtered/sorted for any particular tab. */
   campaigns: Campaign[];
   institutionsById: Map<string, Institution>;
   neshamosById: Map<string, Neshama>;
@@ -30,12 +31,12 @@ function firstSeferName(campaign: Campaign, sefarimById: Map<string, Sefer>): st
   return names.sort()[0] ?? '';
 }
 
-export function useCampaignFeed(
-  filter: HomeFilter,
-  searchQuery: string,
-  options: CampaignFeedOptions = {},
-): CampaignFeedState {
-  const { institutionTypes = [], seferTypes = [], sortKey = 'recommended' } = options;
+/**
+ * Shared base data for every Home tab: all campaigns (search-matched, fulfilled
+ * hidden when not searching) plus institution/neshama/sefer lookup maps. Each tab
+ * layers its own aggregation/filtering/sorting on top of this.
+ */
+export function useCampaignFeedData(searchQuery: string): CampaignFeedBase {
   const [loading, setLoading] = useState(true);
   const [allCampaigns, setAllCampaigns] = useState<Campaign[]>([]);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
@@ -77,10 +78,6 @@ export function useCampaignFeed(
   const campaigns = useMemo(() => {
     let result = allCampaigns;
 
-    if (filter === 'where') result = result.filter((c) => !!c.institutionId);
-    if (filter === 'who') result = result.filter((c) => !!c.neshamaId);
-    if (filter === 'what') result = result.filter((c) => c.items.length > 0);
-
     if (isSearching) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter((c) => {
@@ -107,16 +104,30 @@ export function useCampaignFeed(
       result = result.filter((c) => c.status !== 'fulfilled');
     }
 
+    return result;
+  }, [allCampaigns, isSearching, searchQuery, institutionsById, neshamosById, sefarimById]);
+
+  return { loading, campaigns, institutionsById, neshamosById, sefarimById };
+}
+
+/** The "All Campaigns" tab: the shared base list, filtered/sorted by its own controls. */
+export function useCampaignFeed(searchQuery: string, options: CampaignFeedOptions = {}): CampaignFeedBase {
+  const { institutionTypes = [], seferTypes = [], sortKey = 'recommended' } = options;
+  const base = useCampaignFeedData(searchQuery);
+
+  const campaigns = useMemo(() => {
+    let result = base.campaigns;
+
     if (institutionTypes.length > 0) {
       result = result.filter((c) => {
-        const institution = c.institutionId ? institutionsById.get(c.institutionId) : undefined;
+        const institution = c.institutionId ? base.institutionsById.get(c.institutionId) : undefined;
         return institution && institutionTypes.includes(institution.type);
       });
     }
     if (seferTypes.length > 0) {
       result = result.filter((c) =>
         c.items.some((item) => {
-          const sefer = sefarimById.get(item.seferId);
+          const sefer = base.sefarimById.get(item.seferId);
           return sefer && seferTypes.includes(sefer.type);
         }),
       );
@@ -124,23 +135,23 @@ export function useCampaignFeed(
 
     result = [...result].sort((a, b) => {
       if (sortKey === 'institution-az') {
-        const an = a.institutionId ? institutionsById.get(a.institutionId)?.name ?? '' : '';
-        const bn = b.institutionId ? institutionsById.get(b.institutionId)?.name ?? '' : '';
+        const an = a.institutionId ? base.institutionsById.get(a.institutionId)?.name ?? '' : '';
+        const bn = b.institutionId ? base.institutionsById.get(b.institutionId)?.name ?? '' : '';
         if (!an && !bn) return 0;
         if (!an) return 1;
         if (!bn) return -1;
         return an.localeCompare(bn);
       }
       if (sortKey === 'neshama-az') {
-        const an = a.neshamaId ? neshamosById.get(a.neshamaId)?.name ?? '' : '';
-        const bn = b.neshamaId ? neshamosById.get(b.neshamaId)?.name ?? '' : '';
+        const an = a.neshamaId ? base.neshamosById.get(a.neshamaId)?.name ?? '' : '';
+        const bn = b.neshamaId ? base.neshamosById.get(b.neshamaId)?.name ?? '' : '';
         if (!an && !bn) return 0;
         if (!an) return 1;
         if (!bn) return -1;
         return an.localeCompare(bn);
       }
       if (sortKey === 'sefer-az') {
-        return firstSeferName(a, sefarimById).localeCompare(firstSeferName(b, sefarimById));
+        return firstSeferName(a, base.sefarimById).localeCompare(firstSeferName(b, base.sefarimById));
       }
       // "recommended" (default): campaigns that have gone longest without progress
       // toward their next 10% milestone surface first, nudging donors toward them.
@@ -148,18 +159,7 @@ export function useCampaignFeed(
     });
 
     return result;
-  }, [
-    allCampaigns,
-    filter,
-    isSearching,
-    searchQuery,
-    institutionsById,
-    neshamosById,
-    sefarimById,
-    institutionTypes,
-    seferTypes,
-    sortKey,
-  ]);
+  }, [base.campaigns, base.institutionsById, base.neshamosById, base.sefarimById, institutionTypes, seferTypes, sortKey]);
 
-  return { loading, campaigns, institutionsById, neshamosById, sefarimById };
+  return { ...base, campaigns };
 }

@@ -73,12 +73,17 @@ export async function assignDonationToCampaigns(
 ): Promise<CampaignAssignment[]> {
   const available = new Map<string, number>();
   const taggedByCampaign = new Map<string, Map<string, number>>();
+  const taggedByInstitution = new Map<string, Map<string, number>>();
   for (const item of input.items) {
     const key = keyFor(item.seferId, item.vendorId);
     if (item.campaignId) {
       const bucket = taggedByCampaign.get(item.campaignId) ?? new Map<string, number>();
       bucket.set(key, (bucket.get(key) ?? 0) + item.quantity);
       taggedByCampaign.set(item.campaignId, bucket);
+    } else if (item.requestedInstitutionId) {
+      const bucket = taggedByInstitution.get(item.requestedInstitutionId) ?? new Map<string, number>();
+      bucket.set(key, (bucket.get(key) ?? 0) + item.quantity);
+      taggedByInstitution.set(item.requestedInstitutionId, bucket);
     } else {
       available.set(key, (available.get(key) ?? 0) + item.quantity);
     }
@@ -114,6 +119,24 @@ export async function assignDonationToCampaigns(
   for (const [campaignId, bucket] of taggedByCampaign) {
     const campaign = campaignsById.get(campaignId);
     if (campaign) {
+      const assigned = applyToCampaign(campaign, bucket, Infinity);
+      if (assigned > 0) {
+        assignedByCampaign.set(campaign.id, (assignedByCampaign.get(campaign.id) ?? 0) + assigned);
+      }
+    }
+    for (const [key, qty] of bucket) {
+      if (qty > 0) available.set(key, (available.get(key) ?? 0) + qty);
+    }
+  }
+
+  // Pass 0.5: items where the donor picked a specific institution for that sefer
+  // (from the general Seforim shopping tab, not a specific campaign) go to any of
+  // that institution's active campaigns needing it, uncapped — same reasoning as
+  // Pass 0, just resolved at the institution level instead of one exact campaign.
+  // Leftover this institution can't currently absorb falls into the general pool.
+  for (const [institutionId, bucket] of taggedByInstitution) {
+    const targeted = campaigns.filter((c) => c.institutionId === institutionId);
+    for (const campaign of targeted) {
       const assigned = applyToCampaign(campaign, bucket, Infinity);
       if (assigned > 0) {
         assignedByCampaign.set(campaign.id, (assignedByCampaign.get(campaign.id) ?? 0) + assigned);

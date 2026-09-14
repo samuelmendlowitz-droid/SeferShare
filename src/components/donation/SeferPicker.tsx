@@ -18,6 +18,8 @@ export interface PickedItem {
   imageUrl?: string;
   /** Set when this item came from a specific campaign's page (see PushkaContext). */
   campaignId?: string;
+  /** Set when the donor picked a specific institution for this sefer at checkout. */
+  requestedInstitutionId?: string;
 }
 
 type SortKey = 'recommended' | 'az' | 'za';

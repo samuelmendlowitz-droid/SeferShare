@@ -22,10 +22,14 @@
     "dollarTotal": "סה\"כ ${{amount}}",
     "dollarProgress": "${{fulfilled}} מתוך ${{total}} נאספו",
     "empty": "אין עדיין קמפיינים. היו הראשונים להתחיל אחד!",
-    "fulfilled": "הושלם"
+    "fulfilled": "הושלם",
+    "mekomosEmpty": "אין עדיין מוסדות עם קמפיינים פעילים.",
+    "neshamosEmpty": "אין עדיין נשמות שהוקדשו.",
+    "seforimEmpty": "אין עדיין ספרים זמינים."
   },
   "campaign": {
     "create": "קמפיין חדש",
+    "campaignsHeading": "קמפיינים",
     "selectWhere": "בחרו מוסד",
     "selectWho": "הקדישו לעילוי נשמת",
     "selectSeforim": "בחרו ספרים",
@@ -52,7 +56,8 @@
     "message": "הודעת הקדשה (אופציונלי)",
     "liluyNishmat": "לע\"נ",
     "addNew": "הוספת נשמה",
-    "searchPlaceholder": "חיפוש נשמות…"
+    "searchPlaceholder": "חיפוש נשמות…",
+    "notFound": "הנשמה לא נמצאה."
   },
   "institution": {
     "name": "שם המוסד",
@@ -63,7 +68,8 @@
     "school": "בית ספר",
     "other": "אחר",
     "addNew": "הוספת מוסד",
-    "searchPlaceholder": "חיפוש מוסדות…"
+    "searchPlaceholder": "חיפוש מוסדות…",
+    "notFound": "המוסד לא נמצא."
   },
   "sefer": {
     "hebrewName": "שם בעברית",
@@ -100,7 +106,11 @@
     "includeAd": "הוספת מדבקת פרסום קטנה לעסק שלכם",
     "adBusinessName": "שם העסק",
     "adMessagePlaceholder": "הודעת פרסום קצרה (אופציונלי)",
-    "adSectionTitle": "פרסומת"
+    "adSectionTitle": "פרסומת",
+    "whichInstitutionTitle": "לאיזה מוסד להעביר את אלה?",
+    "whichInstitutionHint": "בחרו מוסד לכל ספר, או תנו לאלגוריתם לבחור היכן יש הכי הרבה צורך.",
+    "algorithmChoice": "לתת לאלגוריתם לבחור",
+    "noCampaignNeedsThis": "אף קמפיין לא זקוק לזה כרגע — זה יעבור לקופה הכללית."
   },
   "vendor": {
     "catalog": "קטלוג",

@@ -11,6 +11,8 @@ import { DonationConfirmationPage } from './pages/DonationConfirmationPage';
 import { CampaignCreatePage } from './pages/CampaignCreatePage';
 import { CampaignDetailPage } from './pages/CampaignDetailPage';
 import { CampaignEditPage } from './pages/CampaignEditPage';
+import { InstitutionDetailPage } from './pages/InstitutionDetailPage';
+import { NeshamaDetailPage } from './pages/NeshamaDetailPage';
 import { VendorPage } from './pages/VendorPage';
 import { AdminPage } from './pages/AdminPage';
 
@@ -69,6 +71,22 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <CampaignEditPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/institutions/:institutionId"
+                element={
+                  <RequireAuth>
+                    <InstitutionDetailPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/neshamos/:neshamaId"
+                element={
+                  <RequireAuth>
+                    <NeshamaDetailPage />
                   </RequireAuth>
                 }
               />

@@ -9,6 +9,9 @@ export interface DonationItem {
   priceEach: number;
   /** Set when added to the pushka straight from a campaign's page. */
   campaignId?: string;
+  /** Set when the donor picked a specific institution for this sefer at checkout
+   *  (items added generically from the Seforim shopping tab, not tied to a campaign). */
+  requestedInstitutionId?: string;
 }
 
 export interface CampaignAssignment {

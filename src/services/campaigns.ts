@@ -37,6 +37,22 @@ export async function getCampaign(campaignId: string): Promise<Campaign | null> 
   return snap.exists() ? { ...(snap.data() as Campaign), campaignId: snap.id } : null;
 }
 
+/** All of an institution's campaigns (any status) — for the institution detail page. */
+export async function listCampaignsByInstitution(institutionId: string): Promise<Campaign[]> {
+  const snap = await getDocs(
+    query(campaignsRef, where('institutionId', '==', institutionId), orderBy('createdAt', 'desc')),
+  );
+  return snap.docs.map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }));
+}
+
+/** All of a neshama's campaigns (any status) — for the neshama detail page. */
+export async function listCampaignsByNeshama(neshamaId: string): Promise<Campaign[]> {
+  const snap = await getDocs(
+    query(campaignsRef, where('neshamaId', '==', neshamaId), orderBy('createdAt', 'desc')),
+  );
+  return snap.docs.map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }));
+}
+
 export interface CreateCampaignInput {
   createdByUid: string;
   title?: string;

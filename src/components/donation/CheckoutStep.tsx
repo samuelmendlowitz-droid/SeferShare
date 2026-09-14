@@ -85,6 +85,7 @@ export function CheckoutStep({
           quantity: i.quantity,
           priceEach: i.price,
           ...(i.campaignId ? { campaignId: i.campaignId } : {}),
+          ...(i.requestedInstitutionId ? { requestedInstitutionId: i.requestedInstitutionId } : {}),
         })),
         requestedInstitutionId: institutionId,
         requestedNeshamaId: neshamaId,
