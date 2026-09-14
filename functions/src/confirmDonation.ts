@@ -4,6 +4,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { db } from './lib/firebaseAdmin';
 import { getStripe, stripeSecretKey, stripeWebhookSecret } from './lib/stripe';
 import { assignDonationToCampaigns } from './algorithm';
+import { assignStickerDedications } from './dedication';
 import { notify, notifyCampaigners } from './notify';
 import type { Donation, DonationItem, Order } from './types';
 
@@ -63,9 +64,12 @@ export const confirmDonation = onRequest(
       requestedNeshamaId: donation.requestedNeshamaId ?? undefined,
     });
 
+    const stickers = await assignStickerDedications(donation.items, donation.donorDedication);
+
     await donationRef.update({
       status: 'paid',
       campaignAssignments,
+      stickers,
     });
 
     const ordersByVendor = splitOrdersByVendor(donation.items);

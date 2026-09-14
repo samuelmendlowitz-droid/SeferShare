@@ -207,7 +207,7 @@ export function AdminPage() {
                   )
                 }
               />
-              {n.name} {n.hebrewName ? `· ${n.hebrewName}` : ''} ({n.campaignCount} campaigns)
+              {n.name} {n.hebrewName ? `· ${n.hebrewName}` : ''}
             </label>
           ))}
           <Button

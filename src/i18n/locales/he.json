@@ -35,7 +35,7 @@
     "selectSeforim": "בחרו ספרים",
     "shippingAddress": "כתובת למשלוח",
     "publish": "פרסום הקמפיין",
-    "atLeastOne": "בחרו לפחות מוסד או נשמה",
+    "institutionRequired": "לקמפיין חייב להיות מוסד",
     "atLeastOneItem": "הוסיפו לפחות ספר אחד",
     "titlePlaceholder": "כותרת הקמפיין",
     "titleRequired": "כותרת הקמפיין היא שדה חובה",
@@ -52,15 +52,20 @@
   "neshama": {
     "name": "שם",
     "hebrewName": "שם בעברית",
-    "relationship": "קרבה משפחתית (אופציונלי)",
-    "message": "הודעת הקדשה (אופציונלי)",
+    "son": "בן",
+    "daughter": "בת",
+    "fatherHebrewName": "שם האב המלא בעברית",
+    "seferTypesLabel": "אילו ספרים כדאי שאנשים יקדישו לזכרם?",
+    "stickerDefault": "ברירת המחדל למדבקה",
     "liluyNishmat": "לע\"נ",
     "addNew": "הוספת נשמה",
     "searchPlaceholder": "חיפוש נשמות…",
     "notFound": "הנשמה לא נמצאה.",
     "loadError": "אירעה שגיאה בטעינת הנשמה. נסו שוב.",
-    "noActiveCampaign": "אין קמפיין פעיל",
-    "donateInTheirName": "רוצים לתרום לעילוי נשמתם?",
+    "noActiveCampaign": "אין עדיין קמפיינים פעילים",
+    "chooseCampaign": "תרמו דרך קמפיין",
+    "chooseInstitution": "או תרמו ישירות למוסד",
+    "donateInTheirName": "תרמו לעילוי נשמתם",
     "donatingInMemoryOf": "תורמים לעילוי נשמת",
     "addedToPushka": "נוסף לפושקע שלכם."
   },
@@ -95,6 +100,10 @@
     "haggadah": "הגדה",
     "other": "אחר"
   },
+  "seforim": {
+    "selectInstitution": "לאיזה מוסד יועברו הספרים?",
+    "selectInstitutionHint": "בחרו מוסד למעלה כדי לעיין ולהוסיף ספרים עבורו."
+  },
   "donation": {
     "message": "הודעה לעורך הקמפיין (אופציונלי)",
     "checkout": "לתשלום",
@@ -108,18 +117,14 @@
     "stickerAuto": "{{campaignTitle}}: {{liluyNishmat}} {{name}} — יודפס על המדבקה",
     "stickerAutoPlain": "{{liluyNishmat}} {{name}} — יודפס על המדבקה",
     "yourDedicationTitle": "ההקדשה שלכם (למדבקה)",
-    "yourDedicationHint": "שם זה יודפס על המדבקה עבור ספרים שהקמפיין שלהם עדיין ללא הקדשה משלו.",
-    "addDedication": "הוספת הקדשה נוספת",
-    "additionalDedicationTitle": "הקדשה נוספת",
-    "additionalDedicationHint": "לא תודפס על מדבקה, אך תיזכר כלע\"נ.",
-    "removeDedication": "הסרת הקדשה",
+    "yourDedicationHint": "בחרו נשמה להדפסה על המדבקה עבור כל העגלה — אחרת כל ספר ישמור על ברירת המחדל של הקמפיין שלו, או שתיבחר עבורו נשמה.",
     "includeAd": "הוספת מדבקת פרסום קטנה לעסק שלכם",
     "adBusinessName": "שם העסק",
     "adMessagePlaceholder": "הודעת פרסום קצרה (אופציונלי)",
     "adSectionTitle": "פרסומת",
     "makeADonation": "לתרומה",
-    "whichInstitutionTitle": "לאיזה מוסד להעביר את זה?",
-    "algorithmChoice": "לתת לאלגוריתם לבחור"
+    "algorithmChoice": "לתת לאלגוריתם לבחור",
+    "algorithmWillChooseHint": "לא נבחרה הקדשה — עבור כל ספר תיבחר בעת התשלום הנשמה שממתינה הכי הרבה זמן להקדשה."
   },
   "vendor": {
     "catalog": "קטלוג",

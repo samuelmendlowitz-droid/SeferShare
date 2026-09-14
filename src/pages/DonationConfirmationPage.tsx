@@ -56,12 +56,12 @@ export function DonationConfirmationPage() {
             {t('neshama.liluyNishmat')} {donation.donorDedication.name}
           </p>
         )}
-        {donation.additionalDedications && donation.additionalDedications.length > 0 && (
+        {!donation.donorDedication?.name && donation.stickers && donation.stickers.length > 0 && (
           <div className="mt-2 text-left">
-            <p className="text-xs font-medium text-text-muted">{t('donation.additionalDedicationTitle')}</p>
-            {donation.additionalDedications.map((dedication, idx) => (
+            {donation.stickers.map((sticker, idx) => (
               <p key={idx} className="text-sm">
-                {t('neshama.liluyNishmat')} {dedication.name}
+                {sefarimById.get(sticker.seferId)?.englishName ?? sticker.seferId}: {t('neshama.liluyNishmat')}{' '}
+                {sticker.dedication.name}
               </p>
             ))}
           </div>

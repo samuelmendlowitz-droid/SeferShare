@@ -56,11 +56,13 @@ export async function mergeSefarim(primarySeferId: string, duplicateSeferId: str
 /** Reassigns campaigns pointing at the duplicate neshama, then deletes it (spec §13). */
 export async function mergeNeshamos(primaryNeshamaId: string, duplicateNeshamaId: string): Promise<void> {
   const campaignsSnap = await getDocs(
-    query(collection(db, 'campaigns'), where('neshamaId', '==', duplicateNeshamaId)),
+    query(collection(db, 'campaigns'), where('neshamaIds', 'array-contains', duplicateNeshamaId)),
   );
   const batch = writeBatch(db);
   campaignsSnap.docs.forEach((d) => {
-    batch.update(d.ref, { neshamaId: primaryNeshamaId });
+    const campaign = d.data() as Campaign;
+    const neshamaIds = [...new Set((campaign.neshamaIds ?? []).map((id) => (id === duplicateNeshamaId ? primaryNeshamaId : id)))];
+    batch.update(d.ref, { neshamaIds });
   });
   batch.delete(doc(db, 'neshamos', duplicateNeshamaId));
   await batch.commit();

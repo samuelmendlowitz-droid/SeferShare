@@ -9,6 +9,8 @@ import { getNeshama } from '../services/neshamos';
 import { listSefarim } from '../services/sefarim';
 import type { Campaign, Institution, Neshama, Sefer } from '../types';
 import { campaignDollarTotal } from '../lib/campaignMath';
+import { neshamaDedicationLine } from '../lib/neshamaFormat';
+import { useLanguage } from '../context/LanguageContext';
 import { ProgressBar } from '../components/campaign/ProgressBar';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -20,12 +22,13 @@ export function CampaignDetailPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const { showBilingual } = useLanguage();
   const pushka = usePushka();
   const { campaignId } = useParams();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [institution, setInstitution] = useState<Institution | null>(null);
-  const [neshama, setNeshama] = useState<Neshama | null>(null);
+  const [neshamas, setNeshamas] = useState<Neshama[]>([]);
   const [sefarimById, setSefarimById] = useState<Map<string, Sefer>>(new Map());
   const [stepQuantities, setStepQuantities] = useState<Record<string, number>>({});
 
@@ -38,8 +41,11 @@ export function CampaignDetailPage() {
         return;
       }
       setCampaign(c);
-      if (c.institutionId) setInstitution(await getInstitution(c.institutionId));
-      if (c.neshamaId) setNeshama(await getNeshama(c.neshamaId));
+      setInstitution(await getInstitution(c.institutionId));
+      if (c.neshamaIds?.length) {
+        const fetched = await Promise.all(c.neshamaIds.map((id) => getNeshama(id)));
+        setNeshamas(fetched.filter((n): n is Neshama => Boolean(n)));
+      }
       const sefarim = await listSefarim();
       setSefarimById(new Map(sefarim.map((s) => [s.seferId, s])));
     })();
@@ -92,8 +98,7 @@ export function CampaignDetailPage() {
         imageUrl: listing?.imageUrls?.[0],
         campaignId: campaign.campaignId,
         campaignTitle: campaign.title ?? undefined,
-        institutionId: campaign.institutionId ?? undefined,
-        neshamaId: campaign.neshamaId ?? undefined,
+        institutionId: campaign.institutionId,
       },
       qty,
     );
@@ -115,18 +120,18 @@ export function CampaignDetailPage() {
 
       <Card>
         {campaign.title && <h1 className="mb-1 text-lg font-bold">{campaign.title}</h1>}
-        {(institution || neshama) && (
+        {institution && (
           <p className="text-sm">
-            {institution && <span>{institution.name}</span>}
-            {institution && neshama && ' • '}
-            {neshama && (
-              <span className={institution ? 'text-text-muted' : ''}>
-                {t('neshama.liluyNishmat')} {neshama.name}
+            <span>{institution.name}</span>
+            {neshamas.length > 0 && ' • '}
+            {neshamas.length > 0 && (
+              <span className="text-text-muted">
+                {t('neshama.liluyNishmat')}{' '}
+                {neshamas.map((n) => neshamaDedicationLine(n, showBilingual)).join(', ')}
               </span>
             )}
           </p>
         )}
-        {neshama?.message && <p className="mt-1 text-sm italic text-text-muted">"{neshama.message}"</p>}
         {campaign.description && <p className="mt-3 text-sm text-text">{campaign.description}</p>}
 
         <div className="mt-4">

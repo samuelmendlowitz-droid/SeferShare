@@ -54,7 +54,6 @@ export function NeshamaDonatePage() {
           hebrewName: item.hebrewName,
           price: item.price,
           imageUrl: item.imageUrl,
-          neshamaId: neshama.neshamaId,
           institutionId,
         },
         item.quantity,
@@ -62,6 +61,21 @@ export function NeshamaDonatePage() {
     }
     setPicked([]);
     setAdded(true);
+  }
+
+  function goToPushka() {
+    if (!neshama) return;
+    navigate('/pushka', {
+      state: {
+        suggestedDedication: {
+          neshamaId: neshama.neshamaId,
+          name: neshama.name,
+          hebrewName: neshama.hebrewName,
+          parentGender: neshama.parentGender,
+          fatherHebrewName: neshama.fatherHebrewName,
+        },
+      },
+    });
   }
 
   return (
@@ -101,7 +115,7 @@ export function NeshamaDonatePage() {
           className="fixed inset-x-0 z-40 mx-auto max-w-2xl px-4"
           style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
         >
-          <Button className="w-full shadow-navbar" onClick={() => navigate('/pushka')}>
+          <Button className="w-full shadow-navbar" onClick={goToPushka}>
             {t('pushka.completeDonation', { count: pushka.totalCount, amount: pushka.totalPrice.toFixed(2) })}
           </Button>
         </div>

@@ -21,8 +21,8 @@ export interface Campaign {
   campaignId: string;
   createdByUid: string;
   title?: string | null;
-  institutionId?: string | null;
-  neshamaId?: string | null;
+  institutionId: string;
+  neshamaIds?: string[];
   items: CampaignItem[];
   shippingAddress: Address;
   status: CampaignStatus;
@@ -60,14 +60,35 @@ export interface CampaignAssignment {
 export interface DonationDedication {
   name: string;
   hebrewName?: string;
-  relationship?: string;
+  parentGender?: 'son' | 'daughter';
+  fatherHebrewName?: string;
   message?: string;
+}
+
+export interface Neshama {
+  neshamaId: string;
+  name: string;
+  hebrewName?: string;
+  parentGender: 'son' | 'daughter';
+  fatherHebrewName: string;
+  seferTypes?: string[];
+  seferIds?: string[];
+  lastDedicatedAt?: number;
+  createdAt: FirebaseFirestore.Timestamp;
 }
 
 /** A small ad sticker for the donor's own business, included alongside the dedication. */
 export interface DonationAd {
   businessName: string;
   message?: string;
+}
+
+export interface DonationSticker {
+  seferId: string;
+  vendorId: string;
+  copyIndex: number;
+  dedication: DonationDedication;
+  source: 'donor' | 'campaign' | 'algorithm';
 }
 
 export interface Donation {
@@ -79,9 +100,11 @@ export interface Donation {
   requestedNeshamaId?: string | null;
   campaignAssignments: CampaignAssignment[];
   donorMessage?: string | null;
-  // Sticker dedication for items whose campaign has no neshama of its own.
+  // One dedication for the whole cart — printed on every sticker when set; falls
+  // back per-item to that campaign's first neshama, or an algorithm pick, otherwise.
   donorDedication?: DonationDedication | null;
-  additionalDedications?: DonationDedication[];
+  // Per-physical-copy dedication, resolved at confirmDonation time (see dedication.ts).
+  stickers?: DonationSticker[];
   ad?: DonationAd | null;
   roundedUpFee: boolean;
   totalCharged: number;

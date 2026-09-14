@@ -25,7 +25,6 @@ export function useMekomosFeed(searchQuery: string, options: MekomosFeedOptions 
   const institutions = useMemo<InstitutionSummary[]>(() => {
     const byInstitution = new Map<string, Campaign[]>();
     for (const c of campaigns) {
-      if (!c.institutionId) continue;
       const list = byInstitution.get(c.institutionId) ?? [];
       list.push(c);
       byInstitution.set(c.institutionId, list);

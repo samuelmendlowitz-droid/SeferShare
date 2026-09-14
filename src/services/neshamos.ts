@@ -1,6 +1,6 @@
 import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { Neshama } from '../types';
+import type { Neshama, ParentGender, SeferType } from '../types';
 
 const neshamosRef = collection(db, 'neshamos');
 
@@ -14,9 +14,25 @@ export async function getNeshama(neshamaId: string): Promise<Neshama | null> {
   return snap.exists() ? { ...(snap.data() as Neshama), neshamaId: snap.id } : null;
 }
 
-export async function createNeshama(
-  input: Omit<Neshama, 'neshamaId' | 'createdAt' | 'campaignCount'>,
-): Promise<string> {
-  const docRef = await addDoc(neshamosRef, { ...input, campaignCount: 0, createdAt: serverTimestamp() });
+export interface CreateNeshamaInput {
+  name: string;
+  hebrewName?: string;
+  parentGender: ParentGender;
+  fatherHebrewName: string;
+  seferTypes?: SeferType[];
+  seferIds?: string[];
+}
+
+export async function createNeshama(input: CreateNeshamaInput): Promise<string> {
+  const docRef = await addDoc(neshamosRef, {
+    name: input.name,
+    hebrewName: input.hebrewName ?? null,
+    parentGender: input.parentGender,
+    fatherHebrewName: input.fatherHebrewName,
+    seferTypes: input.seferTypes ?? [],
+    seferIds: input.seferIds ?? [],
+    lastDedicatedAt: null,
+    createdAt: serverTimestamp(),
+  });
   return docRef.id;
 }

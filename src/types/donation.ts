@@ -1,3 +1,5 @@
+import type { ParentGender } from './neshama';
+
 export type DonationStatus = 'pending' | 'paid' | 'fulfilled' | 'refunded';
 
 export const DONATION_STATUSES: DonationStatus[] = ['pending', 'paid', 'fulfilled', 'refunded'];
@@ -23,7 +25,8 @@ export interface CampaignAssignment {
 export interface DonationDedication {
   name: string;
   hebrewName?: string;
-  relationship?: string;
+  parentGender?: ParentGender;
+  fatherHebrewName?: string;
   message?: string;
 }
 
@@ -31,6 +34,16 @@ export interface DonationDedication {
 export interface DonationAd {
   businessName: string;
   message?: string;
+}
+
+/** The dedication printed on one physical Sefer copy, resolved server-side at
+ *  confirmDonation time (see functions/src/dedication.ts). */
+export interface DonationSticker {
+  seferId: string;
+  vendorId: string;
+  copyIndex: number;
+  dedication: DonationDedication;
+  source: 'donor' | 'campaign' | 'algorithm';
 }
 
 export interface Donation {
@@ -47,11 +60,12 @@ export interface Donation {
   campaignAssignments: CampaignAssignment[];
 
   donorMessage?: string;
-  // Sticker dedication for items whose campaign has no neshama of its own (items
-  // whose campaign already carries a neshama always use that one instead).
+  // One dedication for the whole cart. When set, it's printed on every sticker;
+  // left blank, each item falls back to its own campaign's first neshama, or an
+  // algorithm-picked one when the campaign has none (see functions/src/algorithm.ts).
   donorDedication?: DonationDedication;
-  // Extra LI"N dedications the donor wants remembered but not printed on a sticker.
-  additionalDedications?: DonationDedication[];
+  // Per-physical-copy dedication, resolved at confirmDonation time.
+  stickers?: DonationSticker[];
   ad?: DonationAd;
   roundedUpFee: boolean;
   totalCharged: number;

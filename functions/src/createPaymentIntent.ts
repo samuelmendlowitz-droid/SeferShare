@@ -10,7 +10,6 @@ interface CreatePaymentIntentRequest {
   requestedNeshamaId?: string;
   donorMessage?: string;
   donorDedication?: DonationDedication;
-  additionalDedications?: DonationDedication[];
   ad?: DonationAd;
   roundedUpFee: boolean;
 }
@@ -50,7 +49,6 @@ export const createPaymentIntent = onCall<CreatePaymentIntentRequest>(
       requestedNeshamaId,
       donorMessage,
       donorDedication,
-      additionalDedications,
       ad,
       roundedUpFee,
     } = request.data;
@@ -69,7 +67,6 @@ export const createPaymentIntent = onCall<CreatePaymentIntentRequest>(
       campaignAssignments: [],
       donorMessage: donorMessage ?? null,
       donorDedication: donorDedication ?? null,
-      additionalDedications: additionalDedications ?? [],
       ad: ad ?? null,
       roundedUpFee,
       totalCharged,

@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import type { Campaign, Neshama, SeferType } from '../types';
-import { useCampaignFeedData } from './useCampaignFeed';
+import { useEffect, useMemo, useState } from 'react';
+import type { Neshama, SeferType } from '../types';
+import { listNeshamos } from '../services/neshamos';
 
-export type NeshamosSortKey = 'name-az' | 'size';
+export type NeshamosSortKey = 'recommended' | 'name-az';
 
 export interface NeshamosFeedOptions {
   seferTypes?: SeferType[];
@@ -11,55 +11,48 @@ export interface NeshamosFeedOptions {
 
 export interface NeshamaSummary {
   neshama: Neshama;
-  totalNeeded: number;
-  totalFulfilled: number;
-  seferTypes: SeferType[];
 }
 
-/** The Neshamas tab: people currently dedicated to at least one campaign, with the
- *  aggregate seforim requested l'iluy nishmasam across all of them. */
+/** The Neshamas tab: every neshama in the system — they're independent records now,
+ *  not tied to having an active campaign (a campaign is just one optional way to
+ *  donate in their honor; see NeshamaDetailPage). */
 export function useNeshamosFeed(searchQuery: string, options: NeshamosFeedOptions = {}) {
-  const { seferTypes = [], sortKey = 'name-az' } = options;
-  const { loading, campaigns, neshamosById, sefarimById } = useCampaignFeedData(searchQuery);
+  const { seferTypes = [], sortKey = 'recommended' } = options;
+  const [loading, setLoading] = useState(true);
+  const [allNeshamos, setAllNeshamos] = useState<Neshama[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    listNeshamos()
+      .then((n) => {
+        if (!cancelled) setAllNeshamos(n);
+      })
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const neshamas = useMemo<NeshamaSummary[]>(() => {
-    const byNeshama = new Map<string, Campaign[]>();
-    for (const c of campaigns) {
-      if (!c.neshamaId) continue;
-      const list = byNeshama.get(c.neshamaId) ?? [];
-      list.push(c);
-      byNeshama.set(c.neshamaId, list);
+    const q = searchQuery.trim().toLowerCase();
+    let list = allNeshamos;
+    if (q) {
+      list = list.filter((n) => n.name.toLowerCase().includes(q) || n.hebrewName?.includes(q));
     }
-
-    let result: NeshamaSummary[] = [];
-    for (const [neshamaId, campaignsForNeshama] of byNeshama) {
-      const neshama = neshamosById.get(neshamaId);
-      if (!neshama) continue;
-      let totalNeeded = 0;
-      let totalFulfilled = 0;
-      const types = new Set<SeferType>();
-      for (const c of campaignsForNeshama) {
-        totalNeeded += c.totalItemsNeeded;
-        totalFulfilled += c.totalItemsFulfilled;
-        for (const item of c.items) {
-          const sefer = sefarimById.get(item.seferId);
-          if (sefer) types.add(sefer.type);
-        }
-      }
-      result.push({ neshama, totalNeeded, totalFulfilled, seferTypes: [...types] });
-    }
-
     if (seferTypes.length > 0) {
-      result = result.filter((r) => r.seferTypes.some((type) => seferTypes.includes(type)));
+      list = list.filter((n) => (n.seferTypes ?? []).some((type) => seferTypes.includes(type)));
     }
 
-    result.sort((a, b) => {
-      if (sortKey === 'size') return b.totalNeeded - a.totalNeeded;
-      return a.neshama.name.localeCompare(b.neshama.name);
+    const sorted = [...list].sort((a, b) => {
+      if (sortKey === 'name-az') return a.name.localeCompare(b.name);
+      // "recommended" (default): neshamas that have gone longest without an
+      // algorithm-picked dedication surface first (never-dedicated first of all).
+      return (a.lastDedicatedAt ?? 0) - (b.lastDedicatedAt ?? 0);
     });
 
-    return result;
-  }, [campaigns, neshamosById, sefarimById, seferTypes, sortKey]);
+    return sorted.map((neshama) => ({ neshama }));
+  }, [allNeshamos, searchQuery, seferTypes, sortKey]);
 
   return { loading, neshamas };
 }

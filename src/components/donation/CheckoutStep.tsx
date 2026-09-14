@@ -14,7 +14,6 @@ interface CheckoutStepProps {
   neshamaId?: string;
   donorMessage?: string;
   donorDedication?: DonationDedication;
-  additionalDedications?: DonationDedication[];
   ad?: DonationAd;
   onPaid: (donationId: string) => void;
 }
@@ -61,7 +60,6 @@ export function CheckoutStep({
   neshamaId,
   donorMessage,
   donorDedication,
-  additionalDedications,
   ad,
   onPaid,
 }: CheckoutStepProps) {
@@ -91,7 +89,6 @@ export function CheckoutStep({
         requestedNeshamaId: neshamaId,
         donorMessage,
         donorDedication,
-        additionalDedications,
         ad,
         roundedUpFee: roundUp,
       });

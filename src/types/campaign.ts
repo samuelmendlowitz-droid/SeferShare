@@ -16,9 +16,10 @@ export interface Campaign {
   title?: string;
   description?: string;
 
-  // At least one of institutionId or neshamaId must be set (enforced at write time)
-  institutionId?: string; // Where
-  neshamaId?: string; // Who
+  institutionId: string; // Where — required; every campaign ships somewhere concrete.
+  // Neshamas are optional add-ons; the first one is the sticker default when the
+  // donor doesn't choose their own (see algorithm.ts for the no-neshama fallback).
+  neshamaIds?: string[]; // Who
 
   items: CampaignItem[]; // What
   shippingAddress: Address;

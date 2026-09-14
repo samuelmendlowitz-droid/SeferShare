@@ -16,7 +16,6 @@ export interface CreatePaymentIntentInput {
   requestedNeshamaId?: string;
   donorMessage?: string;
   donorDedication?: DonationDedication;
-  additionalDedications?: DonationDedication[];
   ad?: DonationAd;
   roundedUpFee: boolean;
 }

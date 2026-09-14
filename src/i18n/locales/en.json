@@ -35,7 +35,7 @@
     "selectSeforim": "Select seforim",
     "shippingAddress": "Shipping address",
     "publish": "Publish campaign",
-    "atLeastOne": "Select at least an institution or a neshama",
+    "institutionRequired": "A campaign must have an institution",
     "atLeastOneItem": "Add at least one sefer",
     "titlePlaceholder": "Campaign title",
     "titleRequired": "Campaign title is required",
@@ -52,15 +52,20 @@
   "neshama": {
     "name": "Name",
     "hebrewName": "Hebrew name",
-    "relationship": "Relationship (optional)",
-    "message": "Dedication message (optional)",
+    "son": "Son (בן)",
+    "daughter": "Daughter (בת)",
+    "fatherHebrewName": "Father's full Hebrew name",
+    "seferTypesLabel": "Which seforim should people dedicate in their honor?",
+    "stickerDefault": "Sticker default",
     "liluyNishmat": "LI\"N",
     "addNew": "Add neshama",
     "searchPlaceholder": "Search neshamos…",
     "notFound": "This neshama couldn't be found.",
     "loadError": "Something went wrong loading this neshama. Please try again.",
-    "noActiveCampaign": "No active campaign",
-    "donateInTheirName": "Would you like to make a donation in their name?",
+    "noActiveCampaign": "No active campaigns yet",
+    "chooseCampaign": "Donate through a campaign",
+    "chooseInstitution": "Or donate directly to an institution",
+    "donateInTheirName": "Make a donation in their name",
     "donatingInMemoryOf": "Donating in memory of",
     "addedToPushka": "Added to your pushka."
   },
@@ -95,6 +100,10 @@
     "haggadah": "Haggadah",
     "other": "Other"
   },
+  "seforim": {
+    "selectInstitution": "Which institution should receive these?",
+    "selectInstitutionHint": "Pick an institution above to browse and add seforim for them."
+  },
   "donation": {
     "message": "Message to campaigner (optional)",
     "checkout": "Checkout",
@@ -108,18 +117,14 @@
     "stickerAuto": "{{campaignTitle}}: {{liluyNishmat}} {{name}} — printed on the sticker",
     "stickerAutoPlain": "{{liluyNishmat}} {{name}} — printed on the sticker",
     "yourDedicationTitle": "Your dedication (for the sticker)",
-    "yourDedicationHint": "This name is printed on the sticker for seforim whose campaign doesn't already have one.",
-    "addDedication": "Add another dedication",
-    "additionalDedicationTitle": "Additional dedication",
-    "additionalDedicationHint": "Not printed on a sticker, but remembered as LI\"N.",
-    "removeDedication": "Remove dedication",
+    "yourDedicationHint": "Pick a neshama to print on the sticker for the whole cart — otherwise each sefer keeps its own campaign's default, or gets one chosen for it.",
     "includeAd": "Add a small ad sticker for your business",
     "adBusinessName": "Business name",
     "adMessagePlaceholder": "Short ad message (optional)",
     "adSectionTitle": "Ad",
     "makeADonation": "Make a donation",
-    "whichInstitutionTitle": "Which institution should get this?",
-    "algorithmChoice": "Let the algorithm choose"
+    "algorithmChoice": "Let the algorithm choose",
+    "algorithmWillChooseHint": "No dedication chosen — a neshama waiting longest for one will be picked for each sefer at checkout."
   },
   "vendor": {
     "catalog": "Catalog",

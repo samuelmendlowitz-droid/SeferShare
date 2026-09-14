@@ -3,24 +3,22 @@ import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import { useNeshamaSearch } from '../../hooks/useNeshamaSearch';
+import type { Neshama } from '../../types';
 import { FilterSortSheet, type SortOption } from '../layout/FilterSortSheet';
 import { Modal } from '../ui/Modal';
-import { Button } from '../ui/Button';
-import { NeshamaCreateForm } from './NeshamaCreateForm';
-import { FilterIcon, PlusIcon, CloseIcon } from '../ui/icons';
+import { NeshamaCreateForm } from '../shared/NeshamaCreateForm';
+import { FilterIcon, PlusIcon } from '../ui/icons';
 
-interface NeshamaPickerProps {
-  /** Selected neshamaIds, in the order added — the first is the sticker default
-   *  when the donor doesn't choose their own at checkout. */
-  values: string[];
-  onChange: (values: string[]) => void;
+interface CartDedicationPickerProps {
+  value?: string;
+  onChange: (neshamaId: string | undefined, neshama?: Neshama) => void;
 }
 
-/** Multi-select: a campaign can carry any number of neshamas as optional add-ons. */
-export function NeshamaPicker({ values, onChange }: NeshamaPickerProps) {
+/** Single-select neshama picker for the pushka's one cart-wide dedication. */
+export function CartDedicationPicker({ value, onChange }: CartDedicationPickerProps) {
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
-  const { neshamos, query, setQuery, sortKey, setSortKey, results, addCreated } = useNeshamaSearch();
+  const { query, setQuery, sortKey, setSortKey, results, addCreated } = useNeshamaSearch();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -31,31 +29,8 @@ export function NeshamaPicker({ values, onChange }: NeshamaPickerProps) {
   ];
   const filtersActive = sortKey !== 'recommended';
 
-  function toggle(neshamaId: string) {
-    onChange(values.includes(neshamaId) ? values.filter((id) => id !== neshamaId) : [...values, neshamaId]);
-  }
-
-  const selectedNeshamas = values.map((id) => neshamos.find((n) => n.neshamaId === id)).filter((n) => n != null);
-
   return (
     <div className="rounded-btn border border-border">
-      {selectedNeshamas.length > 0 && (
-        <div className="flex flex-wrap gap-2 border-b border-border p-2">
-          {selectedNeshamas.map((n, idx) => (
-            <span
-              key={n.neshamaId}
-              className="flex items-center gap-1 rounded-pill bg-accent px-3 py-1.5 text-xs font-medium text-white"
-            >
-              {idx === 0 && <span className="opacity-80">{t('neshama.stickerDefault')} · </span>}
-              {n.name}
-              <button type="button" onClick={() => toggle(n.neshamaId)} aria-label={t('actions.delete') ?? ''}>
-                <CloseIcon width={12} height={12} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
       <div className="flex items-center gap-2 border-b border-border p-2">
         <input
           value={query}
@@ -87,12 +62,12 @@ export function NeshamaPicker({ values, onChange }: NeshamaPickerProps) {
       <div className="max-h-56 overflow-y-auto p-2">
         {results.length === 0 && <p className="p-2 text-sm text-text-muted">{t('actions.noResults')}</p>}
         {results.map((n) => {
-          const selected = values.includes(n.neshamaId);
+          const selected = value === n.neshamaId;
           return (
             <button
               key={n.neshamaId}
               type="button"
-              onClick={() => toggle(n.neshamaId)}
+              onClick={() => onChange(selected ? undefined : n.neshamaId, selected ? undefined : n)}
               className={`mb-1 flex w-full items-center justify-between rounded-btn px-3 py-2 text-left text-sm last:mb-0 ${
                 selected ? 'bg-accent text-white' : 'hover:bg-bg'
               }`}
@@ -119,7 +94,7 @@ export function NeshamaPicker({ values, onChange }: NeshamaPickerProps) {
         <NeshamaCreateForm
           onCreated={(created) => {
             addCreated(created);
-            onChange([...values, created.neshamaId]);
+            onChange(created.neshamaId, created);
             setModalOpen(false);
           }}
         />

@@ -152,7 +152,7 @@ export async function assignDonationToCampaigns(
     const targeted = campaigns.filter(
       (c) =>
         (input.requestedInstitutionId && c.institutionId === input.requestedInstitutionId) ||
-        (input.requestedNeshamaId && c.neshamaId === input.requestedNeshamaId),
+        (input.requestedNeshamaId && c.neshamaIds?.includes(input.requestedNeshamaId)),
     );
     for (const campaign of targeted) {
       if (totalRemaining() <= 0) break;

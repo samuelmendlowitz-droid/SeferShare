@@ -4,17 +4,18 @@ import { useNavigate } from 'react-router-dom';
 import type { Campaign, Institution, Neshama, Sefer } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { campaignDollarFulfilled, campaignDollarTotal } from '../../lib/campaignMath';
+import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import { Card } from '../ui/Card';
 import { ProgressBar } from './ProgressBar';
 
 interface CampaignCardProps {
   campaign: Campaign;
   institution?: Institution;
-  neshama?: Neshama;
+  neshamas?: Neshama[];
   sefarimById: Map<string, Sefer>;
 }
 
-export function CampaignCard({ campaign, institution, neshama, sefarimById }: CampaignCardProps) {
+export function CampaignCard({ campaign, institution, neshamas = [], sefarimById }: CampaignCardProps) {
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export function CampaignCard({ campaign, institution, neshama, sefarimById }: Ca
     >
       {campaign.title && <p className="mb-1 text-base font-semibold">{campaign.title}</p>}
 
-      {(institution || neshama) && (
+      {(institution || neshamas.length > 0) && (
         <p className="text-sm text-text">
           {institution && (
             <span>
@@ -45,11 +46,10 @@ export function CampaignCard({ campaign, institution, neshama, sefarimById }: Ca
               {showBilingual && institution.hebrewName ? ` · ${institution.hebrewName}` : ''}
             </span>
           )}
-          {institution && neshama && ' • '}
-          {neshama && (
+          {institution && neshamas.length > 0 && ' • '}
+          {neshamas.length > 0 && (
             <span className={institution ? 'text-text-muted' : ''}>
-              {t('neshama.liluyNishmat')} {neshama.name}
-              {showBilingual && neshama.hebrewName ? ` · ${neshama.hebrewName}` : ''}
+              {t('neshama.liluyNishmat')} {neshamas.map((n) => neshamaDedicationLine(n, showBilingual)).join(', ')}
             </span>
           )}
         </p>

@@ -60,7 +60,7 @@ export function useMyCampaignsFeed(
   }, [myCampaigns, institutionsById]);
 
   const availableNeshamas = useMemo(() => {
-    const ids = new Set(myCampaigns.map((c) => c.neshamaId).filter((id): id is string => Boolean(id)));
+    const ids = new Set(myCampaigns.flatMap((c) => c.neshamaIds ?? []));
     return [...ids].map((id) => neshamosById.get(id)).filter((n): n is Neshama => Boolean(n));
   }, [myCampaigns, neshamosById]);
 
@@ -76,7 +76,7 @@ export function useMyCampaignsFeed(
   }, [myCampaigns, sefarimById]);
 
   const hasInstitutionCampaigns = myCampaigns.some((c) => !!c.institutionId);
-  const hasNeshamaCampaigns = myCampaigns.some((c) => !!c.neshamaId);
+  const hasNeshamaCampaigns = myCampaigns.some((c) => (c.neshamaIds ?? []).length > 0);
 
   const campaigns = useMemo(() => {
     let result = myCampaigns;
@@ -85,7 +85,7 @@ export function useMyCampaignsFeed(
       result = result.filter((c) => c.institutionId && filters.institutionIds.includes(c.institutionId));
     }
     if (filters.neshamaIds.length > 0) {
-      result = result.filter((c) => c.neshamaId && filters.neshamaIds.includes(c.neshamaId));
+      result = result.filter((c) => (c.neshamaIds ?? []).some((id) => filters.neshamaIds.includes(id)));
     }
     if (filters.seferTypes.length > 0) {
       result = result.filter((c) =>
@@ -106,8 +106,8 @@ export function useMyCampaignsFeed(
         return an.localeCompare(bn);
       }
       if (sortKey === 'neshama-az') {
-        const an = a.neshamaId ? neshamosById.get(a.neshamaId)?.name ?? '' : '';
-        const bn = b.neshamaId ? neshamosById.get(b.neshamaId)?.name ?? '' : '';
+        const an = a.neshamaIds?.[0] ? neshamosById.get(a.neshamaIds[0])?.name ?? '' : '';
+        const bn = b.neshamaIds?.[0] ? neshamosById.get(b.neshamaIds[0])?.name ?? '' : '';
         if (!an && !bn) return 0;
         if (!an) return 1;
         if (!bn) return -1;

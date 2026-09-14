@@ -14,7 +14,6 @@ export interface PushkaItem {
   campaignId?: string;
   campaignTitle?: string;
   institutionId?: string;
-  neshamaId?: string;
 }
 
 export type NewPushkaItem = Omit<PushkaItem, 'quantity'>;

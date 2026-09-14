@@ -24,7 +24,7 @@ export function CampaignCreatePage() {
   const [description, setDescription] = useState('');
   const [institutionId, setInstitutionId] = useState<string>();
   const [institution, setInstitution] = useState<Institution>();
-  const [neshamaId, setNeshamaId] = useState<string>();
+  const [neshamaIds, setNeshamaIds] = useState<string[]>([]);
   const [items, setItems] = useState<PickedItem[]>([]);
   const [addressDiffers, setAddressDiffers] = useState(false);
   const [customAddress, setCustomAddress] = useState<Address>(EMPTY_ADDRESS);
@@ -36,10 +36,6 @@ export function CampaignCreatePage() {
     setInstitution(inst);
   }
 
-  function handleNeshamaChange(id: string | undefined) {
-    setNeshamaId(id);
-  }
-
   const showAddressForm = addressDiffers || !institution;
 
   async function handlePublish() {
@@ -49,8 +45,8 @@ export function CampaignCreatePage() {
       setError(t('campaign.titleRequired'));
       return;
     }
-    if (!institutionId && !neshamaId) {
-      setError(t('campaign.atLeastOne'));
+    if (!institutionId) {
+      setError(t('campaign.institutionRequired'));
       return;
     }
     if (items.length === 0) {
@@ -65,7 +61,7 @@ export function CampaignCreatePage() {
         title: title.trim(),
         description: description || undefined,
         institutionId,
-        neshamaId,
+        neshamaIds,
         items: items.map((i) => ({
           seferId: i.seferId,
           vendorId: i.vendorId,
@@ -114,7 +110,7 @@ export function CampaignCreatePage() {
 
       <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWho')}</p>
       <div className="mb-4">
-        <NeshamaPicker value={neshamaId} onChange={handleNeshamaChange} />
+        <NeshamaPicker values={neshamaIds} onChange={setNeshamaIds} />
       </div>
 
       <h2 className="mb-2 text-base font-semibold">{t('campaign.selectSeforim')}</h2>

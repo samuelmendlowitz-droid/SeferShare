@@ -7,6 +7,7 @@ import { CampaignCard } from '../components/campaign/CampaignCard';
 import { InstitutionSummaryCard } from '../components/home/InstitutionSummaryCard';
 import { NeshamaSummaryCard } from '../components/home/NeshamaSummaryCard';
 import { SeforimShopList } from '../components/home/SeforimShopList';
+import { InstitutionPicker } from '../components/shared/InstitutionPicker';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { useCampaignFeed, type HomeSortKey } from '../hooks/useCampaignFeed';
 import { useMekomosFeed, type MekomosSortKey } from '../hooks/useMekomosFeed';
@@ -44,9 +45,9 @@ export function HomePage() {
     sortKey: mekomosSort,
   });
 
-  // Neshamas tab: people currently dedicated to campaigns
+  // Neshamas tab: every neshama in the system
   const [neshamosSeferTypes, setNeshamosSeferTypes] = useState<SeferType[]>([]);
-  const [neshamosSort, setNeshamosSort] = useState<NeshamosSortKey>('name-az');
+  const [neshamosSort, setNeshamosSort] = useState<NeshamosSortKey>('recommended');
   const neshamosFeed = useNeshamosFeed(searchQuery, {
     seferTypes: neshamosSeferTypes,
     sortKey: neshamosSort,
@@ -55,6 +56,7 @@ export function HomePage() {
   // Seforim tab: a shopping-style browse of the whole catalog
   const [seforimSeferTypes, setSeforimSeferTypes] = useState<SeferType[]>([]);
   const [seforimSort, setSeforimSort] = useState<SeforimShopSortKey>('name-az');
+  const [seforimInstitutionId, setSeforimInstitutionId] = useState<string | undefined>();
   const seforimFeed = useSeforimShopFeed(searchQuery, {
     seferTypes: seforimSeferTypes,
     sortKey: seforimSort,
@@ -132,14 +134,17 @@ export function HomePage() {
       onToggleFilter: (groupKey, value) => {
         if (groupKey === 'seferType') setNeshamosSeferTypes((prev) => toggleValue(prev, value as SeferType));
       },
-      sortOptions: nameAndSizeSortOptions,
+      sortOptions: [
+        { value: 'recommended', label: t('filterSort.sortRecommended') },
+        { value: 'name-az', label: t('filterSort.sortNameAZ') },
+      ],
       sortValue: neshamosSort,
       onSortChange: (v) => setNeshamosSort(v as NeshamosSortKey),
       onReset: () => {
         setNeshamosSeferTypes([]);
-        setNeshamosSort('name-az');
+        setNeshamosSort('recommended');
       },
-      active: neshamosSeferTypes.length > 0 || neshamosSort !== 'name-az',
+      active: neshamosSeferTypes.length > 0 || neshamosSort !== 'recommended',
     },
     what: {
       filterGroups: [seferTypeFilterGroup],
@@ -185,8 +190,10 @@ export function HomePage() {
               <CampaignCard
                 key={campaign.campaignId}
                 campaign={campaign}
-                institution={campaign.institutionId ? allFeed.institutionsById.get(campaign.institutionId) : undefined}
-                neshama={campaign.neshamaId ? allFeed.neshamosById.get(campaign.neshamaId) : undefined}
+                institution={allFeed.institutionsById.get(campaign.institutionId)}
+                neshamas={(campaign.neshamaIds ?? [])
+                  .map((id) => allFeed.neshamosById.get(id))
+                  .filter((n): n is NonNullable<typeof n> => Boolean(n))}
                 sefarimById={allFeed.sefarimById}
               />
             ))
@@ -214,14 +221,26 @@ export function HomePage() {
             ))
           ))}
 
-        {filter === 'what' &&
-          (seforimFeed.loading ? (
-            <LoadingSpinner />
-          ) : seforimFeed.items.length === 0 ? (
-            <p className="text-text-muted">{t('home.seforimEmpty')}</p>
-          ) : (
-            <SeforimShopList items={seforimFeed.items} />
-          ))}
+        {filter === 'what' && (
+          <>
+            <div className="mb-3">
+              <p className="mb-1 text-sm font-medium">{t('seforim.selectInstitution')}</p>
+              <InstitutionPicker
+                value={seforimInstitutionId}
+                onChange={(id) => setSeforimInstitutionId(id)}
+              />
+            </div>
+            {!seforimInstitutionId ? (
+              <p className="text-text-muted">{t('seforim.selectInstitutionHint')}</p>
+            ) : seforimFeed.loading ? (
+              <LoadingSpinner />
+            ) : seforimFeed.items.length === 0 ? (
+              <p className="text-text-muted">{t('home.seforimEmpty')}</p>
+            ) : (
+              <SeforimShopList items={seforimFeed.items} institutionId={seforimInstitutionId} />
+            )}
+          </>
+        )}
       </AppLayout>
 
       <FilterSortSheet

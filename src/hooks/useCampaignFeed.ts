@@ -81,13 +81,14 @@ export function useCampaignFeedData(searchQuery: string): CampaignFeedBase {
     if (isSearching) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter((c) => {
-        const institution = c.institutionId ? institutionsById.get(c.institutionId) : undefined;
-        const neshama = c.neshamaId ? neshamosById.get(c.neshamaId) : undefined;
+        const institution = institutionsById.get(c.institutionId);
+        const neshamas = (c.neshamaIds ?? []).map((id) => neshamosById.get(id)).filter((n): n is Neshama => Boolean(n));
         const matchesInstitution =
           institution &&
           (institution.name.toLowerCase().includes(q) || institution.hebrewName?.includes(q));
-        const matchesNeshama =
-          neshama && (neshama.name.toLowerCase().includes(q) || neshama.hebrewName?.includes(q));
+        const matchesNeshama = neshamas.some(
+          (neshama) => neshama.name.toLowerCase().includes(q) || neshama.hebrewName?.includes(q),
+        );
         const matchesSefer = c.items.some((item) => {
           const sefer = sefarimById.get(item.seferId);
           return (
@@ -135,16 +136,13 @@ export function useCampaignFeed(searchQuery: string, options: CampaignFeedOption
 
     result = [...result].sort((a, b) => {
       if (sortKey === 'institution-az') {
-        const an = a.institutionId ? base.institutionsById.get(a.institutionId)?.name ?? '' : '';
-        const bn = b.institutionId ? base.institutionsById.get(b.institutionId)?.name ?? '' : '';
-        if (!an && !bn) return 0;
-        if (!an) return 1;
-        if (!bn) return -1;
+        const an = base.institutionsById.get(a.institutionId)?.name ?? '';
+        const bn = base.institutionsById.get(b.institutionId)?.name ?? '';
         return an.localeCompare(bn);
       }
       if (sortKey === 'neshama-az') {
-        const an = a.neshamaId ? base.neshamosById.get(a.neshamaId)?.name ?? '' : '';
-        const bn = b.neshamaId ? base.neshamosById.get(b.neshamaId)?.name ?? '' : '';
+        const an = a.neshamaIds?.[0] ? base.neshamosById.get(a.neshamaIds[0])?.name ?? '' : '';
+        const bn = b.neshamaIds?.[0] ? base.neshamosById.get(b.neshamaIds[0])?.name ?? '' : '';
         if (!an && !bn) return 0;
         if (!an) return 1;
         if (!bn) return -1;

@@ -9,9 +9,10 @@ import { MinusIcon, PlusIcon } from '../ui/icons';
 
 interface SeforimShopListProps {
   items: SeforimShopItem[];
+  institutionId: string;
 }
 
-export function SeforimShopList({ items }: SeforimShopListProps) {
+export function SeforimShopList({ items, institutionId }: SeforimShopListProps) {
   const { t } = useTranslation();
   const pushka = usePushka();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -36,6 +37,7 @@ export function SeforimShopList({ items }: SeforimShopListProps) {
         hebrewName: item.sefer.hebrewName,
         price: item.listing.price,
         imageUrl: item.listing.imageUrls?.[0],
+        institutionId,
       },
       quantityFor(itemKey),
     );

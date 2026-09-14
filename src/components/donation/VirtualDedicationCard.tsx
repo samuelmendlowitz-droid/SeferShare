@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { DonationAd, DonationDedication } from '../../types';
+import type { DonationAd } from '../../types';
 import type { PickedItem } from './SeferPicker';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -9,19 +9,16 @@ export interface StickerInfo {
   label: string;
   name: string;
   hebrewName?: string;
-  relationship?: string;
-  message?: string;
 }
 
 interface VirtualDedicationCardProps {
   donorName: string;
   items: PickedItem[];
   stickers: StickerInfo[];
-  additionalDedications?: DonationDedication[];
   ad?: DonationAd;
 }
 
-export function VirtualDedicationCard({ donorName, items, stickers, additionalDedications, ad }: VirtualDedicationCardProps) {
+export function VirtualDedicationCard({ donorName, items, stickers, ad }: VirtualDedicationCardProps) {
   const { t } = useTranslation();
 
   return (
@@ -38,20 +35,7 @@ export function VirtualDedicationCard({ donorName, items, stickers, additionalDe
                 {t('neshama.liluyNishmat')} {sticker.name}
                 {sticker.hebrewName ? ` · ${sticker.hebrewName}` : ''}
               </p>
-              {sticker.message && <p className="mt-1 text-sm italic text-text-muted">"{sticker.message}"</p>}
             </div>
-          ))}
-        </div>
-      )}
-
-      {additionalDedications && additionalDedications.length > 0 && (
-        <div className="mt-3 text-left">
-          <p className="text-xs font-medium text-text-muted">{t('donation.additionalDedicationTitle')}</p>
-          {additionalDedications.map((dedication, idx) => (
-            <p key={idx} className="text-sm">
-              {t('neshama.liluyNishmat')} {dedication.name}
-              {dedication.hebrewName ? ` · ${dedication.hebrewName}` : ''}
-            </p>
           ))}
         </div>
       )}

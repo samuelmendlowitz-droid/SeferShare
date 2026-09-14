@@ -49,9 +49,9 @@ export async function listCampaignsByInstitution(institutionId: string): Promise
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
-/** All of a neshama's campaigns (any status) — for the neshama detail page. See above re: sorting. */
+/** All of a neshama's campaigns (any status) — for the neshama donate chooser. See above re: sorting. */
 export async function listCampaignsByNeshama(neshamaId: string): Promise<Campaign[]> {
-  const snap = await getDocs(query(campaignsRef, where('neshamaId', '==', neshamaId)));
+  const snap = await getDocs(query(campaignsRef, where('neshamaIds', 'array-contains', neshamaId)));
   return snap.docs
     .map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }))
     .sort((a, b) => b.createdAt - a.createdAt);
@@ -61,16 +61,16 @@ export interface CreateCampaignInput {
   createdByUid: string;
   title?: string;
   description?: string;
-  institutionId?: string;
-  neshamaId?: string;
+  institutionId: string;
+  neshamaIds?: string[];
   items: Omit<CampaignItem, 'quantityFulfilled'>[];
   shippingAddress: Campaign['shippingAddress'];
   language: Campaign['language'];
 }
 
 export async function createCampaign(input: CreateCampaignInput): Promise<string> {
-  if (!input.institutionId && !input.neshamaId) {
-    throw new Error('A campaign must have at least an institution or a neshama');
+  if (!input.institutionId) {
+    throw new Error('A campaign must have an institution');
   }
   if (input.items.length === 0) {
     throw new Error('A campaign must have at least one item');
@@ -83,8 +83,8 @@ export async function createCampaign(input: CreateCampaignInput): Promise<string
     createdByUid: input.createdByUid,
     title: input.title ?? null,
     description: input.description ?? null,
-    institutionId: input.institutionId ?? null,
-    neshamaId: input.neshamaId ?? null,
+    institutionId: input.institutionId,
+    neshamaIds: input.neshamaIds ?? [],
     items,
     shippingAddress: input.shippingAddress,
     status: 'active',
@@ -107,8 +107,8 @@ export async function deleteCampaign(campaignId: string): Promise<void> {
 export interface UpdateCampaignInput {
   title?: string;
   description?: string;
-  institutionId?: string;
-  neshamaId?: string;
+  institutionId: string;
+  neshamaIds?: string[];
   items: CampaignItem[];
   shippingAddress: Campaign['shippingAddress'];
   language: Campaign['language'];
@@ -120,8 +120,8 @@ export interface UpdateCampaignInput {
  * Firestore rule for campaigns rejects an owner update that changes them.
  */
 export async function updateCampaign(campaignId: string, input: UpdateCampaignInput): Promise<void> {
-  if (!input.institutionId && !input.neshamaId) {
-    throw new Error('A campaign must have at least an institution or a neshama');
+  if (!input.institutionId) {
+    throw new Error('A campaign must have an institution');
   }
   if (input.items.length === 0) {
     throw new Error('A campaign must have at least one item');
@@ -133,8 +133,8 @@ export async function updateCampaign(campaignId: string, input: UpdateCampaignIn
   await updateDoc(doc(db, 'campaigns', campaignId), {
     title: input.title ?? null,
     description: input.description ?? null,
-    institutionId: input.institutionId ?? null,
-    neshamaId: input.neshamaId ?? null,
+    institutionId: input.institutionId,
+    neshamaIds: input.neshamaIds ?? [],
     items: input.items,
     shippingAddress: input.shippingAddress,
     totalItemsNeeded,

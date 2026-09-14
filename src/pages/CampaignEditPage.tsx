@@ -40,7 +40,7 @@ export function CampaignEditPage() {
   const [description, setDescription] = useState('');
   const [institutionId, setInstitutionId] = useState<string>();
   const [institution, setInstitution] = useState<Institution>();
-  const [neshamaId, setNeshamaId] = useState<string>();
+  const [neshamaIds, setNeshamaIds] = useState<string[]>([]);
   const [existingItems, setExistingItems] = useState<CampaignItem[]>([]);
   const [newItems, setNewItems] = useState<PickedItem[]>([]);
   const [addressDiffers, setAddressDiffers] = useState(false);
@@ -67,7 +67,7 @@ export function CampaignEditPage() {
       setTitle(c.title ?? '');
       setDescription(c.description ?? '');
       setInstitutionId(c.institutionId ?? undefined);
-      setNeshamaId(c.neshamaId ?? undefined);
+      setNeshamaIds(c.neshamaIds ?? []);
       setExistingItems(c.items);
       setCustomAddress(c.shippingAddress);
 
@@ -107,10 +107,6 @@ export function CampaignEditPage() {
     setInstitution(inst);
   }
 
-  function handleNeshamaChange(id: string | undefined) {
-    setNeshamaId(id);
-  }
-
   function updateExistingQuantity(index: number, quantity: number) {
     setExistingItems((prev) =>
       prev.map((item, i) => (i === index ? { ...item, quantity: Math.max(item.quantityFulfilled, quantity) } : item)),
@@ -130,8 +126,8 @@ export function CampaignEditPage() {
       setError(t('campaign.titleRequired'));
       return;
     }
-    if (!institutionId && !neshamaId) {
-      setError(t('campaign.atLeastOne'));
+    if (!institutionId) {
+      setError(t('campaign.institutionRequired'));
       return;
     }
     if (existingItems.length === 0 && newItems.length === 0) {
@@ -164,7 +160,7 @@ export function CampaignEditPage() {
         title: title.trim(),
         description: description || undefined,
         institutionId,
-        neshamaId,
+        neshamaIds,
         items: merged,
         shippingAddress,
         language: campaign.language,
@@ -208,7 +204,7 @@ export function CampaignEditPage() {
 
       <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWho')}</p>
       <div className="mb-4">
-        <NeshamaPicker value={neshamaId} onChange={handleNeshamaChange} />
+        <NeshamaPicker values={neshamaIds} onChange={setNeshamaIds} />
       </div>
 
       <h2 className="mb-2 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
