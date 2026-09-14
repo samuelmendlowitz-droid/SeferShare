@@ -56,6 +56,17 @@ export interface CampaignAssignment {
   itemsFulfilled: number;
 }
 
+/** A monetary gift card given to an institution instead of specific seforim — adds
+ *  straight to that institution's giftCardBalance (see confirmDonation.ts and
+ *  spendInstitutionBalance.ts). Never carries a dedication of its own. */
+export interface DonationGiftCard {
+  institutionId: string;
+  institutionName?: string;
+  campaignId?: string;
+  campaignTitle?: string;
+  amount: number;
+}
+
 /** A named LI"N dedication the donor adds at checkout. */
 export interface DonationDedication {
   name: string;
@@ -94,8 +105,12 @@ export interface DonationSticker {
 export interface Donation {
   donationId: string;
   donorUid: string;
-  stripePaymentIntentId: string;
+  stripePaymentIntentId: string | null;
+  /** 'giftCardBalance' when an institution paid out of its own balance rather than
+   *  a donor paying by card — see spendInstitutionBalance.ts. */
+  paymentMethod?: 'stripe' | 'giftCardBalance';
   items: DonationItem[];
+  giftCards?: DonationGiftCard[];
   requestedInstitutionId?: string | null;
   requestedNeshamaId?: string | null;
   campaignAssignments: CampaignAssignment[];
@@ -109,6 +124,17 @@ export interface Donation {
   roundedUpFee: boolean;
   totalCharged: number;
   status: DonationStatus;
+  createdAt: FirebaseFirestore.Timestamp;
+}
+
+export interface Institution {
+  institutionId: string;
+  name: string;
+  hebrewName?: string;
+  type: string;
+  address: Address;
+  createdByUid: string;
+  giftCardBalance?: number;
   createdAt: FirebaseFirestore.Timestamp;
 }
 

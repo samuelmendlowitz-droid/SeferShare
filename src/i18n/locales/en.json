@@ -83,7 +83,12 @@
     "loadError": "Something went wrong loading this institution. Please try again.",
     "noActiveCampaign": "No active campaign",
     "noActiveCampaignPrompt": "Would you like to make a donation, or find another campaign?",
-    "findAnotherCampaign": "Find another campaign"
+    "findAnotherCampaign": "Find another campaign",
+    "giftCardBalance": "Gift card balance: ${{amount}} — spend it",
+    "spendBalance": "Spend gift card balance",
+    "spendDedicationTitle": "Your dedication (optional)",
+    "spendSuccess": "Spent ${{amount}} from your gift card balance.",
+    "insufficientBalance": "This is more than your available gift card balance."
   },
   "sefer": {
     "hebrewName": "Hebrew name",
@@ -124,7 +129,11 @@
     "adSectionTitle": "Ad",
     "makeADonation": "Make a donation",
     "algorithmChoice": "Let the algorithm choose",
-    "algorithmWillChooseHint": "No dedication chosen — a neshama waiting longest for one will be picked for each sefer at checkout."
+    "algorithmWillChooseHint": "No dedication chosen — a neshama waiting longest for one will be picked for each sefer at checkout.",
+    "giftCardOption": "Donate a gift card instead",
+    "giftCardHint": "Give money the institution can spend on any seforim it needs. Dedication stickers and ads aren't available for gift card donations.",
+    "giftCardAdd": "Add gift card",
+    "giftCardNoDedicationHint": "Gift cards don't carry a dedication sticker or ad — the institution adds their own when they spend it."
   },
   "vendor": {
     "catalog": "Catalog",

@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import type { DonationAd } from '../../types';
+import type { PushkaGiftCard } from '../../context/PushkaContext';
 import type { PickedItem } from './SeferPicker';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { GiftIcon } from '../ui/icons';
 
 export interface StickerInfo {
   /** Campaign title (or donation.yourDedicationTitle) this sticker is printed for. */
@@ -14,11 +16,12 @@ export interface StickerInfo {
 interface VirtualDedicationCardProps {
   donorName: string;
   items: PickedItem[];
+  giftCards?: PushkaGiftCard[];
   stickers: StickerInfo[];
   ad?: DonationAd;
 }
 
-export function VirtualDedicationCard({ donorName, items, stickers, ad }: VirtualDedicationCardProps) {
+export function VirtualDedicationCard({ donorName, items, giftCards = [], stickers, ad }: VirtualDedicationCardProps) {
   const { t } = useTranslation();
 
   return (
@@ -44,6 +47,13 @@ export function VirtualDedicationCard({ donorName, items, stickers, ad }: Virtua
         {items.map((item) => (
           <p key={`${item.seferId}-${item.vendorId}`} className="text-sm">
             {item.quantity}× {item.englishName} · {item.hebrewName}
+          </p>
+        ))}
+        {giftCards.map((giftCard) => (
+          <p key={giftCard.id} className="flex items-center gap-1 text-sm">
+            <GiftIcon width={14} height={14} />
+            {giftCard.campaignTitle || giftCard.institutionName || t('donation.giftCardOption')}: $
+            {giftCard.amount.toFixed(2)}
           </p>
         ))}
       </div>

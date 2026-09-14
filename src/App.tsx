@@ -12,6 +12,7 @@ import { CampaignCreatePage } from './pages/CampaignCreatePage';
 import { CampaignDetailPage } from './pages/CampaignDetailPage';
 import { CampaignEditPage } from './pages/CampaignEditPage';
 import { InstitutionDetailPage } from './pages/InstitutionDetailPage';
+import { InstitutionSpendPage } from './pages/InstitutionSpendPage';
 import { NeshamaDetailPage } from './pages/NeshamaDetailPage';
 import { NeshamaDonatePage } from './pages/NeshamaDonatePage';
 import { VendorPage } from './pages/VendorPage';
@@ -80,6 +81,14 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <InstitutionDetailPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/institutions/:institutionId/spend"
+                element={
+                  <RequireAuth>
+                    <InstitutionSpendPage />
                   </RequireAuth>
                 }
               />

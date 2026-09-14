@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePushka } from '../../context/PushkaContext';
 import type { SeforimShopItem } from '../../hooks/useSeforimShopFeed';
+import { GiftCardOption } from '../donation/GiftCardOption';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { SeferThumbnail } from '../ui/SeferThumbnail';
@@ -10,9 +11,10 @@ import { MinusIcon, PlusIcon } from '../ui/icons';
 interface SeforimShopListProps {
   items: SeforimShopItem[];
   institutionId: string;
+  institutionName?: string;
 }
 
-export function SeforimShopList({ items, institutionId }: SeforimShopListProps) {
+export function SeforimShopList({ items, institutionId, institutionName }: SeforimShopListProps) {
   const { t } = useTranslation();
   const pushka = usePushka();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -46,6 +48,7 @@ export function SeforimShopList({ items, institutionId }: SeforimShopListProps) 
 
   return (
     <div className="space-y-2">
+      <GiftCardOption onAdd={(amount) => pushka.addGiftCard({ institutionId, institutionName, amount })} />
       {items.map((item) => {
         const itemKey = `${item.sefer.seferId}_${item.listing?.vendorId ?? 'none'}`;
         const inPushkaCount = item.listing

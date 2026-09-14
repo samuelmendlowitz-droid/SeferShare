@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { usePushka, type PushkaItem } from '../context/PushkaContext';
+import { usePushka, type PushkaGiftCard, type PushkaItem } from '../context/PushkaContext';
 import { getCampaign } from '../services/campaigns';
 import { getNeshama } from '../services/neshamos';
 import { neshamaDedicationLine } from '../lib/neshamaFormat';
-import type { Campaign, DonationAd, DonationDedication, Neshama } from '../types';
+import type { Campaign, DonationAd, DonationDedication, DonationGiftCard, Neshama } from '../types';
 import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
 import { CartDedicationPicker } from '../components/donation/CartDedicationPicker';
@@ -15,7 +15,7 @@ import { VirtualDedicationCard, type StickerInfo } from '../components/donation/
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
-import { MinusIcon, PlusIcon, CloseIcon } from '../components/ui/icons';
+import { GiftIcon, MinusIcon, PlusIcon, CloseIcon } from '../components/ui/icons';
 
 function toPickedItem(item: PushkaItem): PickedItem {
   return {
@@ -29,6 +29,16 @@ function toPickedItem(item: PushkaItem): PickedItem {
     imageUrl: item.imageUrl,
     campaignId: item.campaignId,
     requestedInstitutionId: item.institutionId,
+  };
+}
+
+function toDonationGiftCard(giftCard: PushkaGiftCard): DonationGiftCard {
+  return {
+    institutionId: giftCard.institutionId,
+    institutionName: giftCard.institutionName,
+    campaignId: giftCard.campaignId,
+    campaignTitle: giftCard.campaignTitle,
+    amount: giftCard.amount,
   };
 }
 
@@ -73,6 +83,7 @@ export function PushkaPage() {
   const [campaignsById, setCampaignsById] = useState<Map<string, Campaign>>(new Map());
   const [campaignNeshamasById, setCampaignNeshamasById] = useState<Map<string, Neshama>>(new Map());
   const [paidItems, setPaidItems] = useState<PushkaItem[]>([]);
+  const [paidGiftCards, setPaidGiftCards] = useState<PushkaGiftCard[]>([]);
   const [paidStickers, setPaidStickers] = useState<StickerInfo[]>([]);
 
   const groups = useMemo(() => {
@@ -155,6 +166,7 @@ export function PushkaPage() {
 
   async function handlePaid() {
     setPaidItems(pushka.items);
+    setPaidGiftCards(pushka.giftCards);
     const stickers: StickerInfo[] = campaignStickerGroups.map((g) => ({
       label: g.campaignTitle || t('campaign.untitled'),
       name: g.neshama.name,
@@ -192,6 +204,7 @@ export function PushkaPage() {
         <VirtualDedicationCard
           donorName={profile?.displayName ?? ''}
           items={paidItems.map((item) => toPickedItem(item))}
+          giftCards={paidGiftCards}
           stickers={paidStickers}
           ad={includeAd && ad.businessName.trim() ? ad : undefined}
         />
@@ -210,7 +223,7 @@ export function PushkaPage() {
 
       <h1 className="mb-4 text-lg font-bold">{t('pushka.title')}</h1>
 
-      {pushka.items.length === 0 ? (
+      {pushka.items.length === 0 && pushka.giftCards.length === 0 ? (
         <div className="text-center">
           <p className="mb-4 text-text-muted">{t('pushka.empty')}</p>
           <Button onClick={() => navigate('/')}>{t('pushka.goHome')}</Button>
@@ -218,6 +231,17 @@ export function PushkaPage() {
       ) : (
         <>
           <div className="space-y-4">
+            {pushka.giftCards.length > 0 && (
+              <div>
+                <p className="mb-2 text-sm font-semibold text-text-muted">{t('donation.giftCardOption')}</p>
+                <div className="space-y-2">
+                  {pushka.giftCards.map((giftCard) => (
+                    <GiftCardRow key={giftCard.id} giftCard={giftCard} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {[...groups.byCampaign.entries()].map(([campaignId, items]) => (
               <div key={campaignId}>
                 <button
@@ -247,59 +271,67 @@ export function PushkaPage() {
             )}
           </div>
 
-          <Card className="mt-4">
-            <h2 className="mb-1 text-base font-semibold">{t('donation.dedicationsTitle')}</h2>
-            <p className="mb-3 text-xs text-text-muted">{t('donation.yourDedicationHint')}</p>
+          {pushka.items.length > 0 && (
+            <>
+              <Card className="mt-4">
+                <h2 className="mb-1 text-base font-semibold">{t('donation.dedicationsTitle')}</h2>
+                <p className="mb-3 text-xs text-text-muted">{t('donation.yourDedicationHint')}</p>
 
-            {campaignStickerGroups.length > 0 && (
-              <div className="mb-3 space-y-2">
-                {campaignStickerGroups.map((g) => (
-                  <p key={g.campaignId} className="text-sm text-text-muted">
-                    {t('donation.stickerAuto', {
-                      campaignTitle: g.campaignTitle || t('campaign.untitled'),
-                      liluyNishmat: t('neshama.liluyNishmat'),
-                      name: neshamaDedicationLine(g.neshama, showBilingual),
-                    })}
-                  </p>
-                ))}
-              </div>
-            )}
+                {campaignStickerGroups.length > 0 && (
+                  <div className="mb-3 space-y-2">
+                    {campaignStickerGroups.map((g) => (
+                      <p key={g.campaignId} className="text-sm text-text-muted">
+                        {t('donation.stickerAuto', {
+                          campaignTitle: g.campaignTitle || t('campaign.untitled'),
+                          liluyNishmat: t('neshama.liluyNishmat'),
+                          name: neshamaDedicationLine(g.neshama, showBilingual),
+                        })}
+                      </p>
+                    ))}
+                  </div>
+                )}
 
-            <CartDedicationPicker
-              value={dedicationNeshamaId}
-              onChange={(id, neshama) => {
-                setDedicationNeshamaId(id);
-                setDedicationNeshama(neshama);
-              }}
-            />
-
-            {!dedicationNeshama && hasAlgorithmStickerItems && (
-              <p className="mt-2 text-xs text-text-muted">{t('donation.algorithmWillChooseHint')}</p>
-            )}
-          </Card>
-
-          <Card className="mt-4">
-            <label className="flex items-center gap-2 text-sm font-medium">
-              <input type="checkbox" checked={includeAd} onChange={(e) => setIncludeAd(e.target.checked)} />
-              {t('donation.includeAd')}
-            </label>
-            {includeAd && (
-              <div className="mt-3 space-y-2">
-                <input
-                  value={ad.businessName}
-                  onChange={(e) => setAd({ ...ad, businessName: e.target.value })}
-                  placeholder={t('donation.adBusinessName') ?? ''}
-                  className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+                <CartDedicationPicker
+                  value={dedicationNeshamaId}
+                  onChange={(id, neshama) => {
+                    setDedicationNeshamaId(id);
+                    setDedicationNeshama(neshama);
+                  }}
                 />
-                <input
-                  value={ad.message ?? ''}
-                  onChange={(e) => setAd({ ...ad, message: e.target.value })}
-                  placeholder={t('donation.adMessagePlaceholder') ?? ''}
-                  className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-                />
-              </div>
-            )}
-          </Card>
+
+                {!dedicationNeshama && hasAlgorithmStickerItems && (
+                  <p className="mt-2 text-xs text-text-muted">{t('donation.algorithmWillChooseHint')}</p>
+                )}
+              </Card>
+
+              <Card className="mt-4">
+                <label className="flex items-center gap-2 text-sm font-medium">
+                  <input type="checkbox" checked={includeAd} onChange={(e) => setIncludeAd(e.target.checked)} />
+                  {t('donation.includeAd')}
+                </label>
+                {includeAd && (
+                  <div className="mt-3 space-y-2">
+                    <input
+                      value={ad.businessName}
+                      onChange={(e) => setAd({ ...ad, businessName: e.target.value })}
+                      placeholder={t('donation.adBusinessName') ?? ''}
+                      className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+                    />
+                    <input
+                      value={ad.message ?? ''}
+                      onChange={(e) => setAd({ ...ad, message: e.target.value })}
+                      placeholder={t('donation.adMessagePlaceholder') ?? ''}
+                      className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+                    />
+                  </div>
+                )}
+              </Card>
+            </>
+          )}
+
+          {pushka.giftCards.length > 0 && pushka.items.length === 0 && (
+            <p className="mt-4 text-xs text-text-muted">{t('donation.giftCardNoDedicationHint')}</p>
+          )}
 
           <textarea
             value={donorMessage}
@@ -311,6 +343,7 @@ export function PushkaPage() {
 
           <CheckoutStep
             items={pushka.items.map((item) => toPickedItem(item))}
+            giftCards={pushka.giftCards.map((g) => toDonationGiftCard(g))}
             donorMessage={donorMessage}
             donorDedication={donorDedication}
             ad={includeAd && ad.businessName.trim() ? ad : undefined}
@@ -319,6 +352,43 @@ export function PushkaPage() {
         </>
       )}
     </div>
+  );
+}
+
+function GiftCardRow({ giftCard }: { giftCard: PushkaGiftCard }) {
+  const { t } = useTranslation();
+  const pushka = usePushka();
+
+  return (
+    <Card className="flex items-center gap-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-btn bg-accent/10 text-accent">
+        <GiftIcon width={20} height={20} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold">
+          {giftCard.campaignTitle || giftCard.institutionName || t('donation.giftCardOption')}
+        </p>
+        <div className="mt-1 flex items-center gap-1 text-sm">
+          <span className="text-text-muted">$</span>
+          <input
+            type="number"
+            min={1}
+            step="0.01"
+            value={giftCard.amount}
+            onChange={(e) => pushka.updateGiftCardAmount(giftCard.id, Number(e.target.value))}
+            className="w-20 rounded-btn border border-border px-2 py-1 text-sm"
+          />
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => pushka.removeGiftCard(giftCard.id)}
+        aria-label={t('actions.delete') ?? ''}
+        className="shrink-0 text-text-muted"
+      >
+        <CloseIcon width={16} height={16} />
+      </button>
+    </Card>
   );
 }
 

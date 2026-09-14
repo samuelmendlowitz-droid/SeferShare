@@ -1,7 +1,7 @@
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
-import type { Donation, DonationAd, DonationDedication, DonationItem } from '../types';
+import type { Donation, DonationAd, DonationDedication, DonationGiftCard, DonationItem } from '../types';
 
 const donationsRef = collection(db, 'donations');
 
@@ -12,6 +12,7 @@ export async function listMyDonations(uid: string): Promise<Donation[]> {
 
 export interface CreatePaymentIntentInput {
   items: DonationItem[];
+  giftCards?: DonationGiftCard[];
   requestedInstitutionId?: string;
   requestedNeshamaId?: string;
   donorMessage?: string;

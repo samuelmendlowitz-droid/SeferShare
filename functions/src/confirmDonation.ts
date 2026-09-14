@@ -5,19 +5,9 @@ import { db } from './lib/firebaseAdmin';
 import { getStripe, stripeSecretKey, stripeWebhookSecret } from './lib/stripe';
 import { assignDonationToCampaigns } from './algorithm';
 import { assignStickerDedications } from './dedication';
+import { splitOrdersByVendor } from './orders';
 import { notify, notifyCampaigners } from './notify';
-import type { Donation, DonationItem, Order } from './types';
-
-/** Groups a donation's items by vendor so each vendor gets its own dropship order (spec §2, §6). */
-function splitOrdersByVendor(items: DonationItem[]): Map<string, DonationItem[]> {
-  const byVendor = new Map<string, DonationItem[]>();
-  for (const item of items) {
-    const list = byVendor.get(item.vendorId) ?? [];
-    list.push(item);
-    byVendor.set(item.vendorId, list);
-  }
-  return byVendor;
-}
+import type { Donation, Order } from './types';
 
 export const confirmDonation = onRequest(
   { secrets: [stripeSecretKey, stripeWebhookSecret] },
@@ -71,6 +61,20 @@ export const confirmDonation = onRequest(
       campaignAssignments,
       stickers,
     });
+
+    if (donation.giftCards?.length) {
+      const balanceByInstitution = new Map<string, number>();
+      for (const giftCard of donation.giftCards) {
+        balanceByInstitution.set(giftCard.institutionId, (balanceByInstitution.get(giftCard.institutionId) ?? 0) + giftCard.amount);
+      }
+      const balanceBatch = db.batch();
+      for (const [institutionId, amount] of balanceByInstitution) {
+        balanceBatch.update(db.collection('institutions').doc(institutionId), {
+          giftCardBalance: FieldValue.increment(amount),
+        });
+      }
+      await balanceBatch.commit();
+    }
 
     const ordersByVendor = splitOrdersByVendor(donation.items);
     const batch = db.batch();

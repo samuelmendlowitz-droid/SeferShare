@@ -83,7 +83,12 @@
     "loadError": "אירעה שגיאה בטעינת המוסד. נסו שוב.",
     "noActiveCampaign": "אין קמפיין פעיל",
     "noActiveCampaignPrompt": "רוצים לתרום, או למצוא קמפיין אחר?",
-    "findAnotherCampaign": "מציאת קמפיין אחר"
+    "findAnotherCampaign": "מציאת קמפיין אחר",
+    "giftCardBalance": "יתרת כרטיס מתנה: ${{amount}} — נצלו אותה",
+    "spendBalance": "ניצול יתרת כרטיס המתנה",
+    "spendDedicationTitle": "ההקדשה שלכם (אופציונלי)",
+    "spendSuccess": "נוצלו ${{amount}} מיתרת כרטיס המתנה שלכם.",
+    "insufficientBalance": "זה יותר מיתרת כרטיס המתנה הזמינה שלכם."
   },
   "sefer": {
     "hebrewName": "שם בעברית",
@@ -124,7 +129,11 @@
     "adSectionTitle": "פרסומת",
     "makeADonation": "לתרומה",
     "algorithmChoice": "לתת לאלגוריתם לבחור",
-    "algorithmWillChooseHint": "לא נבחרה הקדשה — עבור כל ספר תיבחר בעת התשלום הנשמה שממתינה הכי הרבה זמן להקדשה."
+    "algorithmWillChooseHint": "לא נבחרה הקדשה — עבור כל ספר תיבחר בעת התשלום הנשמה שממתינה הכי הרבה זמן להקדשה.",
+    "giftCardOption": "תרמו כרטיס מתנה במקום",
+    "giftCardHint": "תרמו כסף שהמוסד יוכל להוציא על כל הספרים שהוא צריך. מדבקות הקדשה ופרסומות אינן זמינות לתרומות כרטיס מתנה.",
+    "giftCardAdd": "הוספת כרטיס מתנה",
+    "giftCardNoDedicationHint": "כרטיסי מתנה אינם כוללים מדבקת הקדשה או פרסומת — המוסד יוסיף משלו כשישתמש בו."
   },
   "vendor": {
     "catalog": "קטלוג",

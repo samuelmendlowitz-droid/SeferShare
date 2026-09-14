@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { stripePromise, estimateStripeFee } from '../../lib/stripe';
 import { createPaymentIntent } from '../../services/donations';
-import type { DonationAd, DonationDedication } from '../../types';
+import type { DonationAd, DonationDedication, DonationGiftCard } from '../../types';
 import type { PickedItem } from './SeferPicker';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 
 interface CheckoutStepProps {
   items: PickedItem[];
+  giftCards?: DonationGiftCard[];
   institutionId?: string;
   neshamaId?: string;
   donorMessage?: string;
@@ -56,6 +57,7 @@ function PaymentForm({ onPaid, donationId }: { onPaid: (donationId: string) => v
 
 export function CheckoutStep({
   items,
+  giftCards = [],
   institutionId,
   neshamaId,
   donorMessage,
@@ -70,7 +72,8 @@ export function CheckoutStep({
   );
   const [loading, setLoading] = useState(false);
 
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const subtotal =
+    items.reduce((sum, i) => sum + i.price * i.quantity, 0) + giftCards.reduce((sum, g) => sum + g.amount, 0);
   const fee = estimateStripeFee(subtotal);
 
   async function handleContinue() {
@@ -85,6 +88,7 @@ export function CheckoutStep({
           ...(i.campaignId ? { campaignId: i.campaignId } : {}),
           ...(i.requestedInstitutionId ? { requestedInstitutionId: i.requestedInstitutionId } : {}),
         })),
+        giftCards,
         requestedInstitutionId: institutionId,
         requestedNeshamaId: neshamaId,
         donorMessage,
@@ -121,7 +125,7 @@ export function CheckoutStep({
         {t('donation.roundUp', { amount: fee.toFixed(2) })}
       </label>
 
-      <Button onClick={handleContinue} disabled={loading || items.length === 0} className="w-full">
+      <Button onClick={handleContinue} disabled={loading || (items.length === 0 && giftCards.length === 0)} className="w-full">
         {t('donation.checkout')}
       </Button>
     </Card>

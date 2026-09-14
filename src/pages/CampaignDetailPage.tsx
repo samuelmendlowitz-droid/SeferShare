@@ -12,6 +12,7 @@ import { campaignDollarTotal } from '../lib/campaignMath';
 import { neshamaDedicationLine } from '../lib/neshamaFormat';
 import { useLanguage } from '../context/LanguageContext';
 import { ProgressBar } from '../components/campaign/ProgressBar';
+import { GiftCardOption } from '../components/donation/GiftCardOption';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
@@ -145,9 +146,30 @@ export function CampaignDetailPage() {
         <div className="mt-2">
           <ProgressBar fulfilled={campaign.totalItemsFulfilled} needed={campaign.totalItemsNeeded} />
         </div>
+
+        {institution && profile?.uid === institution.createdByUid && (
+          <Button
+            variant="secondary"
+            className="mt-4 w-full"
+            onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}
+          >
+            {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
+          </Button>
+        )}
       </Card>
 
       <h2 className="mb-2 mt-4 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
+      <GiftCardOption
+        onAdd={(amount) =>
+          pushka.addGiftCard({
+            institutionId: campaign.institutionId,
+            institutionName: institution?.name,
+            campaignId: campaign.campaignId,
+            campaignTitle: campaign.title ?? undefined,
+            amount,
+          })
+        }
+      />
       <div className="space-y-2">
         {campaign.items.map((item) => {
           const itemKey = `${item.seferId}_${item.vendorId}`;

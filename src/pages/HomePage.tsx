@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
+import { getInstitution } from '../services/institutions';
 import { AppLayout, type HomeFilter } from '../components/layout/AppLayout';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../components/layout/FilterSortSheet';
 import { CampaignCard } from '../components/campaign/CampaignCard';
@@ -13,7 +14,7 @@ import { useCampaignFeed, type HomeSortKey } from '../hooks/useCampaignFeed';
 import { useMekomosFeed, type MekomosSortKey } from '../hooks/useMekomosFeed';
 import { useNeshamosFeed, type NeshamosSortKey } from '../hooks/useNeshamosFeed';
 import { useSeforimShopFeed, type SeforimShopSortKey } from '../hooks/useSeforimShopFeed';
-import { INSTITUTION_TYPES, SEFER_TYPES, type InstitutionType, type SeferType } from '../types';
+import { INSTITUTION_TYPES, SEFER_TYPES, type Institution, type InstitutionType, type SeferType } from '../types';
 
 function toggleValue<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -22,8 +23,8 @@ function toggleValue<T>(list: T[], value: T): T[] {
 export function HomePage() {
   const { t } = useTranslation();
   const location = useLocation();
-  const initialTab = (location.state as { tab?: HomeFilter } | null)?.tab;
-  const [filter, setFilter] = useState<HomeFilter>(initialTab ?? 'all');
+  const navigationState = location.state as { tab?: HomeFilter; institutionId?: string } | null;
+  const [filter, setFilter] = useState<HomeFilter>(navigationState?.tab ?? 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -56,11 +57,19 @@ export function HomePage() {
   // Seforim tab: a shopping-style browse of the whole catalog
   const [seforimSeferTypes, setSeforimSeferTypes] = useState<SeferType[]>([]);
   const [seforimSort, setSeforimSort] = useState<SeforimShopSortKey>('name-az');
-  const [seforimInstitutionId, setSeforimInstitutionId] = useState<string | undefined>();
+  const [seforimInstitutionId, setSeforimInstitutionId] = useState<string | undefined>(
+    navigationState?.institutionId,
+  );
+  const [seforimInstitution, setSeforimInstitution] = useState<Institution>();
   const seforimFeed = useSeforimShopFeed(searchQuery, {
     seferTypes: seforimSeferTypes,
     sortKey: seforimSort,
   });
+
+  useEffect(() => {
+    if (navigationState?.institutionId) getInstitution(navigationState.institutionId).then((i) => i && setSeforimInstitution(i));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const institutionTypeFilterGroup: FilterGroup = {
     key: 'institutionType',
@@ -227,17 +236,25 @@ export function HomePage() {
               <p className="mb-1 text-sm font-medium">{t('seforim.selectInstitution')}</p>
               <InstitutionPicker
                 value={seforimInstitutionId}
-                onChange={(id) => setSeforimInstitutionId(id)}
+                onChange={(id, inst) => {
+                  setSeforimInstitutionId(id);
+                  setSeforimInstitution(inst);
+                }}
               />
             </div>
             {!seforimInstitutionId ? (
               <p className="text-text-muted">{t('seforim.selectInstitutionHint')}</p>
             ) : seforimFeed.loading ? (
               <LoadingSpinner />
-            ) : seforimFeed.items.length === 0 ? (
-              <p className="text-text-muted">{t('home.seforimEmpty')}</p>
             ) : (
-              <SeforimShopList items={seforimFeed.items} institutionId={seforimInstitutionId} />
+              <>
+                <SeforimShopList
+                  items={seforimFeed.items}
+                  institutionId={seforimInstitutionId}
+                  institutionName={seforimInstitution?.name}
+                />
+                {seforimFeed.items.length === 0 && <p className="text-text-muted">{t('home.seforimEmpty')}</p>}
+              </>
             )}
           </>
         )}

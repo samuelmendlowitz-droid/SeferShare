@@ -42,7 +42,13 @@ service cloud.firestore {
     match /institutions/{institutionId} {
       allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.createdByUid == request.auth.uid;
-      allow update: if signedIn() && resource.data.createdByUid == request.auth.uid;
+      // giftCardBalance is only ever changed server-side (Cloud Functions bypass
+      // these rules) — a gift card donation adds to it, spending it subtracts.
+      allow update: if isAdmin() || (
+        signedIn() &&
+        resource.data.createdByUid == request.auth.uid &&
+        request.resource.data.get('giftCardBalance', 0) == resource.data.get('giftCardBalance', 0)
+      );
       allow delete: if isAdmin();
     }
 

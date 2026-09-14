@@ -21,6 +21,19 @@ export interface CampaignAssignment {
   itemsFulfilled: number;
 }
 
+/** A monetary gift card given to an institution instead of specific seforim — adds
+ *  straight to that institution's giftCardBalance, which its owner can later spend on
+ *  seforim for themselves (with their own dedication and ad; see spendInstitutionBalance).
+ *  Never carries a dedication of its own — no physical sefer to print a sticker on. */
+export interface DonationGiftCard {
+  institutionId: string;
+  institutionName?: string;
+  /** Set when given through a specific campaign's page, purely for display. */
+  campaignId?: string;
+  campaignTitle?: string;
+  amount: number;
+}
+
 /** A named LI"N dedication the donor adds at checkout. */
 export interface DonationDedication {
   name: string;
@@ -50,8 +63,13 @@ export interface Donation {
   donationId: string;
   donorUid: string;
   stripePaymentIntentId: string;
+  /** 'giftCardBalance' when an institution paid for its own seforim out of its
+   *  balance rather than a donor paying by card — see spendInstitutionBalance.
+   *  Absent (or 'stripe') for an ordinary donation. */
+  paymentMethod?: 'stripe' | 'giftCardBalance';
 
   items: DonationItem[];
+  giftCards?: DonationGiftCard[];
 
   // Set by donor at checkout, or left blank for the algorithm to assign server-side
   requestedInstitutionId?: string;

@@ -8,3 +8,6 @@ export { onCampaignUpdate } from './onCampaignUpdate';
 export { approveVendor } from './approveVendor';
 export { onVendorApplicationSubmitted } from './onVendorApplicationSubmitted';
 export { setUserBlocked, deleteUserAccount } from './manageUsers';
+// No Stripe secrets involved — an institution is spending its own already-collected
+// gift card balance, not taking a new card payment — so this one can stay enabled.
+export { spendInstitutionBalance } from './spendInstitutionBalance';

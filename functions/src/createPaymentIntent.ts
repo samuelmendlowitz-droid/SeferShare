@@ -2,35 +2,18 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from './lib/firebaseAdmin';
 import { getStripe, stripeSecretKey } from './lib/stripe';
-import type { DonationAd, DonationDedication, DonationItem, Sefer } from './types';
+import { priceGiftCards, priceItems } from './pricing';
+import type { DonationAd, DonationDedication, DonationGiftCard, DonationItem } from './types';
 
 interface CreatePaymentIntentRequest {
   items: DonationItem[];
+  giftCards?: DonationGiftCard[];
   requestedInstitutionId?: string;
   requestedNeshamaId?: string;
   donorMessage?: string;
   donorDedication?: DonationDedication;
   ad?: DonationAd;
   roundedUpFee: boolean;
-}
-
-/**
- * Recomputes the charge from the canonical `sefarim` catalog server-side — the
- * client-supplied `priceEach` is never trusted (spec §8, §16, §18).
- */
-async function priceItems(items: DonationItem[]): Promise<number> {
-  let total = 0;
-  for (const item of items) {
-    const snap = await db.collection('sefarim').doc(item.seferId).get();
-    if (!snap.exists) throw new HttpsError('not-found', `Sefer ${item.seferId} not found`);
-    const sefer = snap.data() as Sefer;
-    const listing = sefer.vendorListings.find((l) => l.vendorId === item.vendorId);
-    if (!listing || listing.stockQty <= 0) {
-      throw new HttpsError('failed-precondition', `Vendor listing unavailable for ${item.seferId}`);
-    }
-    total += listing.price * item.quantity;
-  }
-  return Math.round(total * 100) / 100;
 }
 
 function estimateStripeFee(amount: number): number {
@@ -45,6 +28,7 @@ export const createPaymentIntent = onCall<CreatePaymentIntentRequest>(
 
     const {
       items,
+      giftCards = [],
       requestedInstitutionId,
       requestedNeshamaId,
       donorMessage,
@@ -52,16 +36,17 @@ export const createPaymentIntent = onCall<CreatePaymentIntentRequest>(
       ad,
       roundedUpFee,
     } = request.data;
-    if (!items?.length) throw new HttpsError('invalid-argument', 'No items provided');
+    if (!items?.length && !giftCards.length) throw new HttpsError('invalid-argument', 'No items provided');
 
-    const subtotal = await priceItems(items);
+    const subtotal = (await priceItems(items ?? [])) + priceGiftCards(giftCards);
     const totalCharged = roundedUpFee ? subtotal + estimateStripeFee(subtotal) : subtotal;
 
     const donationRef = db.collection('donations').doc();
     await donationRef.set({
       donorUid: uid,
       stripePaymentIntentId: null,
-      items,
+      items: items ?? [],
+      giftCards,
       requestedInstitutionId: requestedInstitutionId ?? null,
       requestedNeshamaId: requestedNeshamaId ?? null,
       campaignAssignments: [],
