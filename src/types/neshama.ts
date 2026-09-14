@@ -4,6 +4,7 @@ export type ParentGender = 'son' | 'daughter';
 
 export interface Neshama {
   neshamaId: string;
+  createdByUid: string;
   name: string;
   hebrewName?: string;
   /** בן / בת — needed to phrase the traditional "X ben/bat Y" dedication. */

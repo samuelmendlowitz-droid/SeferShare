@@ -34,8 +34,16 @@ service cloud.firestore {
     // --- Neshamos (shared dedication records) -----------------------------
     match /neshamos/{neshamaId} {
       allow read: if signedIn();
-      allow create: if signedIn();
-      allow update, delete: if isAdmin();
+      allow create: if signedIn() && request.resource.data.createdByUid == request.auth.uid;
+      // lastDedicatedAt is only ever changed server-side by the dedication
+      // algorithm (Cloud Functions bypass these rules) — an owner editing their
+      // neshama's details can't also bump it.
+      allow update: if isAdmin() || (
+        signedIn() &&
+        resource.data.createdByUid == request.auth.uid &&
+        request.resource.data.get('lastDedicatedAt', null) == resource.data.get('lastDedicatedAt', null)
+      );
+      allow delete: if isAdmin() || (signedIn() && resource.data.createdByUid == request.auth.uid);
     }
 
     // --- Institutions ------------------------------------------------------
@@ -49,7 +57,7 @@ service cloud.firestore {
         resource.data.createdByUid == request.auth.uid &&
         request.resource.data.get('giftCardBalance', 0) == resource.data.get('giftCardBalance', 0)
       );
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || (signedIn() && resource.data.createdByUid == request.auth.uid);
     }
 
     // --- Sefarim catalog (public fields only — wholesalePrice lives elsewhere) --
@@ -81,7 +89,7 @@ service cloud.firestore {
         request.resource.data.totalItemsFulfilled == resource.data.totalItemsFulfilled &&
         request.resource.data.currentMilestone == resource.data.currentMilestone
       );
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || (signedIn() && resource.data.createdByUid == request.auth.uid);
     }
 
     // --- Donations — created and mutated only by Cloud Functions --------------

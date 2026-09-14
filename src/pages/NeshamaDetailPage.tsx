@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getNeshama } from '../services/neshamos';
 import { listCampaignsByNeshama } from '../services/campaigns';
 import { getInstitution } from '../services/institutions';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { neshamaDedicationLine } from '../lib/neshamaFormat';
 import type { Campaign, Institution, Neshama } from '../types';
@@ -14,6 +15,7 @@ import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 export function NeshamaDetailPage() {
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
+  const { profile } = useAuth();
   const navigate = useNavigate();
   const { neshamaId } = useParams();
   const [neshama, setNeshama] = useState<Neshama | null>(null);
@@ -78,9 +80,16 @@ export function NeshamaDetailPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate('/')}>
-        {t('actions.back')}
-      </Button>
+      <div className="mb-4 flex items-center justify-between">
+        <Button variant="secondary" onClick={() => navigate('/')}>
+          {t('actions.back')}
+        </Button>
+        {profile?.uid === neshama.createdByUid && (
+          <Button variant="secondary" onClick={() => navigate(`/neshamos/${neshama.neshamaId}/edit`)}>
+            {t('neshama.edit')}
+          </Button>
+        )}
+      </div>
 
       <Card className="mb-4 text-center">
         <h1 className="text-lg font-bold">

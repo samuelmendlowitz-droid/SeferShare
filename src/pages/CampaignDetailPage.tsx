@@ -148,13 +148,22 @@ export function CampaignDetailPage() {
         </div>
 
         {institution && profile?.uid === institution.createdByUid && (
-          <Button
-            variant="secondary"
-            className="mt-4 w-full"
-            onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}
-          >
-            {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
-          </Button>
+          <div className="mt-4 space-y-2">
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}
+            >
+              {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
+            </Button>
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() => navigate(`/institutions/${institution.institutionId}/edit`)}
+            >
+              {t('institution.edit')}
+            </Button>
+          </div>
         )}
       </Card>
 

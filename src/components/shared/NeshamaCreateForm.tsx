@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SEFER_TYPES, type Neshama, type ParentGender, type SeferType } from '../../types';
 import { createNeshama } from '../../services/neshamos';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 
 interface NeshamaCreateFormProps {
@@ -12,6 +13,7 @@ interface NeshamaCreateFormProps {
  *  pushka's cart-wide dedication picker. */
 export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
   const { t } = useTranslation();
+  const { profile } = useAuth();
   const [name, setName] = useState('');
   const [hebrewName, setHebrewName] = useState('');
   const [parentGender, setParentGender] = useState<ParentGender>('son');
@@ -24,10 +26,11 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
   }
 
   async function handleCreate() {
-    if (!name.trim() || !fatherHebrewName.trim()) return;
+    if (!name.trim() || !fatherHebrewName.trim() || !profile) return;
     setSaving(true);
     try {
       const id = await createNeshama({
+        createdByUid: profile.uid,
         name: name.trim(),
         hebrewName: hebrewName.trim() || undefined,
         parentGender,
@@ -36,6 +39,7 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
       });
       const created: Neshama = {
         neshamaId: id,
+        createdByUid: profile.uid,
         name: name.trim(),
         hebrewName: hebrewName.trim() || undefined,
         parentGender,

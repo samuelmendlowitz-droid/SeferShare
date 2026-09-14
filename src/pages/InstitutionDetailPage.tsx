@@ -89,12 +89,20 @@ export function InstitutionDetailPage() {
             {t('institution.findAnotherCampaign')}
           </Button>
           {profile?.uid === institution.createdByUid && (
-            <Button
-              variant="secondary"
-              onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}
-            >
-              {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}
+              >
+                {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => navigate(`/institutions/${institution.institutionId}/edit`)}
+              >
+                {t('institution.edit')}
+              </Button>
+            </>
           )}
         </div>
       </Card>

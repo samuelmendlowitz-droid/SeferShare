@@ -47,7 +47,10 @@
     "addMoreSeforim": "Add more seforim",
     "alreadyFulfilled": "{{count}} already fulfilled — can't remove",
     "shippingAddressDiffers": "Shipping address is different than the institution's location",
-    "view": "View campaign"
+    "view": "View campaign",
+    "delete": "Delete campaign",
+    "confirmDelete": "Delete this campaign? This can't be undone.",
+    "deleteHint": "Deleting a campaign removes it permanently, including its progress toward its goal."
   },
   "neshama": {
     "name": "Name",
@@ -59,6 +62,7 @@
     "stickerDefault": "Sticker default",
     "liluyNishmat": "LI\"N",
     "addNew": "Add neshama",
+    "edit": "Edit neshama",
     "searchPlaceholder": "Search neshamos…",
     "notFound": "This neshama couldn't be found.",
     "loadError": "Something went wrong loading this neshama. Please try again.",
@@ -67,7 +71,10 @@
     "chooseInstitution": "Or donate directly to an institution",
     "donateInTheirName": "Make a donation in their name",
     "donatingInMemoryOf": "Donating in memory of",
-    "addedToPushka": "Added to your pushka."
+    "addedToPushka": "Added to your pushka.",
+    "delete": "Delete neshama",
+    "confirmDelete": "Delete this neshama? This can't be undone.",
+    "deleteHint": "Deleting a neshama removes it permanently, including from any campaign it's dedicated to."
   },
   "institution": {
     "name": "Institution name",
@@ -78,6 +85,7 @@
     "school": "School",
     "other": "Other",
     "addNew": "Add institution",
+    "edit": "Edit institution",
     "searchPlaceholder": "Search institutions…",
     "notFound": "This institution couldn't be found.",
     "loadError": "Something went wrong loading this institution. Please try again.",
@@ -88,7 +96,10 @@
     "spendBalance": "Spend gift card balance",
     "spendDedicationTitle": "Your dedication (optional)",
     "spendSuccess": "Spent ${{amount}} from your gift card balance.",
-    "insufficientBalance": "This is more than your available gift card balance."
+    "insufficientBalance": "This is more than your available gift card balance.",
+    "delete": "Delete institution",
+    "confirmDelete": "Delete this institution? This can't be undone.",
+    "deleteHint": "Deleting an institution removes it permanently, including any gift card balance it holds."
   },
   "sefer": {
     "hebrewName": "Hebrew name",

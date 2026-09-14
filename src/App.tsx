@@ -12,8 +12,10 @@ import { CampaignCreatePage } from './pages/CampaignCreatePage';
 import { CampaignDetailPage } from './pages/CampaignDetailPage';
 import { CampaignEditPage } from './pages/CampaignEditPage';
 import { InstitutionDetailPage } from './pages/InstitutionDetailPage';
+import { InstitutionEditPage } from './pages/InstitutionEditPage';
 import { InstitutionSpendPage } from './pages/InstitutionSpendPage';
 import { NeshamaDetailPage } from './pages/NeshamaDetailPage';
+import { NeshamaEditPage } from './pages/NeshamaEditPage';
 import { NeshamaDonatePage } from './pages/NeshamaDonatePage';
 import { VendorPage } from './pages/VendorPage';
 import { AdminPage } from './pages/AdminPage';
@@ -85,6 +87,14 @@ export default function App() {
                 }
               />
               <Route
+                path="/institutions/:institutionId/edit"
+                element={
+                  <RequireAuth>
+                    <InstitutionEditPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
                 path="/institutions/:institutionId/spend"
                 element={
                   <RequireAuth>
@@ -97,6 +107,14 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <NeshamaDetailPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/neshamos/:neshamaId/edit"
+                element={
+                  <RequireAuth>
+                    <NeshamaEditPage />
                   </RequireAuth>
                 }
               />

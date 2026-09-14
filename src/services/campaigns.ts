@@ -99,7 +99,7 @@ export async function createCampaign(input: CreateCampaignInput): Promise<string
   return docRef.id;
 }
 
-/** Admin-only per Firestore rules — used to remove any campaign, not just your own. */
+/** Usable by the campaign's own creator or an admin, per Firestore rules. */
 export async function deleteCampaign(campaignId: string): Promise<void> {
   await deleteDoc(doc(db, 'campaigns', campaignId));
 }

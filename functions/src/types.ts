@@ -78,6 +78,7 @@ export interface DonationDedication {
 
 export interface Neshama {
   neshamaId: string;
+  createdByUid: string;
   name: string;
   hebrewName?: string;
   parentGender: 'son' | 'daughter';

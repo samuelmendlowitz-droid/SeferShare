@@ -1,7 +1,7 @@
-import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
-import type { DonationAd, DonationDedication, DonationItem, Institution } from '../types';
+import type { Address, DonationAd, DonationDedication, DonationItem, Institution, InstitutionType } from '../types';
 
 const institutionsRef = collection(db, 'institutions');
 
@@ -20,6 +20,29 @@ export async function createInstitution(
 ): Promise<string> {
   const docRef = await addDoc(institutionsRef, { ...input, createdAt: serverTimestamp() });
   return docRef.id;
+}
+
+export interface UpdateInstitutionInput {
+  name: string;
+  hebrewName?: string;
+  type: InstitutionType;
+  address: Address;
+}
+
+/** Full edit of an institution's own details by its creator — never touches
+ *  giftCardBalance, which is server-owned (the Firestore rule rejects an owner
+ *  update that changes it). */
+export async function updateInstitution(institutionId: string, input: UpdateInstitutionInput): Promise<void> {
+  await updateDoc(doc(db, 'institutions', institutionId), {
+    name: input.name,
+    hebrewName: input.hebrewName ?? null,
+    type: input.type,
+    address: input.address,
+  });
+}
+
+export async function deleteInstitution(institutionId: string): Promise<void> {
+  await deleteDoc(doc(db, 'institutions', institutionId));
 }
 
 export interface SpendInstitutionBalanceInput {

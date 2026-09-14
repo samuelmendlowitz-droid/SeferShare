@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getCampaign, updateCampaign } from '../services/campaigns';
+import { deleteCampaign, getCampaign, updateCampaign } from '../services/campaigns';
 import { getInstitution } from '../services/institutions';
 import { listSefarim } from '../services/sefarim';
 import type { Address, Campaign, CampaignItem, Institution, Sefer } from '../types';
@@ -53,6 +53,7 @@ export function CampaignEditPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!campaignId) return;
@@ -173,6 +174,19 @@ export function CampaignEditPage() {
     }
   }
 
+  async function handleDelete() {
+    if (!campaign) return;
+    if (!window.confirm(t('campaign.confirmDelete') ?? '')) return;
+    setDeleting(true);
+    try {
+      await deleteCampaign(campaign.campaignId);
+      navigate('/profile');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
       <Button variant="secondary" className="mb-4" onClick={() => navigate(`/campaigns/${campaign.campaignId}`)}>
@@ -272,6 +286,13 @@ export function CampaignEditPage() {
       <Button className="w-full" disabled={saving} onClick={handleSave}>
         {t('campaign.saveChanges')}
       </Button>
+
+      <Card className="mt-6 border-error/30">
+        <p className="mb-3 text-sm text-text-muted">{t('campaign.deleteHint')}</p>
+        <Button variant="secondary" className="w-full text-error" disabled={deleting} onClick={handleDelete}>
+          {t('campaign.delete')}
+        </Button>
+      </Card>
     </div>
   );
 }

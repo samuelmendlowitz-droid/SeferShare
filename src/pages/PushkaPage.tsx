@@ -70,6 +70,7 @@ export function PushkaPage() {
     suggestedDedication
       ? {
           neshamaId: suggestedDedication.neshamaId,
+          createdByUid: '',
           name: suggestedDedication.name,
           hebrewName: suggestedDedication.hebrewName,
           parentGender: suggestedDedication.parentGender,
