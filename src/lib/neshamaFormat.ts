@@ -1,19 +1,21 @@
 import type { Neshama, ParentGender } from '../types';
 
-export function neshamaConnector(parentGender: ParentGender, hebrew: boolean): string {
-  if (hebrew) return parentGender === 'son' ? 'בן' : 'בת';
-  return parentGender === 'son' ? 'son of' : 'daughter of';
+/** בן / בת — the traditional dedication connector only ever appears in the
+ *  Hebrew form; the English form is just the person's plain name. */
+export function neshamaConnector(parentGender: ParentGender): string {
+  return parentGender === 'son' ? 'בן' : 'בת';
 }
 
-/** "Ploni son of Ploni" / "פלוני בן פלוני" — the full traditional dedication name. */
+/** English: just the name. Hebrew: "פלוני בן/בת פלוני" — the full traditional
+ *  dedication name, only formable when a Hebrew name is on file. */
 export function formatNeshamaDedication(
   neshama: Pick<Neshama, 'name' | 'hebrewName' | 'parentGender' | 'fatherHebrewName'>,
   hebrew: boolean,
 ): string {
   if (hebrew && neshama.hebrewName) {
-    return `${neshama.hebrewName} ${neshamaConnector(neshama.parentGender, true)} ${neshama.fatherHebrewName}`;
+    return `${neshama.hebrewName} ${neshamaConnector(neshama.parentGender)} ${neshama.fatherHebrewName}`;
   }
-  return `${neshama.name} ${neshamaConnector(neshama.parentGender, false)} ${neshama.fatherHebrewName}`;
+  return neshama.name;
 }
 
 /** Single display line, appending the Hebrew form too when bilingual and available. */
