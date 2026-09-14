@@ -4,12 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePushka, type PushkaItem } from '../context/PushkaContext';
 import { getNeshama } from '../services/neshamos';
-import { listActiveCampaigns } from '../services/campaigns';
-import { listInstitutions } from '../services/institutions';
-import type { DonationAd, DonationDedication, Institution, Neshama } from '../types';
+import type { DonationAd, DonationDedication, Neshama } from '../types';
 import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
 import { VirtualDedicationCard, type StickerInfo } from '../components/donation/VirtualDedicationCard';
+import { InstitutionPicker } from '../components/shared/InstitutionPicker';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
@@ -28,17 +27,6 @@ function toPickedItem(item: PushkaItem, requestedInstitutionId?: string): Picked
     campaignId: item.campaignId,
     requestedInstitutionId,
   };
-}
-
-/** Institutions (deduped) with an active campaign still needing any sefer in `items`. */
-function matchesForItems(items: PushkaItem[], institutionsForSefer: Map<string, Institution[]>): Institution[] {
-  const byId = new Map<string, Institution>();
-  for (const item of items) {
-    for (const inst of institutionsForSefer.get(item.seferId) ?? []) {
-      byId.set(inst.institutionId, inst);
-    }
-  }
-  return [...byId.values()];
 }
 
 const emptyDedication: DonationDedication = { name: '', hebrewName: '', relationship: '', message: '' };
@@ -76,24 +64,21 @@ function DedicationFields({ value, onChange }: { value: DonationDedication; onCh
   );
 }
 
-function InstitutionChoicePicker({
-  matches,
+/** Lets the donor browse/search/filter every institution, or explicitly leave it
+ *  to the algorithm — used for anything in the pushka missing an institution. */
+function InstitutionDestinationPicker({
   chosen,
   onChoose,
 }: {
-  matches: Institution[];
   chosen: string | undefined;
-  onChoose: (institutionId: string) => void;
+  onChoose: (institutionId: string | undefined) => void;
 }) {
   const { t } = useTranslation();
-  if (matches.length === 0) {
-    return <p className="text-xs text-text-muted">{t('donation.noCampaignNeedsThis')}</p>;
-  }
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="space-y-2">
       <button
         type="button"
-        onClick={() => onChoose('')}
+        onClick={() => onChoose(undefined)}
         className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
           !chosen
             ? 'border-accent bg-accent text-white'
@@ -102,20 +87,7 @@ function InstitutionChoicePicker({
       >
         {t('donation.algorithmChoice')}
       </button>
-      {matches.map((inst) => (
-        <button
-          key={inst.institutionId}
-          type="button"
-          onClick={() => onChoose(inst.institutionId)}
-          className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
-            chosen === inst.institutionId
-              ? 'border-accent bg-accent text-white'
-              : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
-          }`}
-        >
-          {inst.name}
-        </button>
-      ))}
+      <InstitutionPicker value={chosen} onChange={(id) => onChoose(id)} />
     </div>
   );
 }
@@ -132,7 +104,6 @@ export function PushkaPage() {
   const [includeAd, setIncludeAd] = useState(false);
   const [ad, setAd] = useState<DonationAd>({ businessName: '', message: '' });
   const [neshamosById, setNeshamosById] = useState<Map<string, Neshama>>(new Map());
-  const [institutionsForSefer, setInstitutionsForSefer] = useState<Map<string, Institution[]>>(new Map());
   const [institutionChoices, setInstitutionChoices] = useState<Record<string, string>>({});
   const [paidItems, setPaidItems] = useState<PushkaItem[]>([]);
   const [paidStickers, setPaidStickers] = useState<StickerInfo[]>([]);
@@ -178,32 +149,6 @@ export function PushkaPage() {
       });
       setNeshamosById(map);
     });
-  }, [pushka.items]);
-
-  useEffect(() => {
-    const seferIds = [...new Set(pushka.items.filter((i) => !i.institutionId).map((i) => i.seferId))];
-    if (seferIds.length === 0) {
-      setInstitutionsForSefer(new Map());
-      return;
-    }
-    (async () => {
-      const [campaigns, institutions] = await Promise.all([listActiveCampaigns(), listInstitutions()]);
-      const institutionsById = new Map(institutions.map((inst) => [inst.institutionId, inst]));
-      const map = new Map<string, Institution[]>();
-      for (const seferId of seferIds) {
-        const matchingIds = new Set<string>();
-        for (const campaign of campaigns) {
-          if (!campaign.institutionId) continue;
-          const item = campaign.items.find((it) => it.seferId === seferId);
-          if (item && item.quantity > item.quantityFulfilled) matchingIds.add(campaign.institutionId);
-        }
-        const matches = [...matchingIds]
-          .map((id) => institutionsById.get(id))
-          .filter((inst): inst is Institution => Boolean(inst));
-        map.set(seferId, matches);
-      }
-      setInstitutionsForSefer(map);
-    })();
   }, [pushka.items]);
 
   // Campaigns already dedicated to a neshama always print that neshama on the sticker
@@ -372,10 +317,9 @@ export function PushkaPage() {
                   </div>
                   <div className="mt-2 rounded-btn border border-border p-3">
                     <p className="mb-2 text-xs font-medium text-text-muted">{t('donation.whichInstitutionTitle')}</p>
-                    <InstitutionChoicePicker
-                      matches={matchesForItems(items, institutionsForSefer)}
+                    <InstitutionDestinationPicker
                       chosen={institutionChoices[key]}
-                      onChoose={(id) => setInstitutionChoices((prev) => ({ ...prev, [key]: id }))}
+                      onChoose={(id) => setInstitutionChoices((prev) => ({ ...prev, [key]: id ?? '' }))}
                     />
                   </div>
                 </div>
@@ -395,10 +339,9 @@ export function PushkaPage() {
                           <p className="mb-2 text-xs font-medium text-text-muted">
                             {t('donation.whichInstitutionTitle')}
                           </p>
-                          <InstitutionChoicePicker
-                            matches={institutionsForSefer.get(item.seferId) ?? []}
+                          <InstitutionDestinationPicker
                             chosen={institutionChoices[key]}
-                            onChoose={(id) => setInstitutionChoices((prev) => ({ ...prev, [key]: id }))}
+                            onChoose={(id) => setInstitutionChoices((prev) => ({ ...prev, [key]: id ?? '' }))}
                           />
                         </div>
                       </div>

@@ -119,8 +119,7 @@
     "adSectionTitle": "Ad",
     "makeADonation": "Make a donation",
     "whichInstitutionTitle": "Which institution should get this?",
-    "algorithmChoice": "Let the algorithm choose",
-    "noCampaignNeedsThis": "No campaign currently needs this — it'll go to the general pool."
+    "algorithmChoice": "Let the algorithm choose"
   },
   "vendor": {
     "catalog": "Catalog",
