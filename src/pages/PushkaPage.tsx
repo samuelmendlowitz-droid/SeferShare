@@ -85,17 +85,25 @@ export function PushkaPage() {
 
   const groups = useMemo(() => {
     const byCampaign = new Map<string, PushkaItem[]>();
-    const untagged: PushkaItem[] = [];
+    // No campaign, but dedicated to a neshama — added from a neshama's "donate in
+    // their name" page, with the mokom already picked there (see NeshamaDonatePage).
+    const neshamaDedicated = new Map<string, PushkaItem[]>();
+    // Truly generic items from the Seforim shopping tab — no campaign or dedication yet.
+    const plainUntagged: PushkaItem[] = [];
     for (const item of pushka.items) {
       if (item.campaignId) {
         const list = byCampaign.get(item.campaignId) ?? [];
         list.push(item);
         byCampaign.set(item.campaignId, list);
+      } else if (item.neshamaId) {
+        const list = neshamaDedicated.get(item.neshamaId) ?? [];
+        list.push(item);
+        neshamaDedicated.set(item.neshamaId, list);
       } else {
-        untagged.push(item);
+        plainUntagged.push(item);
       }
     }
-    return { byCampaign, untagged };
+    return { byCampaign, neshamaDedicated, plainUntagged };
   }, [pushka.items]);
 
   useEffect(() => {
@@ -114,7 +122,9 @@ export function PushkaPage() {
   }, [pushka.items]);
 
   useEffect(() => {
-    const seferIds = [...new Set(pushka.items.filter((i) => !i.campaignId).map((i) => i.seferId))];
+    const seferIds = [
+      ...new Set(pushka.items.filter((i) => !i.campaignId && !i.neshamaId).map((i) => i.seferId)),
+    ];
     if (seferIds.length === 0) {
       setInstitutionsForSefer(new Map());
       return;
@@ -152,10 +162,20 @@ export function PushkaPage() {
     [groups.byCampaign, neshamosById],
   );
 
-  // Everything else (untagged items, or campaigns with no neshama of their own) shares
-  // the donor's own dedication on its sticker.
+  // Items added straight "in memory of" a neshama (no campaign) print that neshama
+  // on the sticker too, same as a campaign that already carries one.
+  const neshamaDedicatedStickerGroups = useMemo(
+    () =>
+      [...groups.neshamaDedicated.entries()]
+        .map(([neshamaId]) => ({ neshamaId, neshama: neshamosById.get(neshamaId) }))
+        .filter((g): g is typeof g & { neshama: Neshama } => Boolean(g.neshama)),
+    [groups.neshamaDedicated, neshamosById],
+  );
+
+  // Everything else (plain untagged items, or campaigns with no neshama of their own)
+  // shares the donor's own dedication on its sticker.
   const hasDonorStickerItems = useMemo(
-    () => groups.untagged.length > 0 || [...groups.byCampaign.values()].some((items) => !items[0].neshamaId),
+    () => groups.plainUntagged.length > 0 || [...groups.byCampaign.values()].some((items) => !items[0].neshamaId),
     [groups],
   );
 
@@ -173,12 +193,20 @@ export function PushkaPage() {
 
   async function handlePaid() {
     setPaidItems(pushka.items);
-    const stickers: StickerInfo[] = campaignStickerGroups.map((g) => ({
-      label: g.campaignTitle || t('campaign.untitled'),
-      name: g.neshama.name,
-      hebrewName: g.neshama.hebrewName,
-      message: g.neshama.message,
-    }));
+    const stickers: StickerInfo[] = [
+      ...campaignStickerGroups.map((g) => ({
+        label: g.campaignTitle || t('campaign.untitled'),
+        name: g.neshama.name,
+        hebrewName: g.neshama.hebrewName,
+        message: g.neshama.message,
+      })),
+      ...neshamaDedicatedStickerGroups.map((g) => ({
+        label: '',
+        name: g.neshama.name,
+        hebrewName: g.neshama.hebrewName,
+        message: g.neshama.message,
+      })),
+    ];
     if (donorDedication.name.trim()) {
       stickers.push({ label: t('donation.yourDedicationTitle'), ...donorDedication });
     }
@@ -238,11 +266,24 @@ export function PushkaPage() {
               </div>
             ))}
 
-            {groups.untagged.length > 0 && (
+            {[...groups.neshamaDedicated.entries()].map(([neshamaId, items]) => (
+              <div key={neshamaId}>
+                <p className="mb-2 text-sm font-semibold text-accent">
+                  {t('neshama.liluyNishmat')} {neshamosById.get(neshamaId)?.name ?? ''}
+                </p>
+                <div className="space-y-2">
+                  {items.map((item) => (
+                    <PushkaRow key={pushka.keyFor(item)} item={item} />
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {groups.plainUntagged.length > 0 && (
               <div>
                 <p className="mb-2 text-sm font-semibold text-text-muted">{t('pushka.otherSeforim')}</p>
                 <div className="space-y-2">
-                  {groups.untagged.map((item) => (
+                  {groups.plainUntagged.map((item) => (
                     <PushkaRow key={pushka.keyFor(item)} item={item} />
                   ))}
                 </div>
@@ -250,12 +291,12 @@ export function PushkaPage() {
             )}
           </div>
 
-          {groups.untagged.length > 0 && (
+          {groups.plainUntagged.length > 0 && (
             <Card className="mt-4">
               <h2 className="mb-1 text-base font-semibold">{t('donation.whichInstitutionTitle')}</h2>
               <p className="mb-3 text-xs text-text-muted">{t('donation.whichInstitutionHint')}</p>
               <div className="space-y-4">
-                {groups.untagged.map((item) => {
+                {groups.plainUntagged.map((item) => {
                   const key = pushka.keyFor(item);
                   const matches = institutionsForSefer.get(item.seferId) ?? [];
                   const chosen = institutionChoices[key];
@@ -384,7 +425,17 @@ export function PushkaPage() {
           />
 
           <CheckoutStep
-            items={pushka.items.map((item) => toPickedItem(item, institutionChoices[pushka.keyFor(item)] || undefined))}
+            items={pushka.items.map((item) => {
+              // Campaign-tagged items are already fully resolved (Pass 0). Neshama-
+              // dedicated items already have their mokom fixed from NeshamaDonatePage.
+              // Everything else uses whatever the picker above was set to.
+              const requestedInstitutionId = item.campaignId
+                ? undefined
+                : item.neshamaId
+                  ? item.institutionId
+                  : institutionChoices[pushka.keyFor(item)] || undefined;
+              return toPickedItem(item, requestedInstitutionId);
+            })}
             donorMessage={donorMessage}
             donorDedication={donorDedication.name.trim() ? donorDedication : undefined}
             additionalDedications={extraDedications.filter((d) => d.name.trim())}

@@ -57,7 +57,12 @@
     "liluyNishmat": "LI\"N",
     "addNew": "Add neshama",
     "searchPlaceholder": "Search neshamos…",
-    "notFound": "This neshama couldn't be found."
+    "notFound": "This neshama couldn't be found.",
+    "loadError": "Something went wrong loading this neshama. Please try again.",
+    "noActiveCampaign": "No active campaign",
+    "donateInTheirName": "Would you like to make a donation in their name?",
+    "donatingInMemoryOf": "Donating in memory of",
+    "addedToPushka": "Added to your pushka."
   },
   "institution": {
     "name": "Institution name",
@@ -69,7 +74,11 @@
     "other": "Other",
     "addNew": "Add institution",
     "searchPlaceholder": "Search institutions…",
-    "notFound": "This institution couldn't be found."
+    "notFound": "This institution couldn't be found.",
+    "loadError": "Something went wrong loading this institution. Please try again.",
+    "noActiveCampaign": "No active campaign",
+    "noActiveCampaignPrompt": "Would you like to make a donation, or find another campaign?",
+    "findAnotherCampaign": "Find another campaign"
   },
   "sefer": {
     "hebrewName": "Hebrew name",
@@ -107,6 +116,7 @@
     "adBusinessName": "Business name",
     "adMessagePlaceholder": "Short ad message (optional)",
     "adSectionTitle": "Ad",
+    "makeADonation": "Make a donation",
     "whichInstitutionTitle": "Which institution should get these?",
     "whichInstitutionHint": "Pick one per sefer, or let the algorithm choose where it's needed most.",
     "algorithmChoice": "Let the algorithm choose",

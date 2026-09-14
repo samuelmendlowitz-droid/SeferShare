@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import { AppLayout, type HomeFilter } from '../components/layout/AppLayout';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../components/layout/FilterSortSheet';
 import { CampaignCard } from '../components/campaign/CampaignCard';
@@ -19,7 +20,9 @@ function toggleValue<T>(list: T[], value: T): T[] {
 
 export function HomePage() {
   const { t } = useTranslation();
-  const [filter, setFilter] = useState<HomeFilter>('all');
+  const location = useLocation();
+  const initialTab = (location.state as { tab?: HomeFilter } | null)?.tab;
+  const [filter, setFilter] = useState<HomeFilter>(initialTab ?? 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
 

@@ -37,20 +37,24 @@ export async function getCampaign(campaignId: string): Promise<Campaign | null> 
   return snap.exists() ? { ...(snap.data() as Campaign), campaignId: snap.id } : null;
 }
 
-/** All of an institution's campaigns (any status) — for the institution detail page. */
+/**
+ * All of an institution's campaigns (any status) — for the institution detail page.
+ * Sorted client-side (rather than an indexed `orderBy`) since this is a single-field
+ * equality query that Firestore serves with no composite index required.
+ */
 export async function listCampaignsByInstitution(institutionId: string): Promise<Campaign[]> {
-  const snap = await getDocs(
-    query(campaignsRef, where('institutionId', '==', institutionId), orderBy('createdAt', 'desc')),
-  );
-  return snap.docs.map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }));
+  const snap = await getDocs(query(campaignsRef, where('institutionId', '==', institutionId)));
+  return snap.docs
+    .map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }))
+    .sort((a, b) => b.createdAt - a.createdAt);
 }
 
-/** All of a neshama's campaigns (any status) — for the neshama detail page. */
+/** All of a neshama's campaigns (any status) — for the neshama detail page. See above re: sorting. */
 export async function listCampaignsByNeshama(neshamaId: string): Promise<Campaign[]> {
-  const snap = await getDocs(
-    query(campaignsRef, where('neshamaId', '==', neshamaId), orderBy('createdAt', 'desc')),
-  );
-  return snap.docs.map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }));
+  const snap = await getDocs(query(campaignsRef, where('neshamaId', '==', neshamaId)));
+  return snap.docs
+    .map((d) => ({ ...(d.data() as Campaign), campaignId: d.id }))
+    .sort((a, b) => b.createdAt - a.createdAt);
 }
 
 export interface CreateCampaignInput {

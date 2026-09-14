@@ -57,7 +57,12 @@
     "liluyNishmat": "לע\"נ",
     "addNew": "הוספת נשמה",
     "searchPlaceholder": "חיפוש נשמות…",
-    "notFound": "הנשמה לא נמצאה."
+    "notFound": "הנשמה לא נמצאה.",
+    "loadError": "אירעה שגיאה בטעינת הנשמה. נסו שוב.",
+    "noActiveCampaign": "אין קמפיין פעיל",
+    "donateInTheirName": "רוצים לתרום לעילוי נשמתם?",
+    "donatingInMemoryOf": "תורמים לעילוי נשמת",
+    "addedToPushka": "נוסף לפושקע שלכם."
   },
   "institution": {
     "name": "שם המוסד",
@@ -69,7 +74,11 @@
     "other": "אחר",
     "addNew": "הוספת מוסד",
     "searchPlaceholder": "חיפוש מוסדות…",
-    "notFound": "המוסד לא נמצא."
+    "notFound": "המוסד לא נמצא.",
+    "loadError": "אירעה שגיאה בטעינת המוסד. נסו שוב.",
+    "noActiveCampaign": "אין קמפיין פעיל",
+    "noActiveCampaignPrompt": "רוצים לתרום, או למצוא קמפיין אחר?",
+    "findAnotherCampaign": "מציאת קמפיין אחר"
   },
   "sefer": {
     "hebrewName": "שם בעברית",
@@ -107,6 +116,7 @@
     "adBusinessName": "שם העסק",
     "adMessagePlaceholder": "הודעת פרסום קצרה (אופציונלי)",
     "adSectionTitle": "פרסומת",
+    "makeADonation": "לתרומה",
     "whichInstitutionTitle": "לאיזה מוסד להעביר את אלה?",
     "whichInstitutionHint": "בחרו מוסד לכל ספר, או תנו לאלגוריתם לבחור היכן יש הכי הרבה צורך.",
     "algorithmChoice": "לתת לאלגוריתם לבחור",
