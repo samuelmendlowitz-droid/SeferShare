@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { getInstitution } from '../services/institutions';
 import { AppLayout, type HomeFilter } from '../components/layout/AppLayout';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../components/layout/FilterSortSheet';
@@ -9,7 +9,10 @@ import { InstitutionSummaryCard } from '../components/home/InstitutionSummaryCar
 import { NeshamaSummaryCard } from '../components/home/NeshamaSummaryCard';
 import { SeforimShopList } from '../components/home/SeforimShopList';
 import { InstitutionPicker } from '../components/shared/InstitutionPicker';
+import { InstitutionCreateForm } from '../components/shared/InstitutionCreateForm';
+import { NeshamaCreateForm } from '../components/shared/NeshamaCreateForm';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { Modal } from '../components/ui/Modal';
 import { useCampaignFeed, type HomeSortKey } from '../hooks/useCampaignFeed';
 import { useMekomosFeed, type MekomosSortKey } from '../hooks/useMekomosFeed';
 import { useNeshamosFeed, type NeshamosSortKey } from '../hooks/useNeshamosFeed';
@@ -22,11 +25,14 @@ function toggleValue<T>(list: T[], value: T): T[] {
 
 export function HomePage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const location = useLocation();
   const navigationState = location.state as { tab?: HomeFilter; institutionId?: string } | null;
   const [filter, setFilter] = useState<HomeFilter>(navigationState?.tab ?? 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [createInstitutionOpen, setCreateInstitutionOpen] = useState(false);
+  const [createNeshamaOpen, setCreateNeshamaOpen] = useState(false);
 
   // All Campaigns tab
   const [allInstitutionTypes, setAllInstitutionTypes] = useState<InstitutionType[]>([]);
@@ -178,6 +184,12 @@ export function HomePage() {
 
   const currentSheet = sheetsByTab[filter];
 
+  const createActionByTab: Partial<Record<HomeFilter, { caption: string; onClick: () => void }>> = {
+    all: { caption: t('nav.newCampaign'), onClick: () => navigate('/campaigns/new') },
+    where: { caption: t('nav.newMokom'), onClick: () => setCreateInstitutionOpen(true) },
+    who: { caption: t('nav.newNeshama'), onClick: () => setCreateNeshamaOpen(true) },
+  };
+
   return (
     <>
       <AppLayout
@@ -186,6 +198,7 @@ export function HomePage() {
         onFilterChange={setFilter}
         onSearch={setSearchQuery}
         filterSort={{ active: currentSheet.active, onClick: () => setSheetOpen(true) }}
+        createAction={createActionByTab[filter]}
       >
         <h1 className="mb-4 text-xl font-bold">{t('app.name')}</h1>
 
@@ -271,6 +284,19 @@ export function HomePage() {
         onSortChange={currentSheet.onSortChange}
         onReset={currentSheet.onReset}
       />
+
+      <Modal open={createInstitutionOpen} onClose={() => setCreateInstitutionOpen(false)} title={t('institution.addNew')}>
+        <InstitutionCreateForm onCreated={() => setCreateInstitutionOpen(false)} />
+      </Modal>
+
+      <Modal open={createNeshamaOpen} onClose={() => setCreateNeshamaOpen(false)} title={t('neshama.addNew')}>
+        <NeshamaCreateForm
+          onCreated={(created) => {
+            neshamosFeed.addCreated(created);
+            setCreateNeshamaOpen(false);
+          }}
+        />
+      </Modal>
     </>
   );
 }

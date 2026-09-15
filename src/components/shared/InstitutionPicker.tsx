@@ -1,19 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Address, Institution, InstitutionType } from '../../types';
+import type { Institution, InstitutionType } from '../../types';
 import { INSTITUTION_TYPES } from '../../types';
-import { createInstitution, listInstitutions } from '../../services/institutions';
+import { listInstitutions } from '../../services/institutions';
 import { listActiveCampaigns } from '../../services/campaigns';
-import { useAuth } from '../../context/AuthContext';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../layout/FilterSortSheet';
 import { Modal } from '../ui/Modal';
-import { Button } from '../ui/Button';
-import { AddressForm } from './AddressForm';
-import { SelectField, TextField } from '../ui/TextField';
+import { InstitutionCreateForm } from './InstitutionCreateForm';
 import { institutionTypeText } from '../../lib/institutionFormat';
 import { FilterIcon, PlusIcon } from '../ui/icons';
-
-const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
 
 type SortKey = 'recommended' | 'az' | 'za';
 
@@ -24,7 +19,6 @@ interface InstitutionPickerProps {
 
 export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [neediestByInstitution, setNeediestByInstitution] = useState<Map<string, number>>(new Map());
   const [query, setQuery] = useState('');
@@ -32,12 +26,6 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
   const [typeFilter, setTypeFilter] = useState<InstitutionType[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>('recommended');
   const [modalOpen, setModalOpen] = useState(false);
-
-  const [name, setName] = useState('');
-  const [hebrewName, setHebrewName] = useState('');
-  const [type, setType] = useState<InstitutionType>('shul');
-  const [customType, setCustomType] = useState('');
-  const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
 
   useEffect(() => {
     listInstitutions().then(setInstitutions);
@@ -87,34 +75,10 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
 
   const filtersActive = typeFilter.length > 0 || sortKey !== 'recommended';
 
-  async function handleCreate() {
-    if (!profile || !name) return;
-    const resolvedCustomType = type === 'other' ? customType || undefined : undefined;
-    const id = await createInstitution({
-      name,
-      hebrewName: hebrewName || undefined,
-      type,
-      customType: resolvedCustomType,
-      address,
-      createdByUid: profile.uid,
-    });
-    const created: Institution = {
-      institutionId: id,
-      name,
-      hebrewName,
-      type,
-      customType: resolvedCustomType,
-      address,
-      createdByUid: profile.uid,
-      createdAt: Date.now(),
-    };
+  function handleCreate(created: Institution) {
     setInstitutions((prev) => [...prev, created]);
-    onChange(id, created);
+    onChange(created.institutionId, created);
     setModalOpen(false);
-    setName('');
-    setHebrewName('');
-    setCustomType('');
-    setAddress(EMPTY_ADDRESS);
   }
 
   function toggleTypeFilter(_groupKey: string, val: string) {
@@ -194,23 +158,7 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
       />
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={t('institution.addNew')}>
-        <div className="space-y-2">
-          <TextField label={t('institution.name')} value={name} onChange={setName} />
-          <TextField label={t('institution.hebrewName')} value={hebrewName} onChange={setHebrewName} />
-          <SelectField
-            label={t('institution.type')}
-            value={type}
-            onChange={setType}
-            options={INSTITUTION_TYPES.map((t2) => ({ value: t2, label: t(`institution.${t2}`) }))}
-          />
-          {type === 'other' && (
-            <TextField required label={t('institution.customTypeLabel')} value={customType} onChange={setCustomType} />
-          )}
-          <AddressForm value={address} onChange={setAddress} />
-          <Button className="w-full" disabled={!name} onClick={handleCreate}>
-            {t('actions.add')}
-          </Button>
-        </div>
+        <InstitutionCreateForm onCreated={handleCreate} />
       </Modal>
     </div>
   );

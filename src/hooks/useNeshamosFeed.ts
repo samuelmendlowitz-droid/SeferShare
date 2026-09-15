@@ -54,5 +54,9 @@ export function useNeshamosFeed(searchQuery: string, options: NeshamosFeedOption
     return sorted.map((neshama) => ({ neshama }));
   }, [allNeshamos, searchQuery, seferTypes, sortKey]);
 
-  return { loading, neshamas };
+  function addCreated(neshama: Neshama) {
+    setAllNeshamos((prev) => [...prev, neshama]);
+  }
+
+  return { loading, neshamas, addCreated };
 }

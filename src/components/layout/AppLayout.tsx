@@ -18,6 +18,9 @@ interface HomeLayoutProps {
   onFilterChange: (filter: HomeFilter) => void;
   onSearch: (query: string) => void;
   filterSort?: FilterSortButtonProps;
+  /** The plus button's action for the current tab — its target (a new campaign,
+   *  mokom, or neshama) changes with `filter`; omitted on tabs with nothing to create. */
+  createAction?: { caption: string; onClick: () => void };
   children: ReactNode;
 }
 
@@ -97,6 +100,13 @@ export function AppLayout(props: AppLayoutProps) {
   const actionButton =
     props.variant === 'profile' ? (
       <CornerButton label={t('campaign.create')} icon={<PlusIcon />} onClick={() => navigate('/campaigns/new')} />
+    ) : props.variant === 'home' && props.createAction ? (
+      <CornerButton
+        label={props.createAction.caption}
+        caption={props.createAction.caption}
+        icon={<PlusIcon />}
+        onClick={props.createAction.onClick}
+      />
     ) : null;
 
   // The pushka (donation cart) is only relevant to browsing/giving, which lives on Home.
