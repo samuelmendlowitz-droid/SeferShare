@@ -178,6 +178,8 @@ export interface Sefer {
   englishName: string;
   phoneticName: string;
   type: string;
+  subType?: string;
+  languages?: string[];
   vendorListings: PublicVendorListing[];
 }
 

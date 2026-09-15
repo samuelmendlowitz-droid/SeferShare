@@ -1,4 +1,4 @@
-import type { SeferType } from './common';
+import type { SeferLanguage, SeferType } from './common';
 
 /**
  * Client-safe vendor listing. `wholesalePrice` intentionally omitted —
@@ -24,6 +24,11 @@ export interface Sefer {
   englishName: string;
   phoneticName: string;
   type: SeferType;
+  /** Which specific work/volume this is within its type (e.g. type "gemara",
+   *  subType "succah") — see src/lib/seferTaxonomy.ts for the full list per type. */
+  subType?: string;
+  /** The language(s) this edition's text is printed in. */
+  languages?: SeferLanguage[];
   vendorListings: PublicVendorListing[];
 }
 

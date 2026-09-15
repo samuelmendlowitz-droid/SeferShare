@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SEFER_TYPES, type Sefer, type SeferType } from '../../types';
 import { listSefarim } from '../../services/sefarim';
+import { useLanguage } from '../../context/LanguageContext';
+import { subtypeLabel } from '../../lib/seferTaxonomy';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../layout/FilterSortSheet';
 import { Card } from '../ui/Card';
 import { SeferThumbnail } from '../ui/SeferThumbnail';
@@ -31,6 +33,7 @@ interface SeferPickerProps {
 
 export function SeferPicker({ picked, onChange }: SeferPickerProps) {
   const { t } = useTranslation();
+  const { showBilingual } = useLanguage();
   const [allSefarim, setAllSefarim] = useState<Sefer[]>([]);
   const [query, setQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -148,6 +151,12 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">
                     {sefer.englishName} · {sefer.hebrewName}
+                  </p>
+                  <p className="truncate text-xs text-text-muted">
+                    {t(`sefer.${sefer.type}`)}
+                    {subtypeLabel(sefer.type, sefer.subType, showBilingual)
+                      ? ` · ${subtypeLabel(sefer.type, sefer.subType, showBilingual)}`
+                      : ''}
                   </p>
                   <p className="text-xs text-text-muted">${listing.price.toFixed(2)}</p>
                 </div>

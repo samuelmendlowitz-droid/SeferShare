@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { subtypeLabel } from '../../lib/seferTaxonomy';
 import { deleteVendorListing, listSefarim, listVendorPricing, type VendorPricing } from '../../services/sefarim';
 import { classifyStockStatus, SEFER_TYPES, type Sefer, type SeferType, type StockStatus } from '../../types';
 import { SeferForm } from './SeferForm';
@@ -33,6 +35,7 @@ function stockLabelKey(status: StockStatus): string {
 export function CatalogTab({ filters, sortKey, groupKey }: CatalogTabProps) {
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const { showBilingual } = useLanguage();
   const [sefarim, setSefarim] = useState<Sefer[]>([]);
   const [vendorPricing, setVendorPricing] = useState<Map<string, VendorPricing>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -143,7 +146,12 @@ export function CatalogTab({ filters, sortKey, groupKey }: CatalogTabProps) {
                 <p className="truncate font-semibold">
                   {sefer.englishName} · {sefer.hebrewName}
                 </p>
-                <p className="text-sm text-text-muted">{t(`sefer.${sefer.type}`)}</p>
+                <p className="text-sm text-text-muted">
+                  {t(`sefer.${sefer.type}`)}
+                  {subtypeLabel(sefer.type, sefer.subType, showBilingual)
+                    ? ` · ${subtypeLabel(sefer.type, sefer.subType, showBilingual)}`
+                    : ''}
+                </p>
                 <p className="text-sm">
                   ${listing.price.toFixed(2)} — {listing.stockQty} {t('vendor.stockQty')}
                 </p>

@@ -1,6 +1,6 @@
 import { collection, deleteDoc, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { PublicVendorListing, Sefer, SeferType } from '../types';
+import type { PublicVendorListing, Sefer, SeferLanguage, SeferType } from '../types';
 
 const sefarimRef = collection(db, 'sefarim');
 
@@ -10,16 +10,21 @@ export async function listSefarim(): Promise<Sefer[]> {
 }
 
 /**
- * Matches an existing catalog entry by (englishName, type) so vendor submissions
- * for the same sefer merge into one master record instead of duplicating it (spec §11).
+ * Matches an existing catalog entry by (englishName, type, subType) so vendor
+ * submissions for the same sefer merge into one master record instead of
+ * duplicating it (spec §11).
  */
-async function findExistingSefer(englishName: string, type: SeferType): Promise<Sefer | null> {
+async function findExistingSefer(
+  englishName: string,
+  type: SeferType,
+  subType: string | undefined,
+): Promise<Sefer | null> {
   const snap = await getDocs(
     query(sefarimRef, where('englishName', '==', englishName), where('type', '==', type)),
   );
-  if (snap.empty) return null;
-  const d = snap.docs[0];
-  return { ...(d.data() as Sefer), seferId: d.id };
+  const match = snap.docs.find((d) => (d.data() as Sefer).subType === subType);
+  if (!match) return null;
+  return { ...(match.data() as Sefer), seferId: match.id };
 }
 
 export interface UpsertVendorListingInput {
@@ -28,6 +33,8 @@ export interface UpsertVendorListingInput {
   englishName: string;
   phoneticName: string;
   type: SeferType;
+  subType?: string;
+  languages?: SeferLanguage[];
   vendorId: string;
   vendorName: string;
   retailPrice: number;
@@ -50,7 +57,7 @@ export async function upsertVendorListing(input: UpsertVendorListingInput): Prom
     const snap = await getDoc(doc(db, 'sefarim', seferId));
     existing = snap.exists() ? ({ ...(snap.data() as Sefer), seferId } as Sefer) : null;
   } else {
-    existing = await findExistingSefer(input.englishName, input.type);
+    existing = await findExistingSefer(input.englishName, input.type, input.subType);
     seferId = existing?.seferId;
   }
 
@@ -75,6 +82,8 @@ export async function upsertVendorListing(input: UpsertVendorListingInput): Prom
         englishName: input.englishName,
         phoneticName: input.phoneticName,
         type: input.type,
+        subType: input.subType ?? null,
+        languages: input.languages ?? [],
         vendorListings: [...otherListings, publicListing],
       },
       { merge: true },
@@ -87,6 +96,8 @@ export async function upsertVendorListing(input: UpsertVendorListingInput): Prom
       englishName: input.englishName,
       phoneticName: input.phoneticName,
       type: input.type,
+      subType: input.subType ?? null,
+      languages: input.languages ?? [],
       vendorListings: [publicListing],
     });
   }

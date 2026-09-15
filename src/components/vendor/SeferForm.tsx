@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import { SEFER_TYPES, MAX_SEFER_IMAGES, type Sefer, type SeferType } from '../../types';
+import {
+  SEFER_LANGUAGES,
+  SEFER_TYPES,
+  MAX_SEFER_IMAGES,
+  type Sefer,
+  type SeferLanguage,
+  type SeferType,
+} from '../../types';
+import { getSubtypesFor } from '../../lib/seferTaxonomy';
 import { upsertVendorListing } from '../../services/sefarim';
 import { uploadSeferImages } from '../../services/storage';
 import { Button } from '../ui/Button';
@@ -25,6 +33,8 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
   const [englishName, setEnglishName] = useState(sefer?.englishName ?? '');
   const [phoneticName, setPhoneticName] = useState(sefer?.phoneticName ?? '');
   const [type, setType] = useState<SeferType>(sefer?.type ?? 'chumash');
+  const [subType, setSubType] = useState<string | undefined>(sefer?.subType);
+  const [languages, setLanguages] = useState<SeferLanguage[]>(sefer?.languages ?? []);
   const [retailPrice, setRetailPrice] = useState(myListing ? String(myListing.price) : '');
   const [wholesale, setWholesale] = useState(wholesalePrice !== undefined ? String(wholesalePrice) : '');
   const [stockQty, setStockQty] = useState(myListing ? String(myListing.stockQty) : '0');
@@ -39,6 +49,16 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
   }, [previewUrls]);
 
   const totalImages = existingImageUrls.length + imageFiles.length;
+  const subtypes = useMemo(() => getSubtypesFor(type), [type]);
+
+  function handleTypeChange(nextType: SeferType) {
+    setType(nextType);
+    setSubType((prev) => (getSubtypesFor(nextType).some((s) => s.value === prev) ? prev : undefined));
+  }
+
+  function toggleLanguage(lang: SeferLanguage) {
+    setLanguages((prev) => (prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang]));
+  }
 
   function addFiles(files: FileList | null) {
     if (!files) return;
@@ -68,6 +88,8 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
         englishName,
         phoneticName,
         type,
+        subType,
+        languages,
         vendorId: profile.uid,
         vendorName: profile.displayName,
         retailPrice: Number(retailPrice),
@@ -80,6 +102,8 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
         setHebrewName('');
         setEnglishName('');
         setPhoneticName('');
+        setSubType(undefined);
+        setLanguages([]);
         setRetailPrice('');
         setWholesale('');
         setStockQty('0');
@@ -119,7 +143,7 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
       />
       <select
         value={type}
-        onChange={(e) => setType(e.target.value as SeferType)}
+        onChange={(e) => handleTypeChange(e.target.value as SeferType)}
         className="w-full rounded-btn border border-border px-3 py-2 text-sm"
       >
         {SEFER_TYPES.map((seferType) => (
@@ -128,6 +152,49 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
           </option>
         ))}
       </select>
+
+      {subtypes.length > 0 && (
+        <div>
+          <p className="mb-1 text-xs text-text-muted">{t('sefer.subTypeLabel')}</p>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {subtypes.map((sub) => (
+              <button
+                key={sub.value}
+                type="button"
+                onClick={() => setSubType((prev) => (prev === sub.value ? undefined : sub.value))}
+                className={`shrink-0 whitespace-nowrap rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                  subType === sub.value
+                    ? 'border-accent bg-accent text-white'
+                    : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
+                }`}
+              >
+                {sub.en} · {sub.he}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <p className="mb-1 text-xs text-text-muted">{t('sefer.languagesLabel')}</p>
+        <div className="flex flex-wrap gap-2">
+          {SEFER_LANGUAGES.map((lang) => (
+            <button
+              key={lang}
+              type="button"
+              onClick={() => toggleLanguage(lang)}
+              className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                languages.includes(lang)
+                  ? 'border-accent bg-accent text-white'
+                  : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
+              }`}
+            >
+              {t(`sefer.languages.${lang}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <input
         required
         type="number"

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePushka } from '../../context/PushkaContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { subtypeLabel } from '../../lib/seferTaxonomy';
 import type { SeforimShopItem } from '../../hooks/useSeforimShopFeed';
 import { GiftCardOption } from '../donation/GiftCardOption';
 import { Card } from '../ui/Card';
@@ -16,6 +18,7 @@ interface SeforimShopListProps {
 
 export function SeforimShopList({ items, institutionId, institutionName }: SeforimShopListProps) {
   const { t } = useTranslation();
+  const { showBilingual } = useLanguage();
   const pushka = usePushka();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
@@ -64,7 +67,17 @@ export function SeforimShopList({ items, institutionId, institutionName }: Sefor
               <p className="truncate text-sm font-semibold">
                 {item.sefer.englishName} · {item.sefer.hebrewName}
               </p>
-              <p className="text-xs text-text-muted">{t(`sefer.${item.sefer.type}`)}</p>
+              <p className="text-xs text-text-muted">
+                {t(`sefer.${item.sefer.type}`)}
+                {subtypeLabel(item.sefer.type, item.sefer.subType, showBilingual)
+                  ? ` · ${subtypeLabel(item.sefer.type, item.sefer.subType, showBilingual)}`
+                  : ''}
+              </p>
+              {item.sefer.languages && item.sefer.languages.length > 0 && (
+                <p className="text-xs text-text-muted">
+                  {item.sefer.languages.map((lang) => t(`sefer.languages.${lang}`)).join(', ')}
+                </p>
+              )}
               {item.listing ? (
                 <p className="text-sm">${item.listing.price.toFixed(2)}</p>
               ) : (
