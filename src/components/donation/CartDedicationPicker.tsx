@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import { useNeshamaSearch } from '../../hooks/useNeshamaSearch';
@@ -7,7 +8,7 @@ import type { Neshama } from '../../types';
 import { FilterSortSheet, type SortOption } from '../layout/FilterSortSheet';
 import { Modal } from '../ui/Modal';
 import { NeshamaCreateForm } from '../shared/NeshamaCreateForm';
-import { FilterIcon, PlusIcon } from '../ui/icons';
+import { FilterIcon, PlusIcon, EditIcon } from '../ui/icons';
 
 interface CartDedicationPickerProps {
   value?: string;
@@ -17,6 +18,7 @@ interface CartDedicationPickerProps {
 /** Single-select neshama picker for the pushka's one cart-wide dedication. */
 export function CartDedicationPicker({ value, onChange }: CartDedicationPickerProps) {
   const { t } = useTranslation();
+  const { profile } = useAuth();
   const { showBilingual } = useLanguage();
   const { query, setQuery, sortKey, setSortKey, results, addCreated } = useNeshamaSearch();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -63,17 +65,36 @@ export function CartDedicationPicker({ value, onChange }: CartDedicationPickerPr
         {results.length === 0 && <p className="p-2 text-sm text-text-muted">{t('actions.noResults')}</p>}
         {results.map((n) => {
           const selected = value === n.neshamaId;
+          const isOwn = n.createdByUid === profile?.uid;
           return (
-            <button
+            <div
               key={n.neshamaId}
-              type="button"
-              onClick={() => onChange(selected ? undefined : n.neshamaId, selected ? undefined : n)}
-              className={`mb-1 flex w-full items-center justify-between rounded-btn px-3 py-2 text-left text-sm last:mb-0 ${
+              className={`mb-1 flex w-full items-center justify-between rounded-btn text-sm last:mb-0 ${
                 selected ? 'bg-accent text-white' : 'hover:bg-bg'
               }`}
             >
-              <span className="truncate">{neshamaDedicationLine(n, showBilingual)}</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => onChange(selected ? undefined : n.neshamaId, selected ? undefined : n)}
+                className="min-w-0 flex-1 truncate px-3 py-2 text-left"
+              >
+                {neshamaDedicationLine(n, showBilingual)}
+              </button>
+              {isOwn && (
+                <a
+                  href={`/neshamos/${n.neshamaId}/edit`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('neshama.edit') ?? ''}
+                  onClick={(e) => e.stopPropagation()}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center ${
+                    selected ? 'text-white/80' : 'text-text-muted hover:text-accent'
+                  }`}
+                >
+                  <EditIcon width={16} height={16} />
+                </a>
+              )}
+            </div>
           );
         })}
       </div>

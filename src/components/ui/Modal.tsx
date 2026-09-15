@@ -16,21 +16,21 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-text/40" onClick={onClose} />
-      <div className="relative max-h-[85vh] w-full max-w-md overflow-y-auto rounded-card bg-surface p-4 shadow-navbar">
-        <div className="mb-3 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 overflow-y-auto p-4">
+      <div className="fixed inset-0 -z-10 bg-text/40" onClick={onClose} />
+      <div className="relative mx-auto my-8 w-full max-w-md rounded-card bg-surface shadow-navbar">
+        <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-card bg-surface p-4 pb-3">
           <h2 className="text-base font-bold">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label={t('actions.cancel')}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted hover:bg-bg"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-muted hover:bg-bg"
           >
             <CloseIcon width={16} height={16} />
           </button>
         </div>
-        {children}
+        <div className="px-4 pb-4">{children}</div>
       </div>
     </div>
   );
