@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { TextField } from '../components/ui/TextField';
 
 export function LoginPage() {
   const { t } = useTranslation();
@@ -43,29 +44,22 @@ export function LoginPage() {
       <Card>
         <form onSubmit={handleSubmit} className="space-y-3">
           {mode === 'signUp' && (
-            <input
-              required
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder={t('auth.displayName') ?? ''}
-              className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-            />
+            <TextField required label={t('auth.displayName')} value={displayName} onChange={setDisplayName} />
           )}
-          <input
+          <TextField
             required
             type="email"
+            inputMode="email"
+            label={t('auth.email')}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t('auth.email') ?? ''}
-            className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+            onChange={setEmail}
           />
-          <input
+          <TextField
             required
             type="password"
+            label={t('auth.password')}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={t('auth.password') ?? ''}
-            className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+            onChange={setPassword}
           />
           {(error || redirectError) && (
             <p className="text-sm text-error">{error ?? redirectError}</p>

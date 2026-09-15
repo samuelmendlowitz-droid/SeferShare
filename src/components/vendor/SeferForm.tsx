@@ -14,6 +14,8 @@ import { upsertVendorListing } from '../../services/sefarim';
 import { uploadSeferImages } from '../../services/storage';
 import { Button } from '../ui/Button';
 import { CloseIcon } from '../ui/icons';
+import { NumberField } from '../ui/NumberField';
+import { FIELD_LABEL_CLASS, TextField } from '../ui/TextField';
 
 interface SeferFormProps {
   /** Pass the existing sefer to edit its listing; omit to add a new one. */
@@ -35,9 +37,9 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
   const [type, setType] = useState<SeferType>(sefer?.type ?? 'chumash');
   const [subType, setSubType] = useState<string | undefined>(sefer?.subType);
   const [languages, setLanguages] = useState<SeferLanguage[]>(sefer?.languages ?? []);
-  const [retailPrice, setRetailPrice] = useState(myListing ? String(myListing.price) : '');
-  const [wholesale, setWholesale] = useState(wholesalePrice !== undefined ? String(wholesalePrice) : '');
-  const [stockQty, setStockQty] = useState(myListing ? String(myListing.stockQty) : '0');
+  const [retailPrice, setRetailPrice] = useState(myListing?.price ?? 0);
+  const [wholesale, setWholesale] = useState(wholesalePrice ?? 0);
+  const [stockQty, setStockQty] = useState(myListing?.stockQty ?? 0);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>(myListing?.imageUrls ?? []);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
@@ -92,9 +94,9 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
         languages,
         vendorId: profile.uid,
         vendorName: profile.displayName,
-        retailPrice: Number(retailPrice),
-        wholesalePrice: Number(wholesale),
-        stockQty: Number(stockQty),
+        retailPrice,
+        wholesalePrice: wholesale,
+        stockQty,
         imageUrls: [...existingImageUrls, ...uploadedUrls],
       });
 
@@ -104,9 +106,9 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
         setPhoneticName('');
         setSubType(undefined);
         setLanguages([]);
-        setRetailPrice('');
-        setWholesale('');
-        setStockQty('0');
+        setRetailPrice(0);
+        setWholesale(0);
+        setStockQty(0);
         setImageFiles([]);
         setExistingImageUrls([]);
       }
@@ -120,42 +122,27 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <input
-        required
-        value={hebrewName}
-        onChange={(e) => setHebrewName(e.target.value)}
-        placeholder={t('sefer.hebrewName') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <input
-        required
-        value={englishName}
-        onChange={(e) => setEnglishName(e.target.value)}
-        placeholder={t('sefer.englishName') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <input
-        required
-        value={phoneticName}
-        onChange={(e) => setPhoneticName(e.target.value)}
-        placeholder={t('sefer.phoneticName') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <select
-        value={type}
-        onChange={(e) => handleTypeChange(e.target.value as SeferType)}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      >
-        {SEFER_TYPES.map((seferType) => (
-          <option key={seferType} value={seferType}>
-            {t(`sefer.${seferType}`)}
-          </option>
-        ))}
-      </select>
+      <TextField required label={t('sefer.hebrewName')} value={hebrewName} onChange={setHebrewName} />
+      <TextField required label={t('sefer.englishName')} value={englishName} onChange={setEnglishName} />
+      <TextField required label={t('sefer.phoneticName')} value={phoneticName} onChange={setPhoneticName} />
+      <div>
+        <label className={FIELD_LABEL_CLASS}>{t('sefer.type')}</label>
+        <select
+          value={type}
+          onChange={(e) => handleTypeChange(e.target.value as SeferType)}
+          className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+        >
+          {SEFER_TYPES.map((seferType) => (
+            <option key={seferType} value={seferType}>
+              {t(`sefer.${seferType}`)}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {subtypes.length > 0 && (
         <div>
-          <p className="mb-1 text-xs text-text-muted">{t('sefer.subTypeLabel')}</p>
+          <p className={FIELD_LABEL_CLASS}>{t('sefer.subTypeLabel')}</p>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {subtypes.map((sub) => (
               <button
@@ -176,7 +163,7 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
       )}
 
       <div>
-        <p className="mb-1 text-xs text-text-muted">{t('sefer.languagesLabel')}</p>
+        <p className={FIELD_LABEL_CLASS}>{t('sefer.languagesLabel')}</p>
         <div className="flex flex-wrap gap-2">
           {SEFER_LANGUAGES.map((lang) => (
             <button
@@ -195,36 +182,9 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
         </div>
       </div>
 
-      <input
-        required
-        type="number"
-        min="0"
-        step="0.01"
-        value={retailPrice}
-        onChange={(e) => setRetailPrice(e.target.value)}
-        placeholder={t('vendor.retailPrice') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <input
-        required
-        type="number"
-        min="0"
-        step="0.01"
-        value={wholesale}
-        onChange={(e) => setWholesale(e.target.value)}
-        placeholder={t('vendor.wholesalePrice') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <input
-        required
-        type="number"
-        min="0"
-        step="1"
-        value={stockQty}
-        onChange={(e) => setStockQty(e.target.value)}
-        placeholder={t('vendor.stockQty') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
+      <NumberField required label={t('vendor.retailPrice')} value={retailPrice} onChange={setRetailPrice} min={0} money />
+      <NumberField required label={t('vendor.wholesalePrice')} value={wholesale} onChange={setWholesale} min={0} money />
+      <NumberField required label={t('vendor.stockQty')} value={stockQty} onChange={setStockQty} min={0} />
 
       <div>
         <p className="mb-2 text-sm text-text-muted">{t('vendor.images', { max: MAX_SEFER_IMAGES })}</p>

@@ -14,7 +14,9 @@ import { CartDedicationPicker } from '../components/donation/CartDedicationPicke
 import { VirtualDedicationCard, type StickerInfo } from '../components/donation/VirtualDedicationCard';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { NumberField } from '../components/ui/NumberField';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
+import { TextField, TextAreaField } from '../components/ui/TextField';
 import { GiftIcon, MinusIcon, PlusIcon, CloseIcon } from '../components/ui/icons';
 
 function toPickedItem(item: PushkaItem): PickedItem {
@@ -312,17 +314,15 @@ export function PushkaPage() {
                 </label>
                 {includeAd && (
                   <div className="mt-3 space-y-2">
-                    <input
+                    <TextField
+                      label={t('donation.adBusinessName')}
                       value={ad.businessName}
-                      onChange={(e) => setAd({ ...ad, businessName: e.target.value })}
-                      placeholder={t('donation.adBusinessName') ?? ''}
-                      className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+                      onChange={(v) => setAd({ ...ad, businessName: v })}
                     />
-                    <input
+                    <TextField
+                      label={t('donation.adMessagePlaceholder')}
                       value={ad.message ?? ''}
-                      onChange={(e) => setAd({ ...ad, message: e.target.value })}
-                      placeholder={t('donation.adMessagePlaceholder') ?? ''}
-                      className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+                      onChange={(v) => setAd({ ...ad, message: v })}
                     />
                   </div>
                 )}
@@ -334,12 +334,12 @@ export function PushkaPage() {
             <p className="mt-4 text-xs text-text-muted">{t('donation.giftCardNoDedicationHint')}</p>
           )}
 
-          <textarea
+          <TextAreaField
+            label={t('donation.message')}
             value={donorMessage}
-            onChange={(e) => setDonorMessage(e.target.value)}
-            placeholder={t('donation.message') ?? ''}
-            className="mb-4 mt-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
+            onChange={setDonorMessage}
             rows={3}
+            containerClassName="mb-4 mt-4"
           />
 
           <CheckoutStep
@@ -369,17 +369,14 @@ function GiftCardRow({ giftCard }: { giftCard: PushkaGiftCard }) {
         <p className="truncate text-sm font-semibold">
           {giftCard.campaignTitle || giftCard.institutionName || t('donation.giftCardOption')}
         </p>
-        <div className="mt-1 flex items-center gap-1 text-sm">
-          <span className="text-text-muted">$</span>
-          <input
-            type="number"
-            min={1}
-            step="0.01"
-            value={giftCard.amount}
-            onChange={(e) => pushka.updateGiftCardAmount(giftCard.id, Number(e.target.value))}
-            className="w-20 rounded-btn border border-border px-2 py-1 text-sm"
-          />
-        </div>
+        <NumberField
+          label={t('donation.amountLabel')}
+          value={giftCard.amount}
+          onChange={(amount) => pushka.updateGiftCardAmount(giftCard.id, amount)}
+          min={0}
+          money
+          containerClassName="mt-1 w-24"
+        />
       </div>
       <button
         type="button"

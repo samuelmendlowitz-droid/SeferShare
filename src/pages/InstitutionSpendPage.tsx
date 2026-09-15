@@ -8,6 +8,7 @@ import { SeferPicker, type PickedItem } from '../components/donation/SeferPicker
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { TextField, TextAreaField } from '../components/ui/TextField';
 
 export function InstitutionSpendPage() {
   const { t } = useTranslation();
@@ -111,18 +112,8 @@ export function InstitutionSpendPage() {
       <Card className="mt-4">
         <h2 className="mb-2 text-base font-semibold">{t('institution.spendDedicationTitle')}</h2>
         <div className="space-y-2">
-          <input
-            value={dedicationName}
-            onChange={(e) => setDedicationName(e.target.value)}
-            placeholder={t('neshama.name') ?? ''}
-            className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-          />
-          <input
-            value={dedicationHebrewName}
-            onChange={(e) => setDedicationHebrewName(e.target.value)}
-            placeholder={t('neshama.hebrewName') ?? ''}
-            className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-          />
+          <TextField label={t('neshama.name')} value={dedicationName} onChange={setDedicationName} />
+          <TextField label={t('neshama.hebrewName')} value={dedicationHebrewName} onChange={setDedicationHebrewName} />
         </div>
       </Card>
 
@@ -133,28 +124,26 @@ export function InstitutionSpendPage() {
         </label>
         {includeAd && (
           <div className="mt-3 space-y-2">
-            <input
+            <TextField
+              label={t('donation.adBusinessName')}
               value={ad.businessName}
-              onChange={(e) => setAd({ ...ad, businessName: e.target.value })}
-              placeholder={t('donation.adBusinessName') ?? ''}
-              className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+              onChange={(v) => setAd({ ...ad, businessName: v })}
             />
-            <input
+            <TextField
+              label={t('donation.adMessagePlaceholder')}
               value={ad.message ?? ''}
-              onChange={(e) => setAd({ ...ad, message: e.target.value })}
-              placeholder={t('donation.adMessagePlaceholder') ?? ''}
-              className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+              onChange={(v) => setAd({ ...ad, message: v })}
             />
           </div>
         )}
       </Card>
 
-      <textarea
+      <TextAreaField
+        label={t('donation.message')}
         value={donorMessage}
-        onChange={(e) => setDonorMessage(e.target.value)}
-        placeholder={t('donation.message') ?? ''}
-        className="mb-4 mt-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
+        onChange={setDonorMessage}
         rows={3}
+        containerClassName="mb-4 mt-4"
       />
 
       <Card>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { NumberField } from '../ui/NumberField';
 import { GiftIcon } from '../ui/icons';
 
 interface GiftCardOptionProps {
@@ -14,15 +15,14 @@ interface GiftCardOptionProps {
 export function GiftCardOption({ onAdd }: GiftCardOptionProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(0);
 
-  const parsed = Number(amount);
-  const valid = amount.trim() !== '' && Number.isFinite(parsed) && parsed > 0;
+  const valid = amount > 0;
 
   function handleAdd() {
     if (!valid) return;
-    onAdd(Math.round(parsed * 100) / 100);
-    setAmount('');
+    onAdd(Math.round(amount * 100) / 100);
+    setAmount(0);
     setOpen(false);
   }
 
@@ -44,18 +44,7 @@ export function GiftCardOption({ onAdd }: GiftCardOptionProps) {
 
       {open && (
         <div className="mt-3 space-y-2 border-t border-border pt-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-text-muted">$</span>
-            <input
-              type="number"
-              min={1}
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-            />
-          </div>
+          <NumberField label={t('donation.amountLabel')} value={amount} onChange={setAmount} min={0} money />
           <Button className="w-full" disabled={!valid} onClick={handleAdd}>
             {t('donation.giftCardAdd')}
           </Button>

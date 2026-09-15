@@ -6,6 +6,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { subtypeLabel } from '../../lib/seferTaxonomy';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../layout/FilterSortSheet';
 import { Card } from '../ui/Card';
+import { NumberField } from '../ui/NumberField';
 import { SeferThumbnail } from '../ui/SeferThumbnail';
 import { FilterIcon } from '../ui/icons';
 
@@ -184,12 +185,12 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
               <span className="flex-1 truncate text-sm">
                 {item.englishName} · {item.hebrewName}
               </span>
-              <input
-                type="number"
-                min={0}
+              <NumberField
+                label={t('campaign.quantityLabel')}
                 value={item.quantity}
-                onChange={(e) => updateQuantity(item.seferId, item.vendorId, Number(e.target.value))}
-                className="w-16 rounded-btn border border-border px-2 py-1 text-sm"
+                onChange={(quantity) => updateQuantity(item.seferId, item.vendorId, quantity)}
+                min={0}
+                containerClassName="w-20 shrink-0"
               />
             </div>
           ))}

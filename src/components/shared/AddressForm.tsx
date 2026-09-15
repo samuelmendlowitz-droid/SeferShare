@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { Address } from '../../types';
+import { TextField } from '../ui/TextField';
 
 interface AddressFormProps {
   value: Address;
@@ -16,44 +17,34 @@ export function AddressForm({ value, onChange }: AddressFormProps) {
   return (
     <div className="space-y-2">
       <p className="text-sm text-text-muted">{t('campaign.shippingAddress')}</p>
-      <input
-        value={value.line1}
-        onChange={(e) => set('line1', e.target.value)}
-        placeholder="Address line 1"
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <input
-        value={value.line2 ?? ''}
-        onChange={(e) => set('line2', e.target.value)}
-        placeholder="Address line 2 (optional)"
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
+      <TextField label={t('address.line1')} value={value.line1} onChange={(v) => set('line1', v)} />
+      <TextField label={t('address.line2')} value={value.line2 ?? ''} onChange={(v) => set('line2', v)} />
       <div className="flex gap-2">
-        <input
+        <TextField
+          label={t('address.city')}
           value={value.city}
-          onChange={(e) => set('city', e.target.value)}
-          placeholder="City"
-          className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+          onChange={(v) => set('city', v)}
+          containerClassName="w-full"
         />
-        <input
+        <TextField
+          label={t('address.state')}
           value={value.state}
-          onChange={(e) => set('state', e.target.value)}
-          placeholder="State"
-          className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+          onChange={(v) => set('state', v)}
+          containerClassName="w-full"
         />
       </div>
       <div className="flex gap-2">
-        <input
+        <TextField
+          label={t('address.postalCode')}
           value={value.postalCode}
-          onChange={(e) => set('postalCode', e.target.value)}
-          placeholder="Postal code"
-          className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+          onChange={(v) => set('postalCode', v)}
+          containerClassName="w-full"
         />
-        <input
+        <TextField
+          label={t('address.country')}
           value={value.country}
-          onChange={(e) => set('country', e.target.value)}
-          placeholder="Country"
-          className="w-full rounded-btn border border-border px-3 py-2 text-sm"
+          onChange={(v) => set('country', v)}
+          containerClassName="w-full"
         />
       </div>
     </div>

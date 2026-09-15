@@ -27,6 +27,14 @@
     "neshamosEmpty": "No neshamas have been dedicated yet.",
     "seforimEmpty": "No seforim available yet."
   },
+  "address": {
+    "line1": "Address line 1",
+    "line2": "Address line 2 (optional)",
+    "city": "City",
+    "state": "State",
+    "postalCode": "Postal code",
+    "country": "Country"
+  },
   "campaign": {
     "create": "New Campaign",
     "campaignsHeading": "Campaigns",
@@ -50,7 +58,8 @@
     "view": "View campaign",
     "delete": "Delete campaign",
     "confirmDelete": "Delete this campaign? This can't be undone.",
-    "deleteHint": "Deleting a campaign removes it permanently, including its progress toward its goal."
+    "deleteHint": "Deleting a campaign removes it permanently, including its progress toward its goal.",
+    "quantityLabel": "Quantity"
   },
   "neshama": {
     "name": "Name",
@@ -58,6 +67,7 @@
     "son": "Son (בן)",
     "daughter": "Daughter (בת)",
     "fatherHebrewName": "Father's full Hebrew name",
+    "parentGenderLabel": "Son or daughter",
     "seferTypesLabel": "Which seforim should people dedicate in their honor?",
     "stickerDefault": "Sticker default",
     "liluyNishmat": "LI\"N",
@@ -168,7 +178,8 @@
     "giftCardOption": "Donate a gift card instead",
     "giftCardHint": "Give money the institution can spend on any seforim it needs. Dedication stickers and ads aren't available for gift card donations.",
     "giftCardAdd": "Add gift card",
-    "giftCardNoDedicationHint": "Gift cards don't carry a dedication sticker or ad — the institution adds their own when they spend it."
+    "giftCardNoDedicationHint": "Gift cards don't carry a dedication sticker or ad — the institution adds their own when they spend it.",
+    "amountLabel": "Amount"
   },
   "vendor": {
     "catalog": "Catalog",

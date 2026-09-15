@@ -9,6 +9,7 @@ import { FilterSortSheet, type FilterGroup, type SortOption } from '../layout/Fi
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { AddressForm } from './AddressForm';
+import { SelectField, TextField } from '../ui/TextField';
 import { FilterIcon, PlusIcon } from '../ui/icons';
 
 const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
@@ -180,29 +181,14 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={t('institution.addNew')}>
         <div className="space-y-2">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t('institution.name') ?? ''}
-            className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-          />
-          <input
-            value={hebrewName}
-            onChange={(e) => setHebrewName(e.target.value)}
-            placeholder={t('institution.hebrewName') ?? ''}
-            className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-          />
-          <select
+          <TextField label={t('institution.name')} value={name} onChange={setName} />
+          <TextField label={t('institution.hebrewName')} value={hebrewName} onChange={setHebrewName} />
+          <SelectField
+            label={t('institution.type')}
             value={type}
-            onChange={(e) => setType(e.target.value as InstitutionType)}
-            className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-          >
-            {INSTITUTION_TYPES.map((t2) => (
-              <option key={t2} value={t2}>
-                {t(`institution.${t2}`)}
-              </option>
-            ))}
-          </select>
+            onChange={setType}
+            options={INSTITUTION_TYPES.map((t2) => ({ value: t2, label: t(`institution.${t2}`) }))}
+          />
           <AddressForm value={address} onChange={setAddress} />
           <Button className="w-full" disabled={!name} onClick={handleCreate}>
             {t('actions.add')}

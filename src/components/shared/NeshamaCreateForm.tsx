@@ -4,6 +4,7 @@ import { SEFER_TYPES, type Neshama, type ParentGender, type SeferType } from '..
 import { createNeshama } from '../../services/neshamos';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
+import { FIELD_LABEL_CLASS, TextField } from '../ui/TextField';
 
 interface NeshamaCreateFormProps {
   onCreated: (neshama: Neshama) => void;
@@ -61,46 +62,34 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
 
   return (
     <div className="space-y-2">
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder={t('neshama.name') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <input
-        value={hebrewName}
-        onChange={(e) => setHebrewName(e.target.value)}
-        placeholder={t('neshama.hebrewName') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => setParentGender('son')}
-          className={`flex-1 rounded-btn border px-3 py-2 text-sm font-medium ${
-            parentGender === 'son' ? 'border-accent bg-accent text-white' : 'border-border text-text-muted'
-          }`}
-        >
-          {t('neshama.son')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setParentGender('daughter')}
-          className={`flex-1 rounded-btn border px-3 py-2 text-sm font-medium ${
-            parentGender === 'daughter' ? 'border-accent bg-accent text-white' : 'border-border text-text-muted'
-          }`}
-        >
-          {t('neshama.daughter')}
-        </button>
-      </div>
-      <input
-        value={fatherHebrewName}
-        onChange={(e) => setFatherHebrewName(e.target.value)}
-        placeholder={t('neshama.fatherHebrewName') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
+      <TextField label={t('neshama.name')} value={name} onChange={setName} />
+      <TextField label={t('neshama.hebrewName')} value={hebrewName} onChange={setHebrewName} />
       <div>
-        <p className="mb-1 text-xs text-text-muted">{t('neshama.seferTypesLabel')}</p>
+        <p className={FIELD_LABEL_CLASS}>{t('neshama.parentGenderLabel')}</p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setParentGender('son')}
+            className={`flex-1 rounded-btn border px-3 py-2 text-sm font-medium ${
+              parentGender === 'son' ? 'border-accent bg-accent text-white' : 'border-border text-text-muted'
+            }`}
+          >
+            {t('neshama.son')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setParentGender('daughter')}
+            className={`flex-1 rounded-btn border px-3 py-2 text-sm font-medium ${
+              parentGender === 'daughter' ? 'border-accent bg-accent text-white' : 'border-border text-text-muted'
+            }`}
+          >
+            {t('neshama.daughter')}
+          </button>
+        </div>
+      </div>
+      <TextField label={t('neshama.fatherHebrewName')} value={fatherHebrewName} onChange={setFatherHebrewName} />
+      <div>
+        <p className={FIELD_LABEL_CLASS}>{t('neshama.seferTypesLabel')}</p>
         <div className="flex flex-wrap gap-2">
           {SEFER_TYPES.map((type) => (
             <button

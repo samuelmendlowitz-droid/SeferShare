@@ -11,6 +11,7 @@ import { NeshamaPicker } from '../components/shared/NeshamaPicker';
 import { AddressForm } from '../components/shared/AddressForm';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { TextField, TextAreaField } from '../components/ui/TextField';
 
 const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
 
@@ -87,20 +88,20 @@ export function CampaignCreatePage() {
 
       <h1 className="mb-4 text-lg font-bold">{t('campaign.create')}</h1>
 
-      <input
+      <TextField
         required
+        label={t('campaign.titlePlaceholder')}
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder={t('campaign.titlePlaceholder') ?? ''}
-        className="mb-3 w-full rounded-btn border border-border px-3 py-2 text-sm"
+        onChange={setTitle}
+        containerClassName="mb-3"
       />
 
-      <textarea
+      <TextAreaField
+        label={t('campaign.descriptionOptional')}
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder={t('campaign.descriptionOptional') ?? ''}
+        onChange={setDescription}
         rows={4}
-        className="mb-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
+        containerClassName="mb-4"
       />
 
       <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWhere')}</p>

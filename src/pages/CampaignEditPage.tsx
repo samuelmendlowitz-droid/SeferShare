@@ -13,7 +13,9 @@ import { AddressForm } from '../components/shared/AddressForm';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { NumberField } from '../components/ui/NumberField';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
+import { TextField, TextAreaField } from '../components/ui/TextField';
 
 function addressesEqual(a: Address, b: Address): boolean {
   return (
@@ -195,20 +197,20 @@ export function CampaignEditPage() {
 
       <h1 className="mb-4 text-lg font-bold">{t('campaign.edit')}</h1>
 
-      <input
+      <TextField
         required
+        label={t('campaign.titlePlaceholder')}
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder={t('campaign.titlePlaceholder') ?? ''}
-        className="mb-3 w-full rounded-btn border border-border px-3 py-2 text-sm"
+        onChange={setTitle}
+        containerClassName="mb-3"
       />
 
-      <textarea
+      <TextAreaField
+        label={t('campaign.descriptionOptional')}
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder={t('campaign.descriptionOptional') ?? ''}
+        onChange={setDescription}
         rows={4}
-        className="mb-4 w-full rounded-btn border border-border px-3 py-2 text-sm"
+        containerClassName="mb-4"
       />
 
       <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWhere')}</p>
@@ -240,12 +242,12 @@ export function CampaignEditPage() {
                     : `$${item.retailPrice.toFixed(2)}`}
                 </p>
               </div>
-              <input
-                type="number"
+              <NumberField
+                label={t('campaign.quantityLabel')}
                 min={item.quantityFulfilled}
                 value={item.quantity}
-                onChange={(e) => updateExistingQuantity(index, Number(e.target.value))}
-                className="w-16 shrink-0 rounded-btn border border-border px-2 py-1 text-center text-sm"
+                onChange={(quantity) => updateExistingQuantity(index, quantity)}
+                containerClassName="w-20 shrink-0"
               />
               <button
                 type="button"

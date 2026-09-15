@@ -8,6 +8,7 @@ import { AddressForm } from '../components/shared/AddressForm';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { SelectField, TextField } from '../components/ui/TextField';
 
 export function InstitutionEditPage() {
   const { t } = useTranslation();
@@ -103,29 +104,14 @@ export function InstitutionEditPage() {
       <h1 className="mb-4 text-lg font-bold">{t('institution.edit')}</h1>
 
       <div className="space-y-2">
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t('institution.name') ?? ''}
-          className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-        />
-        <input
-          value={hebrewName}
-          onChange={(e) => setHebrewName(e.target.value)}
-          placeholder={t('institution.hebrewName') ?? ''}
-          className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-        />
-        <select
+        <TextField label={t('institution.name')} value={name} onChange={setName} />
+        <TextField label={t('institution.hebrewName')} value={hebrewName} onChange={setHebrewName} />
+        <SelectField
+          label={t('institution.type')}
           value={type}
-          onChange={(e) => setType(e.target.value as InstitutionType)}
-          className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-        >
-          {INSTITUTION_TYPES.map((t2) => (
-            <option key={t2} value={t2}>
-              {t(`institution.${t2}`)}
-            </option>
-          ))}
-        </select>
+          onChange={setType}
+          options={INSTITUTION_TYPES.map((t2) => ({ value: t2, label: t(`institution.${t2}`) }))}
+        />
         <AddressForm value={address} onChange={setAddress} />
       </div>
 

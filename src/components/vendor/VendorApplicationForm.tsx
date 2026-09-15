@@ -5,6 +5,7 @@ import { applyToBeVendor } from '../../services/users';
 import type { Address } from '../../types';
 import { AddressForm } from '../shared/AddressForm';
 import { Button } from '../ui/Button';
+import { TextField, TextAreaField } from '../ui/TextField';
 
 const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
 
@@ -49,44 +50,12 @@ export function VendorApplicationForm({ onSubmitted }: VendorApplicationFormProp
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <input
-        required
-        value={companyName}
-        onChange={(e) => setCompanyName(e.target.value)}
-        placeholder={t('vendor.companyName') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <input
-        required
-        value={contactName}
-        onChange={(e) => setContactName(e.target.value)}
-        placeholder={t('vendor.contactName') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <input
-        required
-        type="tel"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        placeholder={t('auth.phone') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
-      <input
-        required
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder={t('auth.email') ?? ''}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
+      <TextField required label={t('vendor.companyName')} value={companyName} onChange={setCompanyName} />
+      <TextField required label={t('vendor.contactName')} value={contactName} onChange={setContactName} />
+      <TextField required type="tel" inputMode="tel" label={t('auth.phone')} value={phone} onChange={setPhone} />
+      <TextField required type="email" inputMode="email" label={t('auth.email')} value={email} onChange={setEmail} />
       <AddressForm value={address} onChange={setAddress} />
-      <textarea
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        placeholder={t('vendor.notesOptional') ?? ''}
-        rows={3}
-        className="w-full rounded-btn border border-border px-3 py-2 text-sm"
-      />
+      <TextAreaField label={t('vendor.notesOptional')} value={notes} onChange={setNotes} rows={3} />
       {error && <p className="text-sm text-error">{error}</p>}
       <Button type="submit" disabled={submitting} className="w-full">
         {t('vendor.submitApplication')}
