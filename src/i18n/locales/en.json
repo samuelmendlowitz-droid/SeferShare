@@ -310,6 +310,28 @@
     "increaseQuantity": "Increase quantity",
     "decreaseQuantity": "Decrease quantity"
   },
+  "sticker": {
+    "customize": "Customize sticker design",
+    "editorTitle": "Design your dedication sticker",
+    "layoutLabel": "Layout",
+    "frameLabel": "Frame",
+    "dividerLabel": "Divider",
+    "flourishLabel": "Flourish",
+    "fontLabel": "Font",
+    "colorsLabel": "Colors",
+    "saveAsDefault": "Save these settings for next time",
+    "saved": "Saved!",
+    "element": {
+      "background": "Background",
+      "frame": "Frame",
+      "divider": "Divider",
+      "flourish": "Flourish",
+      "label": "Label",
+      "dedication": "Name",
+      "message": "Message",
+      "donor": "Donor"
+    }
+  },
   "orderStatus": {
     "pending": "Pending",
     "shipped": "Shipped",

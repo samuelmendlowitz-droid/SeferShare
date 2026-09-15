@@ -7,13 +7,18 @@ import { usePushka, type PushkaGiftCard, type PushkaItem } from '../context/Push
 import { getCampaign } from '../services/campaigns';
 import { getNeshama } from '../services/neshamos';
 import { neshamaDedicationLine, prefixedName } from '../lib/neshamaFormat';
-import type { Campaign, DonationAd, DonationDedication, DonationGiftCard, Neshama } from '../types';
+import { DEFAULT_STICKER_DESIGN } from '../lib/stickerDesign';
+import { updateDefaultStickerDesign } from '../services/users';
+import type { Campaign, DonationAd, DonationDedication, DonationGiftCard, Neshama, StickerDesign } from '../types';
 import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
 import { CartDedicationPicker } from '../components/donation/CartDedicationPicker';
 import { VirtualDedicationCard, type StickerInfo } from '../components/donation/VirtualDedicationCard';
+import { StickerDesignEditor } from '../components/donation/StickerDesignEditor';
+import type { StickerContent } from '../components/donation/StickerPreview';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { Modal } from '../components/ui/Modal';
 import { NumberField } from '../components/ui/NumberField';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
 import { TextField, TextAreaField } from '../components/ui/TextField';
@@ -92,6 +97,19 @@ export function PushkaPage() {
   const [paidItems, setPaidItems] = useState<PushkaItem[]>([]);
   const [paidGiftCards, setPaidGiftCards] = useState<PushkaGiftCard[]>([]);
   const [paidStickers, setPaidStickers] = useState<StickerInfo[]>([]);
+  const [paidStickerDesign, setPaidStickerDesign] = useState<StickerDesign>(DEFAULT_STICKER_DESIGN);
+
+  const [stickerDesign, setStickerDesign] = useState<StickerDesign>(DEFAULT_STICKER_DESIGN);
+  const [stickerDesignSeeded, setStickerDesignSeeded] = useState(false);
+  const [stickerEditorOpen, setStickerEditorOpen] = useState(false);
+
+  // Seed once from the donor's saved default the first time their profile loads,
+  // without clobbering choices they've already made in this session.
+  useEffect(() => {
+    if (stickerDesignSeeded || !profile) return;
+    if (profile.defaultStickerDesign) setStickerDesign(profile.defaultStickerDesign);
+    setStickerDesignSeeded(true);
+  }, [profile, stickerDesignSeeded]);
 
   const groups = useMemo(() => {
     const byCampaign = new Map<string, PushkaItem[]>();
@@ -189,6 +207,7 @@ export function PushkaPage() {
       stickers.push({ label: t('donation.yourDedicationTitle'), name: t('donation.algorithmChoice') });
     }
     setPaidStickers(stickers);
+    setPaidStickerDesign(stickerDesign);
     pushka.clear();
     setDedicationNeshamaId(undefined);
     setDedicationNeshama(undefined);
@@ -207,6 +226,22 @@ export function PushkaPage() {
       }
     : undefined;
 
+  // What the sticker editor's live preview shows: the donor's own cart-wide pick if
+  // they made one, else the first campaign's neshama, else a placeholder — the same
+  // priority the printed sticker itself follows (see stickers[] above).
+  const previewNeshama = dedicationNeshama ?? campaignStickerGroups[0]?.neshama;
+  const stickerPreviewContent: StickerContent = {
+    label: dedicationNeshama
+      ? t('donation.yourDedicationTitle')
+      : campaignStickerGroups[0]?.campaignTitle || t('donation.yourDedicationTitle'),
+    dedicationName: previewNeshama
+      ? (prefixedName(previewNeshama, false) ?? previewNeshama.name)
+      : t('donation.algorithmChoice'),
+    dedicationHebrewName: previewNeshama ? prefixedName(previewNeshama, true) : undefined,
+    message: donorMessage || undefined,
+    donorName: profile?.displayName,
+  };
+
   if (step === 'confirmation') {
     return (
       <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
@@ -215,6 +250,7 @@ export function PushkaPage() {
           items={paidItems.map((item) => toPickedItem(item))}
           giftCards={paidGiftCards}
           stickers={paidStickers}
+          stickerDesign={paidStickerDesign}
           ad={includeAd && ad.businessName.trim() ? ad : undefined}
         />
         <Button className="mt-4 w-full" onClick={() => navigate('/')}>
@@ -311,6 +347,10 @@ export function PushkaPage() {
                 {!dedicationNeshama && hasAlgorithmStickerItems && (
                   <p className="mt-2 text-xs text-text-muted">{t('donation.algorithmWillChooseHint')}</p>
                 )}
+
+                <Button variant="secondary" className="mt-3 w-full" onClick={() => setStickerEditorOpen(true)}>
+                  {t('sticker.customize')}
+                </Button>
               </Card>
 
               <Card className="mt-4">
@@ -353,11 +393,21 @@ export function PushkaPage() {
             giftCards={pushka.giftCards.map((g) => toDonationGiftCard(g))}
             donorMessage={donorMessage}
             donorDedication={donorDedication}
+            stickerDesign={pushka.items.length > 0 ? stickerDesign : undefined}
             ad={includeAd && ad.businessName.trim() ? ad : undefined}
             onPaid={handlePaid}
           />
         </>
       )}
+
+      <Modal open={stickerEditorOpen} onClose={() => setStickerEditorOpen(false)} title={t('sticker.editorTitle')}>
+        <StickerDesignEditor
+          value={stickerDesign}
+          onChange={setStickerDesign}
+          content={stickerPreviewContent}
+          onSaveDefault={profile ? () => updateDefaultStickerDesign(profile.uid, stickerDesign) : undefined}
+        />
+      </Modal>
     </div>
   );
 }

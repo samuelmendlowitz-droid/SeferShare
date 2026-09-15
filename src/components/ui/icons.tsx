@@ -152,3 +152,33 @@ export function EditIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function StarOfDavidIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3 19 15.5H5Z" />
+      <path d="M12 21 5 8.5h14Z" />
+    </Icon>
+  );
+}
+
+export function LeafIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3c-4.5 4-4.5 10.5 0 15 4.5-4.5 4.5-11 0-15Z" />
+      <path d="M12 9.5V19" />
+    </Icon>
+  );
+}
+
+export function MenorahIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M12 4v10" />
+      <path d="M12 7c-4 0-6.5 2.5-6.5 6.5M12 7c4 0 6.5 2.5 6.5 6.5" />
+      <path d="M12 5.5c-6 0-9.5 3.5-9.5 8M12 5.5c6 0 9.5 3.5 9.5 8" />
+      <path d="M6 20h12" />
+      <path d="M12 14v6" />
+    </Icon>
+  );
+}

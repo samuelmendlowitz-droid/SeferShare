@@ -99,6 +99,29 @@ export interface DonationAd {
   message?: string;
 }
 
+export interface StickerColorSet {
+  background: string;
+  frame: string;
+  divider: string;
+  flourish: string;
+  label: string;
+  dedication: string;
+  message: string;
+  donor: string;
+}
+
+/** The dedication sticker's editable design, chosen in the cart — see
+ *  src/lib/stickerDesign.ts on the client for the curated option lists this
+ *  references. Opaque here: the server just stores and echoes it back. */
+export interface StickerDesign {
+  layout: string;
+  frame: 'none' | 'thin' | 'double' | 'ornate';
+  divider: 'none' | 'line' | 'dots' | 'starLine';
+  flourish: 'none' | 'star' | 'leaf' | 'menorah';
+  font: 'sans' | 'serif' | 'script';
+  colors: StickerColorSet;
+}
+
 export interface DonationSticker {
   seferId: string;
   vendorId: string;
@@ -125,6 +148,7 @@ export interface Donation {
   donorDedication?: DonationDedication | null;
   // Per-physical-copy dedication, resolved at confirmDonation time (see dedication.ts).
   stickers?: DonationSticker[];
+  stickerDesign?: StickerDesign | null;
   ad?: DonationAd | null;
   roundedUpFee: boolean;
   totalCharged: number;

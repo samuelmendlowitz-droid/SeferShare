@@ -3,7 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { db } from './lib/firebaseAdmin';
 import { getStripe, stripeSecretKey } from './lib/stripe';
 import { priceGiftCards, priceItems } from './pricing';
-import type { DonationAd, DonationDedication, DonationGiftCard, DonationItem } from './types';
+import type { DonationAd, DonationDedication, DonationGiftCard, DonationItem, StickerDesign } from './types';
 
 interface CreatePaymentIntentRequest {
   items: DonationItem[];
@@ -12,6 +12,7 @@ interface CreatePaymentIntentRequest {
   requestedNeshamaId?: string;
   donorMessage?: string;
   donorDedication?: DonationDedication;
+  stickerDesign?: StickerDesign;
   ad?: DonationAd;
   roundedUpFee: boolean;
 }
@@ -33,6 +34,7 @@ export const createPaymentIntent = onCall<CreatePaymentIntentRequest>(
       requestedNeshamaId,
       donorMessage,
       donorDedication,
+      stickerDesign,
       ad,
       roundedUpFee,
     } = request.data;
@@ -52,6 +54,7 @@ export const createPaymentIntent = onCall<CreatePaymentIntentRequest>(
       campaignAssignments: [],
       donorMessage: donorMessage ?? null,
       donorDedication: donorDedication ?? null,
+      stickerDesign: stickerDesign ?? null,
       ad: ad ?? null,
       roundedUpFee,
       totalCharged,

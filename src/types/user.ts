@@ -1,4 +1,5 @@
 import type { Address, Language } from './common';
+import type { StickerDesign } from './donation';
 
 export interface PaymentMethod {
   id: string;
@@ -32,5 +33,8 @@ export interface User {
   blocked?: boolean;
   stripeCustomerId?: string;
   savedPaymentMethods: PaymentMethod[];
+  /** The donor's saved dedication-sticker design — pre-fills the cart's sticker
+   *  editor so a repeat donor can pick up (and keep tweaking) where they left off. */
+  defaultStickerDesign?: StickerDesign;
   createdAt: number;
 }

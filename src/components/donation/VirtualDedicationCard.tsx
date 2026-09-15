@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import type { DonationAd } from '../../types';
+import type { DonationAd, StickerDesign } from '../../types';
 import type { PushkaGiftCard } from '../../context/PushkaContext';
 import type { PickedItem } from './SeferPicker';
+import { DEFAULT_STICKER_DESIGN } from '../../lib/stickerDesign';
+import { StickerPreview } from './StickerPreview';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { GiftIcon } from '../ui/icons';
@@ -18,10 +20,18 @@ interface VirtualDedicationCardProps {
   items: PickedItem[];
   giftCards?: PushkaGiftCard[];
   stickers: StickerInfo[];
+  stickerDesign?: StickerDesign;
   ad?: DonationAd;
 }
 
-export function VirtualDedicationCard({ donorName, items, giftCards = [], stickers, ad }: VirtualDedicationCardProps) {
+export function VirtualDedicationCard({
+  donorName,
+  items,
+  giftCards = [],
+  stickers,
+  stickerDesign = DEFAULT_STICKER_DESIGN,
+  ad,
+}: VirtualDedicationCardProps) {
   const { t } = useTranslation();
 
   return (
@@ -30,15 +40,14 @@ export function VirtualDedicationCard({ donorName, items, giftCards = [], sticke
       <p className="mt-3 text-lg font-bold text-accent">{t('donation.confirmedTitle')}</p>
 
       {stickers.length > 0 && (
-        <div className="mt-4 space-y-2 text-left">
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
           {stickers.map((sticker, idx) => (
-            <div key={idx} className="rounded-btn border border-border/60 p-2">
-              {sticker.label && <p className="text-xs uppercase tracking-wide text-text-muted">{sticker.label}</p>}
-              <p className="text-base font-semibold">
-                {t('neshama.liluyNishmat')} {sticker.name}
-                {sticker.hebrewName ? ` · ${sticker.hebrewName}` : ''}
-              </p>
-            </div>
+            <StickerPreview
+              key={idx}
+              design={stickerDesign}
+              content={{ label: sticker.label, dedicationName: sticker.name, dedicationHebrewName: sticker.hebrewName }}
+              className="max-w-[140px] shadow-card"
+            />
           ))}
         </div>
       )}

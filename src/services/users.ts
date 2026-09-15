@@ -1,10 +1,16 @@
 import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
-import type { Language, User, VendorApplication } from '../types';
+import type { Language, StickerDesign, User, VendorApplication } from '../types';
 
 export async function updatePreferredLanguage(uid: string, language: Language) {
   await updateDoc(doc(db, 'users', uid), { preferredLanguage: language });
+}
+
+/** Saves the donor's current cart sticker-design choices as their default, so the
+ *  next donation's editor opens pre-filled with the same layout/colors/etc. */
+export async function updateDefaultStickerDesign(uid: string, design: StickerDesign) {
+  await updateDoc(doc(db, 'users', uid), { defaultStickerDesign: design });
 }
 
 export async function getUser(uid: string): Promise<User | null> {

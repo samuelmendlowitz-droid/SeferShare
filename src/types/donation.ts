@@ -1,5 +1,35 @@
 import type { ParentGender } from './neshama';
 
+export type StickerElementKey = 'label' | 'dedication' | 'message' | 'donor';
+export type StickerFrameValue = 'none' | 'thin' | 'double' | 'ornate';
+export type StickerDividerValue = 'none' | 'line' | 'dots' | 'starLine';
+export type StickerFlourishValue = 'none' | 'star' | 'leaf' | 'menorah';
+export type StickerFontValue = 'sans' | 'serif' | 'script';
+
+export interface StickerColorSet {
+  background: string;
+  frame: string;
+  divider: string;
+  flourish: string;
+  label: string;
+  dedication: string;
+  message: string;
+  donor: string;
+}
+
+/** The dedication sticker's editable design — chosen in the cart (see
+ *  StickerDesignEditor), optionally saved as the donor's default
+ *  (User.defaultStickerDesign), and printed on every physical sefer this
+ *  donation covers. */
+export interface StickerDesign {
+  layout: string;
+  frame: StickerFrameValue;
+  divider: StickerDividerValue;
+  flourish: StickerFlourishValue;
+  font: StickerFontValue;
+  colors: StickerColorSet;
+}
+
 export type DonationStatus = 'pending' | 'paid' | 'fulfilled' | 'refunded';
 
 export const DONATION_STATUSES: DonationStatus[] = ['pending', 'paid', 'fulfilled', 'refunded'];
@@ -86,6 +116,9 @@ export interface Donation {
   donorDedication?: DonationDedication;
   // Per-physical-copy dedication, resolved at confirmDonation time.
   stickers?: DonationSticker[];
+  // The visual design (layout/frame/divider/flourish/font/colors) applied to every
+  // sticker this donation prints — chosen in the cart; see StickerDesignEditor.
+  stickerDesign?: StickerDesign;
   ad?: DonationAd;
   roundedUpFee: boolean;
   totalCharged: number;

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { stripePromise, estimateStripeFee } from '../../lib/stripe';
 import { createPaymentIntent } from '../../services/donations';
-import type { DonationAd, DonationDedication, DonationGiftCard } from '../../types';
+import type { DonationAd, DonationDedication, DonationGiftCard, StickerDesign } from '../../types';
 import type { PickedItem } from './SeferPicker';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -15,6 +15,7 @@ interface CheckoutStepProps {
   neshamaId?: string;
   donorMessage?: string;
   donorDedication?: DonationDedication;
+  stickerDesign?: StickerDesign;
   ad?: DonationAd;
   onPaid: (donationId: string) => void;
 }
@@ -62,6 +63,7 @@ export function CheckoutStep({
   neshamaId,
   donorMessage,
   donorDedication,
+  stickerDesign,
   ad,
   onPaid,
 }: CheckoutStepProps) {
@@ -93,6 +95,7 @@ export function CheckoutStep({
         requestedNeshamaId: neshamaId,
         donorMessage,
         donorDedication,
+        stickerDesign,
         ad,
         roundedUpFee: roundUp,
       });

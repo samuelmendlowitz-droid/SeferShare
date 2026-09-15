@@ -310,6 +310,28 @@
     "increaseQuantity": "הגדלת כמות",
     "decreaseQuantity": "הקטנת כמות"
   },
+  "sticker": {
+    "customize": "עיצוב מדבקת ההקדשה",
+    "editorTitle": "עצבו את מדבקת ההקדשה שלכם",
+    "layoutLabel": "פריסה",
+    "frameLabel": "מסגרת",
+    "dividerLabel": "קו מפריד",
+    "flourishLabel": "קישוט",
+    "fontLabel": "גופן",
+    "colorsLabel": "צבעים",
+    "saveAsDefault": "שמירת ההגדרות האלה לפעם הבאה",
+    "saved": "נשמר!",
+    "element": {
+      "background": "רקע",
+      "frame": "מסגרת",
+      "divider": "קו מפריד",
+      "flourish": "קישוט",
+      "label": "תווית",
+      "dedication": "שם",
+      "message": "הודעה",
+      "donor": "תורם"
+    }
+  },
   "orderStatus": {
     "pending": "ממתין",
     "shipped": "נשלח",
