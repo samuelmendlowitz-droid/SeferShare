@@ -6,7 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { usePushka, type PushkaGiftCard, type PushkaItem } from '../context/PushkaContext';
 import { getCampaign } from '../services/campaigns';
 import { getNeshama } from '../services/neshamos';
-import { neshamaDedicationLine } from '../lib/neshamaFormat';
+import { neshamaDedicationLine, prefixedName } from '../lib/neshamaFormat';
 import type { Campaign, DonationAd, DonationDedication, DonationGiftCard, Neshama } from '../types';
 import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
@@ -48,6 +48,8 @@ interface SuggestedDedication {
   neshamaId: string;
   name: string;
   hebrewName?: string;
+  namePrefix?: string;
+  customNamePrefix?: string;
   parentGender: Neshama['parentGender'];
   fatherHebrewName: string;
 }
@@ -75,6 +77,8 @@ export function PushkaPage() {
           createdByUid: '',
           name: suggestedDedication.name,
           hebrewName: suggestedDedication.hebrewName,
+          namePrefix: suggestedDedication.namePrefix,
+          customNamePrefix: suggestedDedication.customNamePrefix,
           parentGender: suggestedDedication.parentGender,
           fatherHebrewName: suggestedDedication.fatherHebrewName,
           createdAt: 0,
@@ -172,14 +176,14 @@ export function PushkaPage() {
     setPaidGiftCards(pushka.giftCards);
     const stickers: StickerInfo[] = campaignStickerGroups.map((g) => ({
       label: g.campaignTitle || t('campaign.untitled'),
-      name: g.neshama.name,
-      hebrewName: g.neshama.hebrewName,
+      name: prefixedName(g.neshama, false) ?? g.neshama.name,
+      hebrewName: prefixedName(g.neshama, true),
     }));
     if (dedicationNeshama) {
       stickers.push({
         label: t('donation.yourDedicationTitle'),
-        name: dedicationNeshama.name,
-        hebrewName: dedicationNeshama.hebrewName,
+        name: prefixedName(dedicationNeshama, false) ?? dedicationNeshama.name,
+        hebrewName: prefixedName(dedicationNeshama, true),
       });
     } else if (hasAlgorithmStickerItems) {
       stickers.push({ label: t('donation.yourDedicationTitle'), name: t('donation.algorithmChoice') });
@@ -196,6 +200,8 @@ export function PushkaPage() {
     ? {
         name: dedicationNeshama.name,
         hebrewName: dedicationNeshama.hebrewName,
+        namePrefix: dedicationNeshama.namePrefix,
+        customNamePrefix: dedicationNeshama.customNamePrefix,
         parentGender: dedicationNeshama.parentGender,
         fatherHebrewName: dedicationNeshama.fatherHebrewName,
       }

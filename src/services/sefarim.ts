@@ -33,7 +33,9 @@ export interface UpsertVendorListingInput {
   englishName: string;
   phoneticName: string;
   type: SeferType;
+  customType?: string;
   subType?: string;
+  customSubType?: string;
   languages?: SeferLanguage[];
   vendorId: string;
   vendorName: string;
@@ -82,7 +84,9 @@ export async function upsertVendorListing(input: UpsertVendorListingInput): Prom
         englishName: input.englishName,
         phoneticName: input.phoneticName,
         type: input.type,
+        customType: input.type === 'other' ? input.customType ?? null : null,
         subType: input.subType ?? null,
+        customSubType: input.subType === 'other' ? input.customSubType ?? null : null,
         languages: input.languages ?? [],
         vendorListings: [...otherListings, publicListing],
       },
@@ -96,7 +100,9 @@ export async function upsertVendorListing(input: UpsertVendorListingInput): Prom
       englishName: input.englishName,
       phoneticName: input.phoneticName,
       type: input.type,
+      customType: input.type === 'other' ? input.customType ?? null : null,
       subType: input.subType ?? null,
+      customSubType: input.subType === 'other' ? input.customSubType ?? null : null,
       languages: input.languages ?? [],
       vendorListings: [publicListing],
     });

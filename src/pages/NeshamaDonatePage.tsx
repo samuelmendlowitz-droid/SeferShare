@@ -71,6 +71,8 @@ export function NeshamaDonatePage() {
           neshamaId: neshama.neshamaId,
           name: neshama.name,
           hebrewName: neshama.hebrewName,
+          namePrefix: neshama.namePrefix,
+          customNamePrefix: neshama.customNamePrefix,
           parentGender: neshama.parentGender,
           fatherHebrewName: neshama.fatherHebrewName,
         },

@@ -5,6 +5,11 @@ export type ParentGender = 'son' | 'daughter';
 export interface Neshama {
   neshamaId: string;
   createdByUid: string;
+  /** Common honorific shown before the name in a dedication (e.g. "Reb", "HaRav") —
+   *  see src/lib/neshamaPrefixes.ts. The sentinel 'other' means "see customNamePrefix". */
+  namePrefix?: string;
+  /** Set when `namePrefix` is 'other' — free text for a prefix not in the list. */
+  customNamePrefix?: string;
   name: string;
   hebrewName?: string;
   /** בן / בת — needed to phrase the traditional "X ben/bat Y" dedication. */

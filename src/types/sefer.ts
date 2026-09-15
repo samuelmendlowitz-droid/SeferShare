@@ -24,9 +24,16 @@ export interface Sefer {
   englishName: string;
   phoneticName: string;
   type: SeferType;
+  /** Set when `type` is 'other' — the vendor's own free-text name for a type not
+   *  in the curated list. */
+  customType?: string;
   /** Which specific work/volume this is within its type (e.g. type "gemara",
-   *  subType "succah") — see src/lib/seferTaxonomy.ts for the full list per type. */
+   *  subType "succah") — see src/lib/seferTaxonomy.ts for the full list per type.
+   *  The sentinel value 'other' means "see customSubType" instead. */
   subType?: string;
+  /** Set when `subType` is 'other' — the vendor's own free-text name for a
+   *  specific volume not in the curated list (or when the type has none at all). */
+  customSubType?: string;
   /** The language(s) this edition's text is printed in. */
   languages?: SeferLanguage[];
   vendorListings: PublicVendorListing[];

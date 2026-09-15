@@ -38,6 +38,8 @@ export interface DonationGiftCard {
 export interface DonationDedication {
   name: string;
   hebrewName?: string;
+  namePrefix?: string;
+  customNamePrefix?: string;
   parentGender?: ParentGender;
   fatherHebrewName?: string;
   message?: string;

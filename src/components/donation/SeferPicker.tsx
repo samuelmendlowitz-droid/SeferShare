@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SEFER_TYPES, type Sefer, type SeferType } from '../../types';
 import { listSefarim } from '../../services/sefarim';
 import { useLanguage } from '../../context/LanguageContext';
-import { subtypeLabel } from '../../lib/seferTaxonomy';
+import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../layout/FilterSortSheet';
 import { Card } from '../ui/Card';
 import { NumberField } from '../ui/NumberField';
@@ -154,9 +154,9 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
                     {sefer.englishName} · {sefer.hebrewName}
                   </p>
                   <p className="truncate text-xs text-text-muted">
-                    {t(`sefer.${sefer.type}`)}
-                    {subtypeLabel(sefer.type, sefer.subType, showBilingual)
-                      ? ` · ${subtypeLabel(sefer.type, sefer.subType, showBilingual)}`
+                    {seferTypeText(sefer.type, sefer.customType, t(`sefer.${sefer.type}`))}
+                    {subtypeLabel(sefer.type, sefer.subType, showBilingual, sefer.customSubType)
+                      ? ` · ${subtypeLabel(sefer.type, sefer.subType, showBilingual, sefer.customSubType)}`
                       : ''}
                   </p>
                   <p className="text-xs text-text-muted">${listing.price.toFixed(2)}</p>

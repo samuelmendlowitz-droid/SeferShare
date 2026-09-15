@@ -9,7 +9,7 @@ import {
   type SeferLanguage,
   type SeferType,
 } from '../../types';
-import { getSubtypesFor } from '../../lib/seferTaxonomy';
+import { getSubtypesFor, OTHER_SUBTYPE_VALUE } from '../../lib/seferTaxonomy';
 import { upsertVendorListing } from '../../services/sefarim';
 import { uploadSeferImages } from '../../services/storage';
 import { Button } from '../ui/Button';
@@ -35,7 +35,9 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
   const [englishName, setEnglishName] = useState(sefer?.englishName ?? '');
   const [phoneticName, setPhoneticName] = useState(sefer?.phoneticName ?? '');
   const [type, setType] = useState<SeferType>(sefer?.type ?? 'chumash');
+  const [customType, setCustomType] = useState(sefer?.customType ?? '');
   const [subType, setSubType] = useState<string | undefined>(sefer?.subType);
+  const [customSubType, setCustomSubType] = useState(sefer?.customSubType ?? '');
   const [languages, setLanguages] = useState<SeferLanguage[]>(sefer?.languages ?? []);
   const [retailPrice, setRetailPrice] = useState(myListing?.price ?? 0);
   const [wholesale, setWholesale] = useState(wholesalePrice ?? 0);
@@ -52,10 +54,22 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
 
   const totalImages = existingImageUrls.length + imageFiles.length;
   const subtypes = useMemo(() => getSubtypesFor(type), [type]);
+  const hasCuratedSubtypes = subtypes.length > 0;
 
   function handleTypeChange(nextType: SeferType) {
     setType(nextType);
-    setSubType((prev) => (getSubtypesFor(nextType).some((s) => s.value === prev) ? prev : undefined));
+    setSubType((prev) => {
+      if (prev === OTHER_SUBTYPE_VALUE) return prev;
+      return getSubtypesFor(nextType).some((s) => s.value === prev) ? prev : undefined;
+    });
+  }
+
+  /** subType is only meaningful when either a curated chip (or "Other") was
+   *  picked, or — for types with no curated list at all — the vendor typed
+   *  something into the always-shown custom field. */
+  function resolveSubType(): string | undefined {
+    if (hasCuratedSubtypes) return subType;
+    return customSubType.trim() ? OTHER_SUBTYPE_VALUE : undefined;
   }
 
   function toggleLanguage(lang: SeferLanguage) {
@@ -90,7 +104,9 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
         englishName,
         phoneticName,
         type,
-        subType,
+        customType: type === 'other' ? customType.trim() || undefined : undefined,
+        subType: resolveSubType(),
+        customSubType: customSubType.trim() || undefined,
         languages,
         vendorId: profile.uid,
         vendorName: profile.displayName,
@@ -104,7 +120,9 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
         setHebrewName('');
         setEnglishName('');
         setPhoneticName('');
+        setCustomType('');
         setSubType(undefined);
+        setCustomSubType('');
         setLanguages([]);
         setRetailPrice(0);
         setWholesale(0);
@@ -140,10 +158,19 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
         </select>
       </div>
 
-      {subtypes.length > 0 && (
-        <div>
-          <p className={FIELD_LABEL_CLASS}>{t('sefer.subTypeLabel')}</p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+      {type === 'other' && (
+        <TextField
+          required
+          label={t('sefer.customTypeLabel')}
+          value={customType}
+          onChange={setCustomType}
+        />
+      )}
+
+      <div>
+        <p className={FIELD_LABEL_CLASS}>{t('sefer.subTypeLabel')}</p>
+        {hasCuratedSubtypes && (
+          <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
             {subtypes.map((sub) => (
               <button
                 key={sub.value}
@@ -158,9 +185,23 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
                 {sub.en} · {sub.he}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setSubType((prev) => (prev === OTHER_SUBTYPE_VALUE ? undefined : OTHER_SUBTYPE_VALUE))}
+              className={`shrink-0 whitespace-nowrap rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                subType === OTHER_SUBTYPE_VALUE
+                  ? 'border-accent bg-accent text-white'
+                  : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
+              }`}
+            >
+              {t('sefer.otherOption')}
+            </button>
           </div>
-        </div>
-      )}
+        )}
+        {(!hasCuratedSubtypes || subType === OTHER_SUBTYPE_VALUE) && (
+          <TextField label={t('sefer.customSubTypeLabel')} value={customSubType} onChange={setCustomSubType} />
+        )}
+      </div>
 
       <div>
         <p className={FIELD_LABEL_CLASS}>{t('sefer.languagesLabel')}</p>

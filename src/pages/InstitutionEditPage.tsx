@@ -22,6 +22,7 @@ export function InstitutionEditPage() {
   const [name, setName] = useState('');
   const [hebrewName, setHebrewName] = useState('');
   const [type, setType] = useState<InstitutionType>('shul');
+  const [customType, setCustomType] = useState('');
   const [address, setAddress] = useState<Address>({ line1: '', city: '', state: '', postalCode: '', country: '' });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -38,6 +39,7 @@ export function InstitutionEditPage() {
       setName(inst.name);
       setHebrewName(inst.hebrewName ?? '');
       setType(inst.type);
+      setCustomType(inst.customType ?? '');
       setAddress(inst.address);
     });
   }, [institutionId]);
@@ -72,6 +74,7 @@ export function InstitutionEditPage() {
         name: name.trim(),
         hebrewName: hebrewName.trim() || undefined,
         type,
+        customType: type === 'other' ? customType.trim() || undefined : undefined,
         address,
       });
       navigate(`/institutions/${institution.institutionId}`);
@@ -112,6 +115,9 @@ export function InstitutionEditPage() {
           onChange={setType}
           options={INSTITUTION_TYPES.map((t2) => ({ value: t2, label: t(`institution.${t2}`) }))}
         />
+        {type === 'other' && (
+          <TextField required label={t('institution.customTypeLabel')} value={customType} onChange={setCustomType} />
+        )}
         <AddressForm value={address} onChange={setAddress} />
       </div>
 

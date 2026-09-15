@@ -6,6 +6,7 @@ import { db } from '../lib/firebase';
 import { getInstitution } from '../services/institutions';
 import { getNeshama } from '../services/neshamos';
 import { listSefarim } from '../services/sefarim';
+import { prefixedName } from '../lib/neshamaFormat';
 import type { Donation, Institution, Neshama, Sefer } from '../types';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
@@ -46,14 +47,14 @@ export function DonationConfirmationPage() {
             {institution && neshama && ' • '}
             {neshama && (
               <span className={institution ? 'text-text-muted' : ''}>
-                {t('neshama.liluyNishmat')} {neshama.name}
+                {t('neshama.liluyNishmat')} {prefixedName(neshama, false) ?? neshama.name}
               </span>
             )}
           </p>
         )}
         {donation.donorDedication?.name && (
           <p className="mt-1 text-sm">
-            {t('neshama.liluyNishmat')} {donation.donorDedication.name}
+            {t('neshama.liluyNishmat')} {prefixedName(donation.donorDedication, false) ?? donation.donorDedication.name}
           </p>
         )}
         {!donation.donorDedication?.name && donation.stickers && donation.stickers.length > 0 && (
@@ -61,7 +62,7 @@ export function DonationConfirmationPage() {
             {donation.stickers.map((sticker, idx) => (
               <p key={idx} className="text-sm">
                 {sefarimById.get(sticker.seferId)?.englishName ?? sticker.seferId}: {t('neshama.liluyNishmat')}{' '}
-                {sticker.dedication.name}
+                {prefixedName(sticker.dedication, false) ?? sticker.dedication.name}
               </p>
             ))}
           </div>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { subtypeLabel } from '../../lib/seferTaxonomy';
+import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
 import { deleteVendorListing, listSefarim, listVendorPricing, type VendorPricing } from '../../services/sefarim';
 import { classifyStockStatus, SEFER_TYPES, type Sefer, type SeferType, type StockStatus } from '../../types';
 import { SeferForm } from './SeferForm';
@@ -147,9 +147,9 @@ export function CatalogTab({ filters, sortKey, groupKey }: CatalogTabProps) {
                   {sefer.englishName} · {sefer.hebrewName}
                 </p>
                 <p className="text-sm text-text-muted">
-                  {t(`sefer.${sefer.type}`)}
-                  {subtypeLabel(sefer.type, sefer.subType, showBilingual)
-                    ? ` · ${subtypeLabel(sefer.type, sefer.subType, showBilingual)}`
+                  {seferTypeText(sefer.type, sefer.customType, t(`sefer.${sefer.type}`))}
+                  {subtypeLabel(sefer.type, sefer.subType, showBilingual, sefer.customSubType)
+                    ? ` · ${subtypeLabel(sefer.type, sefer.subType, showBilingual, sefer.customSubType)}`
                     : ''}
                 </p>
                 <p className="text-sm">

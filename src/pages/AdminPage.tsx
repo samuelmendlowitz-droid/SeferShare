@@ -9,7 +9,7 @@ import {
   setUserBlocked,
 } from '../services/users';
 import { deleteVendorListing, listSefarim } from '../services/sefarim';
-import { subtypeLabel } from '../lib/seferTaxonomy';
+import { seferTypeText, subtypeLabel } from '../lib/seferTaxonomy';
 import { listNeshamos } from '../services/neshamos';
 import { deleteCampaign } from '../services/campaigns';
 import {
@@ -128,8 +128,8 @@ export function AdminPage() {
           {sefarim.map((s) => (
             <Card key={s.seferId}>
               <p className="text-sm font-semibold">
-                {s.englishName} · {s.hebrewName} ({t(`sefer.${s.type}`)}
-              {subtypeLabel(s.type, s.subType, true) ? ` · ${subtypeLabel(s.type, s.subType, true)}` : ''})
+                {s.englishName} · {s.hebrewName} ({seferTypeText(s.type, s.customType, t(`sefer.${s.type}`))}
+              {subtypeLabel(s.type, s.subType, true, s.customSubType) ? ` · ${subtypeLabel(s.type, s.subType, true, s.customSubType)}` : ''})
               </p>
               <div className="mt-2 space-y-1">
                 {s.vendorListings.map((l) => (
@@ -178,8 +178,8 @@ export function AdminPage() {
                   )
                 }
               />
-              {s.englishName} · {s.hebrewName} ({t(`sefer.${s.type}`)}
-              {subtypeLabel(s.type, s.subType, true) ? ` · ${subtypeLabel(s.type, s.subType, true)}` : ''})
+              {s.englishName} · {s.hebrewName} ({seferTypeText(s.type, s.customType, t(`sefer.${s.type}`))}
+              {subtypeLabel(s.type, s.subType, true, s.customSubType) ? ` · ${subtypeLabel(s.type, s.subType, true, s.customSubType)}` : ''})
             </label>
           ))}
           <Button

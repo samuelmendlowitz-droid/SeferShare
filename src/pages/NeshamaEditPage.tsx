@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getNeshama, updateNeshama, deleteNeshama } from '../services/neshamos';
 import { SEFER_TYPES, type Neshama, type ParentGender, type SeferType } from '../types';
+import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../lib/neshamaPrefixes';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
@@ -20,6 +21,8 @@ export function NeshamaEditPage() {
 
   const [name, setName] = useState('');
   const [hebrewName, setHebrewName] = useState('');
+  const [namePrefix, setNamePrefix] = useState<string | undefined>(undefined);
+  const [customNamePrefix, setCustomNamePrefix] = useState('');
   const [parentGender, setParentGender] = useState<ParentGender>('son');
   const [fatherHebrewName, setFatherHebrewName] = useState('');
   const [seferTypes, setSeferTypes] = useState<SeferType[]>([]);
@@ -37,6 +40,8 @@ export function NeshamaEditPage() {
       setNeshama(n);
       setName(n.name);
       setHebrewName(n.hebrewName ?? '');
+      setNamePrefix(n.namePrefix);
+      setCustomNamePrefix(n.customNamePrefix ?? '');
       setParentGender(n.parentGender);
       setFatherHebrewName(n.fatherHebrewName);
       setSeferTypes(n.seferTypes ?? []);
@@ -76,6 +81,8 @@ export function NeshamaEditPage() {
       await updateNeshama(neshama.neshamaId, {
         name: name.trim(),
         hebrewName: hebrewName.trim() || undefined,
+        namePrefix,
+        customNamePrefix: namePrefix === OTHER_PREFIX_VALUE ? customNamePrefix.trim() || undefined : undefined,
         parentGender,
         fatherHebrewName: fatherHebrewName.trim(),
         seferTypes,
@@ -112,6 +119,30 @@ export function NeshamaEditPage() {
       <div className="space-y-2">
         <TextField label={t('neshama.name')} value={name} onChange={setName} />
         <TextField label={t('neshama.hebrewName')} value={hebrewName} onChange={setHebrewName} />
+        <div>
+          <p className={FIELD_LABEL_CLASS}>{t('neshama.namePrefixLabel')}</p>
+          <div className="flex flex-wrap gap-2">
+            {NESHAMA_PREFIXES.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setNamePrefix((prev) => (prev === option.value ? undefined : option.value))}
+                className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                  namePrefix === option.value
+                    ? 'border-accent bg-accent text-white'
+                    : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
+                }`}
+              >
+                {option.en} · {option.he}
+              </button>
+            ))}
+          </div>
+          {namePrefix === OTHER_PREFIX_VALUE && (
+            <div className="mt-2">
+              <TextField label={t('neshama.customNamePrefixLabel')} value={customNamePrefix} onChange={setCustomNamePrefix} />
+            </div>
+          )}
+        </div>
         <div>
           <p className={FIELD_LABEL_CLASS}>{t('neshama.parentGenderLabel')}</p>
           <div className="flex gap-2">

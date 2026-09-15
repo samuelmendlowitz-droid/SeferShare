@@ -71,6 +71,8 @@ export interface DonationGiftCard {
 export interface DonationDedication {
   name: string;
   hebrewName?: string;
+  namePrefix?: string;
+  customNamePrefix?: string;
   parentGender?: 'son' | 'daughter';
   fatherHebrewName?: string;
   message?: string;
@@ -79,6 +81,8 @@ export interface DonationDedication {
 export interface Neshama {
   neshamaId: string;
   createdByUid: string;
+  namePrefix?: string;
+  customNamePrefix?: string;
   name: string;
   hebrewName?: string;
   parentGender: 'son' | 'daughter';
@@ -133,6 +137,7 @@ export interface Institution {
   name: string;
   hebrewName?: string;
   type: string;
+  customType?: string;
   address: Address;
   createdByUid: string;
   giftCardBalance?: number;
@@ -178,7 +183,9 @@ export interface Sefer {
   englishName: string;
   phoneticName: string;
   type: string;
+  customType?: string;
   subType?: string;
+  customSubType?: string;
   languages?: string[];
   vendorListings: PublicVendorListing[];
 }

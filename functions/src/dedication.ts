@@ -91,6 +91,8 @@ export async function assignStickerDedications(
           dedication: {
             name: campaignNeshama.name,
             hebrewName: campaignNeshama.hebrewName,
+            namePrefix: campaignNeshama.namePrefix,
+            customNamePrefix: campaignNeshama.customNamePrefix,
             parentGender: campaignNeshama.parentGender,
             fatherHebrewName: campaignNeshama.fatherHebrewName,
           },
@@ -133,6 +135,8 @@ export async function assignStickerDedications(
       dedication: {
         name: pick.neshama.name,
         hebrewName: pick.neshama.hebrewName,
+        namePrefix: pick.neshama.namePrefix,
+        customNamePrefix: pick.neshama.customNamePrefix,
         parentGender: pick.neshama.parentGender,
         fatherHebrewName: pick.neshama.fatherHebrewName,
       },

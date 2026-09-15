@@ -10,6 +10,11 @@ export interface SeferSubtype {
   he: string;
 }
 
+/** Sentinel `subType` value meaning "see customSubType instead" — always offered
+ *  alongside the curated list (and alone when a type has no curated list at all),
+ *  since no fixed list can cover every sefer that'll ever be catalogued. */
+export const OTHER_SUBTYPE_VALUE = 'other';
+
 const CHUMASH: SeferSubtype[] = [
   { value: 'bereishis', en: 'Bereishis (Genesis)', he: 'בראשית' },
   { value: 'shemos', en: 'Shemos (Exodus)', he: 'שמות' },
@@ -319,6 +324,14 @@ export const SEFER_SUBTYPES: Partial<Record<SeferType, SeferSubtype[]>> = {
   reference: REFERENCE,
 };
 
+/** Resolves the display text for a sefer's type: its own free text when `type`
+ *  is 'other' and one was given, otherwise the caller's translated fallback
+ *  (`t('sefer.' + type)`) — callers already have that string in hand from their
+ *  own `t()` call, so this just decides which one wins. */
+export function seferTypeText(type: SeferType, customType: string | undefined, translatedFallback: string): string {
+  return type === 'other' && customType ? customType : translatedFallback;
+}
+
 export function getSubtypesFor(type: SeferType): SeferSubtype[] {
   return SEFER_SUBTYPES[type] ?? [];
 }
@@ -329,8 +342,15 @@ export function findSubtype(type: SeferType, value: string | undefined): SeferSu
 }
 
 /** Display label for a sefer's subtype, honoring the bilingual toggle the same
- *  way the rest of the app does (English, or "English · Hebrew" when bilingual). */
-export function subtypeLabel(type: SeferType, value: string | undefined, showBilingual: boolean): string | undefined {
+ *  way the rest of the app does (English, or "English · Hebrew" when bilingual).
+ *  When `value` is the 'other' sentinel, resolves to `customSubType` instead. */
+export function subtypeLabel(
+  type: SeferType,
+  value: string | undefined,
+  showBilingual: boolean,
+  customSubType?: string,
+): string | undefined {
+  if (value === OTHER_SUBTYPE_VALUE) return customSubType || undefined;
   const sub = findSubtype(type, value);
   if (!sub) return undefined;
   return showBilingual ? `${sub.en} · ${sub.he}` : sub.en;

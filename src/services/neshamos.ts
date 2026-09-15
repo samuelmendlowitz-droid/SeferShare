@@ -16,6 +16,8 @@ export async function getNeshama(neshamaId: string): Promise<Neshama | null> {
 
 export interface CreateNeshamaInput {
   createdByUid: string;
+  namePrefix?: string;
+  customNamePrefix?: string;
   name: string;
   hebrewName?: string;
   parentGender: ParentGender;
@@ -27,6 +29,8 @@ export interface CreateNeshamaInput {
 export async function createNeshama(input: CreateNeshamaInput): Promise<string> {
   const docRef = await addDoc(neshamosRef, {
     createdByUid: input.createdByUid,
+    namePrefix: input.namePrefix ?? null,
+    customNamePrefix: input.namePrefix === 'other' ? input.customNamePrefix ?? null : null,
     name: input.name,
     hebrewName: input.hebrewName ?? null,
     parentGender: input.parentGender,
@@ -40,6 +44,8 @@ export async function createNeshama(input: CreateNeshamaInput): Promise<string> 
 }
 
 export interface UpdateNeshamaInput {
+  namePrefix?: string;
+  customNamePrefix?: string;
   name: string;
   hebrewName?: string;
   parentGender: ParentGender;
@@ -53,6 +59,8 @@ export interface UpdateNeshamaInput {
  *  neshamos rejects an owner update that changes it). */
 export async function updateNeshama(neshamaId: string, input: UpdateNeshamaInput): Promise<void> {
   await updateDoc(doc(db, 'neshamos', neshamaId), {
+    namePrefix: input.namePrefix ?? null,
+    customNamePrefix: input.namePrefix === 'other' ? input.customNamePrefix ?? null : null,
     name: input.name,
     hebrewName: input.hebrewName ?? null,
     parentGender: input.parentGender,

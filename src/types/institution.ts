@@ -9,6 +9,9 @@ export interface Institution {
   name: string;
   hebrewName?: string;
   type: InstitutionType;
+  /** Set when `type` is 'other' — the creator's own free-text name for a type
+   *  not in the curated list. */
+  customType?: string;
   address: Address;
   createdByUid: string;
   /** Funded by gift card donations (see DonationGiftCard) — spendable by the

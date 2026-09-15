@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePushka } from '../../context/PushkaContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { subtypeLabel } from '../../lib/seferTaxonomy';
+import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
 import type { SeforimShopItem } from '../../hooks/useSeforimShopFeed';
 import { GiftCardOption } from '../donation/GiftCardOption';
 import { Card } from '../ui/Card';
@@ -68,9 +68,9 @@ export function SeforimShopList({ items, institutionId, institutionName }: Sefor
                 {item.sefer.englishName} · {item.sefer.hebrewName}
               </p>
               <p className="text-xs text-text-muted">
-                {t(`sefer.${item.sefer.type}`)}
-                {subtypeLabel(item.sefer.type, item.sefer.subType, showBilingual)
-                  ? ` · ${subtypeLabel(item.sefer.type, item.sefer.subType, showBilingual)}`
+                {seferTypeText(item.sefer.type, item.sefer.customType, t(`sefer.${item.sefer.type}`))}
+                {subtypeLabel(item.sefer.type, item.sefer.subType, showBilingual, item.sefer.customSubType)
+                  ? ` · ${subtypeLabel(item.sefer.type, item.sefer.subType, showBilingual, item.sefer.customSubType)}`
                   : ''}
               </p>
               {item.sefer.languages && item.sefer.languages.length > 0 && (

@@ -26,6 +26,7 @@ export interface UpdateInstitutionInput {
   name: string;
   hebrewName?: string;
   type: InstitutionType;
+  customType?: string;
   address: Address;
 }
 
@@ -37,6 +38,7 @@ export async function updateInstitution(institutionId: string, input: UpdateInst
     name: input.name,
     hebrewName: input.hebrewName ?? null,
     type: input.type,
+    customType: input.type === 'other' ? input.customType ?? null : null,
     address: input.address,
   });
 }

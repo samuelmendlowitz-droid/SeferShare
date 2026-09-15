@@ -10,6 +10,7 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { AddressForm } from './AddressForm';
 import { SelectField, TextField } from '../ui/TextField';
+import { institutionTypeText } from '../../lib/institutionFormat';
 import { FilterIcon, PlusIcon } from '../ui/icons';
 
 const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
@@ -35,6 +36,7 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
   const [name, setName] = useState('');
   const [hebrewName, setHebrewName] = useState('');
   const [type, setType] = useState<InstitutionType>('shul');
+  const [customType, setCustomType] = useState('');
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
 
   useEffect(() => {
@@ -87,19 +89,31 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
 
   async function handleCreate() {
     if (!profile || !name) return;
+    const resolvedCustomType = type === 'other' ? customType || undefined : undefined;
     const id = await createInstitution({
       name,
       hebrewName: hebrewName || undefined,
       type,
+      customType: resolvedCustomType,
       address,
       createdByUid: profile.uid,
     });
-    const created: Institution = { institutionId: id, name, hebrewName, type, address, createdByUid: profile.uid, createdAt: Date.now() };
+    const created: Institution = {
+      institutionId: id,
+      name,
+      hebrewName,
+      type,
+      customType: resolvedCustomType,
+      address,
+      createdByUid: profile.uid,
+      createdAt: Date.now(),
+    };
     setInstitutions((prev) => [...prev, created]);
     onChange(id, created);
     setModalOpen(false);
     setName('');
     setHebrewName('');
+    setCustomType('');
     setAddress(EMPTY_ADDRESS);
   }
 
@@ -157,7 +171,7 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
                 {inst.hebrewName ? ` · ${inst.hebrewName}` : ''}
               </span>
               <span className={`shrink-0 text-xs ${selected ? 'text-white/80' : 'text-text-muted'}`}>
-                {t(`institution.${inst.type}`)}
+                {institutionTypeText(inst.type, inst.customType, t(`institution.${inst.type}`))}
               </span>
             </button>
           );
@@ -189,6 +203,9 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
             onChange={setType}
             options={INSTITUTION_TYPES.map((t2) => ({ value: t2, label: t(`institution.${t2}`) }))}
           />
+          {type === 'other' && (
+            <TextField required label={t('institution.customTypeLabel')} value={customType} onChange={setCustomType} />
+          )}
           <AddressForm value={address} onChange={setAddress} />
           <Button className="w-full" disabled={!name} onClick={handleCreate}>
             {t('actions.add')}
