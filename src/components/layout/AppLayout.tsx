@@ -104,7 +104,7 @@ export function AppLayout(props: AppLayoutProps) {
       <CornerButton
         label={props.createAction.caption}
         caption={props.createAction.caption}
-        icon={<PlusIcon />}
+        icon={<PlusIcon width={16} height={16} />}
         onClick={props.createAction.onClick}
       />
     ) : null;
