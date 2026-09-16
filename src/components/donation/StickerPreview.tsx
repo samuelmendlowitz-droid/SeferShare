@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import {
   findDedicationPhrase,
   findStickerLayout,
+  normalizeStickerDesign,
   stickerFontStack,
   STICKER_ASPECT_RATIO,
   type StickerDesign,
@@ -96,7 +97,12 @@ function frameStyle(design: StickerDesign): CSSProperties {
 /** Renders the dedication sticker exactly as it will be printed on a sefer, at a
  *  standard book-cover proportion so it scales to fit whatever slot it's shown in
  *  (the cart editor's preview, a confirmation card, an admin/print view, etc). */
-export function StickerPreview({ design, content, className = '' }: StickerPreviewProps) {
+export function StickerPreview({ design: rawDesign, content, className = '' }: StickerPreviewProps) {
+  // Defensive: a design loaded from Firestore (e.g. a donor's saved default) may
+  // predate a schema change and be missing fields this component now reads
+  // unconditionally — never trust it's actually complete just because its type
+  // says so.
+  const design = normalizeStickerDesign(rawDesign);
   const layout = findStickerLayout(design.layout);
   const phrase = findDedicationPhrase(design.dedicationPhrase);
   const { colors } = design;

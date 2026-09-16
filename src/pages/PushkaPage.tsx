@@ -7,7 +7,7 @@ import { usePushka, type PushkaGiftCard, type PushkaItem } from '../context/Push
 import { getCampaign } from '../services/campaigns';
 import { getNeshama } from '../services/neshamos';
 import { neshamaDedicationLine, prefixedName } from '../lib/neshamaFormat';
-import { DEFAULT_STICKER_DESIGN } from '../lib/stickerDesign';
+import { DEFAULT_STICKER_DESIGN, normalizeStickerDesign } from '../lib/stickerDesign';
 import { updateDefaultStickerDesign } from '../services/users';
 import type { Campaign, DonationAd, DonationDedication, DonationGiftCard, Neshama, StickerDesign } from '../types';
 import type { PickedItem } from '../components/donation/SeferPicker';
@@ -107,7 +107,10 @@ export function PushkaPage() {
   // without clobbering choices they've already made in this session.
   useEffect(() => {
     if (stickerDesignSeeded || !profile) return;
-    if (profile.defaultStickerDesign) setStickerDesign(profile.defaultStickerDesign);
+    // normalizeStickerDesign repairs a default saved under an older shape of
+    // StickerDesign (e.g. before per-element fonts existed) — without this, a
+    // stale saved default would crash the editor every time it's opened.
+    if (profile.defaultStickerDesign) setStickerDesign(normalizeStickerDesign(profile.defaultStickerDesign));
     setStickerDesignSeeded(true);
   }, [profile, stickerDesignSeeded]);
 

@@ -112,3 +112,21 @@ export function stickerFontStack(value: StickerFontValue): string {
 export function findDedicationPhrase(value: string): StickerDedicationPhraseOption {
   return STICKER_DEDICATION_PHRASES.find((p) => p.value === value) ?? STICKER_DEDICATION_PHRASES[0];
 }
+
+/** Fills in any field missing from a saved/loaded design with the default —
+ *  a design saved under an older shape of StickerDesign (e.g. before per-element
+ *  fonts or the dedication phrase existed) would otherwise crash the editor and
+ *  preview by lacking fields they now read unconditionally. Safe to call on any
+ *  value, including `undefined`/`null` or a fully old-shaped object. */
+export function normalizeStickerDesign(input: Partial<StickerDesign> | null | undefined): StickerDesign {
+  if (!input) return DEFAULT_STICKER_DESIGN;
+  return {
+    layout: input.layout ?? DEFAULT_STICKER_DESIGN.layout,
+    frame: input.frame ?? DEFAULT_STICKER_DESIGN.frame,
+    divider: input.divider ?? DEFAULT_STICKER_DESIGN.divider,
+    flourish: input.flourish ?? DEFAULT_STICKER_DESIGN.flourish,
+    dedicationPhrase: input.dedicationPhrase ?? DEFAULT_STICKER_DESIGN.dedicationPhrase,
+    fonts: { ...DEFAULT_STICKER_DESIGN.fonts, ...input.fonts },
+    colors: { ...DEFAULT_STICKER_DESIGN.colors, ...input.colors },
+  };
+}

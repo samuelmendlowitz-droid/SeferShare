@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  normalizeStickerDesign,
   STICKER_DEDICATION_PHRASES,
   STICKER_DIVIDERS,
   STICKER_FLOURISHES,
@@ -29,10 +30,14 @@ const COLOR_KEYS: (keyof StickerColorSet)[] = ['background', 'frame', 'divider',
 
 const FONT_OPTIONS = STICKER_FONTS.map((opt) => ({ value: opt.value, label: `${opt.en} · ${opt.he}` }));
 
-export function StickerDesignEditor({ value, onChange, content, onSaveDefault }: StickerDesignEditorProps) {
+export function StickerDesignEditor({ value: rawValue, onChange, content, onSaveDefault }: StickerDesignEditorProps) {
   const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  // Defensive: `value` may be a design saved before a schema change (e.g. missing
+  // per-element fonts) — never assume it's actually complete just because its
+  // type says so.
+  const value = normalizeStickerDesign(rawValue);
 
   function setColor(key: keyof StickerColorSet, color: string) {
     onChange({ ...value, colors: { ...value.colors, [key]: color } });
