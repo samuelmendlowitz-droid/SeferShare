@@ -195,6 +195,12 @@
     "orders": "הזמנות",
     "sales": "מכירות",
     "markShipped": "סימון כנשלח",
+    "markFulfilled": "סימון כהושלם",
+    "resetToPending": "איפוס לממתין",
+    "confirmResetOrder": "לאפס את ההזמנה הזו בחזרה לממתין? השתמשו באפשרות זו רק אם היא סומנה כהושלמה בטעות.",
+    "downloadCsv": "הורדת CSV",
+    "selectAll": "בחירת הכול",
+    "ordersSelected": "{{count}} נבחרו",
     "totalRevenue": "סך ההכנסות",
     "itemsSold": "פריטים שנמכרו",
     "addSefer": "הוספת ספר",
@@ -335,7 +341,7 @@
   "orderStatus": {
     "pending": "ממתין",
     "shipped": "נשלח",
-    "delivered": "נמסר"
+    "delivered": "הושלם"
   },
   "donationStatus": {
     "pending": "ממתין",

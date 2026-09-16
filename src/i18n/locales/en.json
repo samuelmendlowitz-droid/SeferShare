@@ -195,6 +195,12 @@
     "orders": "Orders",
     "sales": "Sales",
     "markShipped": "Mark shipped",
+    "markFulfilled": "Mark fulfilled",
+    "resetToPending": "Reset to pending",
+    "confirmResetOrder": "Reset this order back to pending? Use this only if it was marked fulfilled by mistake.",
+    "downloadCsv": "Download CSV",
+    "selectAll": "Select all",
+    "ordersSelected": "{{count}} selected",
     "totalRevenue": "Total revenue",
     "itemsSold": "Items sold",
     "addSefer": "Add sefer",
@@ -335,7 +341,7 @@
   "orderStatus": {
     "pending": "Pending",
     "shipped": "Shipped",
-    "delivered": "Delivered"
+    "delivered": "Fulfilled"
   },
   "donationStatus": {
     "pending": "Pending",

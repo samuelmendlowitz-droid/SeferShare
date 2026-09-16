@@ -202,3 +202,13 @@ export function CrownIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function DownloadIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3v12" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M5 20h14" />
+    </Icon>
+  );
+}

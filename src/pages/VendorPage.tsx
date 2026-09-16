@@ -191,7 +191,9 @@ export function VendorPage() {
             groupKey={catalogGroup}
           />
         )}
-        {tab === 'orders' && <VendorOrdersTab loading={ordersData.loading} orders={filteredOrders} />}
+        {tab === 'orders' && (
+          <VendorOrdersTab loading={ordersData.loading} orders={filteredOrders} sefarimById={ordersData.sefarimById} />
+        )}
         {tab === 'sales' && <SalesTab loading={ordersData.loading} orders={filteredSales} />}
       </AppLayout>
 

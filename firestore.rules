@@ -98,17 +98,22 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // --- Orders — vendor sees their own and may mark a pending order shipped;
-    // any other status transition (e.g. delivered) is admin-only -----------------
+    // --- Orders — vendor sees their own and may walk it through the
+    // pending -> shipped -> delivered ("fulfilled") cycle themselves, including
+    // resetting an accidentally-fulfilled order back to pending (the client
+    // confirms with the vendor before sending that transition) -----------------
     match /orders/{orderId} {
       allow read: if signedIn() && (resource.data.vendorId == request.auth.uid || isAdmin());
       allow create: if isAdmin();
       allow update: if isAdmin() || (
         signedIn() &&
         resource.data.vendorId == request.auth.uid &&
-        resource.data.status == 'pending' &&
-        request.resource.data.status == 'shipped' &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
+        (
+          (resource.data.status == 'pending' && request.resource.data.status == 'shipped') ||
+          (resource.data.status == 'shipped' && request.resource.data.status == 'delivered') ||
+          (resource.data.status == 'delivered' && request.resource.data.status == 'pending')
+        )
       );
     }
 
