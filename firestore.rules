@@ -98,6 +98,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // --- Sticker designs — a designer's own saved-design library (visual
+    // choices only, never the donation-specific dedication text); fully
+    // owner-managed, client-side (view/name/edit/delete) ------------------------
+    match /stickerDesigns/{designId} {
+      allow read: if signedIn() && (resource.data.createdByUid == request.auth.uid || isAdmin());
+      allow create: if signedIn() && request.resource.data.createdByUid == request.auth.uid;
+      allow update, delete: if isAdmin() || (signedIn() && resource.data.createdByUid == request.auth.uid);
+    }
+
     // --- Orders — vendor sees their own and may walk it through the
     // pending -> shipped -> delivered ("fulfilled") cycle themselves, including
     // resetting an accidentally-fulfilled order back to pending (the client

@@ -17,9 +17,11 @@ export interface StickerColorSet {
 }
 
 /** The dedication sticker's editable design — chosen in the cart (see
- *  StickerDesignEditor), optionally saved as the donor's default
- *  (User.defaultStickerDesign), and printed on every physical sefer this
- *  donation covers. */
+ *  StickerDesignEditor) and printed on every physical sefer this donation
+ *  covers. Deliberately holds only the visual choices (layout, frame, divider,
+ *  flourish, phrase, fonts, colors) — never the donation-specific text (the
+ *  dedication name, donor name, etc; see StickerContent), so the same design
+ *  can be reused across different donations. */
 export interface StickerDesign {
   layout: string;
   frame: StickerFrameValue;
@@ -32,6 +34,19 @@ export interface StickerDesign {
    *  each use a different one. */
   fonts: Record<StickerElementKey, StickerFontValue>;
   colors: StickerColorSet;
+}
+
+/** A sticker design saved to the designer's own library — auto-saved (and
+ *  assigned this designId) as soon as they start customizing one in the cart,
+ *  so they can name, re-select, keep editing, or delete it later (see
+ *  useStickerDesigns / StickerDesignEditor). */
+export interface SavedStickerDesign {
+  designId: string;
+  createdByUid: string;
+  name: string;
+  design: StickerDesign;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export type DonationStatus = 'pending' | 'paid' | 'fulfilled' | 'refunded';

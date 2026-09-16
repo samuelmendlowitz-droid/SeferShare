@@ -8,7 +8,7 @@ import { getCampaign } from '../services/campaigns';
 import { getNeshama } from '../services/neshamos';
 import { neshamaDedicationLine, prefixedName } from '../lib/neshamaFormat';
 import { DEFAULT_STICKER_DESIGN, normalizeStickerDesign } from '../lib/stickerDesign';
-import { updateDefaultStickerDesign } from '../services/users';
+import { useStickerDesigns } from '../hooks/useStickerDesigns';
 import type { Campaign, DonationAd, DonationDedication, DonationGiftCard, Neshama, StickerDesign } from '../types';
 import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
@@ -102,17 +102,20 @@ export function PushkaPage() {
   const [stickerDesign, setStickerDesign] = useState<StickerDesign>(DEFAULT_STICKER_DESIGN);
   const [stickerDesignSeeded, setStickerDesignSeeded] = useState(false);
   const [stickerEditorOpen, setStickerEditorOpen] = useState(false);
+  const stickerDesignsData = useStickerDesigns(profile?.uid);
 
-  // Seed once from the donor's saved default the first time their profile loads,
-  // without clobbering choices they've already made in this session.
+  // Seed once from the designer's most-recently-updated saved design, the first
+  // time their library finishes loading — without clobbering choices they've
+  // already made in this session.
   useEffect(() => {
-    if (stickerDesignSeeded || !profile) return;
-    // normalizeStickerDesign repairs a default saved under an older shape of
+    if (stickerDesignSeeded || stickerDesignsData.loading) return;
+    // normalizeStickerDesign repairs a design saved under an older shape of
     // StickerDesign (e.g. before per-element fonts existed) — without this, a
-    // stale saved default would crash the editor every time it's opened.
-    if (profile.defaultStickerDesign) setStickerDesign(normalizeStickerDesign(profile.defaultStickerDesign));
+    // stale saved design would crash the editor every time it's opened.
+    const mostRecent = stickerDesignsData.designs[0];
+    if (mostRecent) setStickerDesign(normalizeStickerDesign(mostRecent.design));
     setStickerDesignSeeded(true);
-  }, [profile, stickerDesignSeeded]);
+  }, [stickerDesignsData.loading, stickerDesignsData.designs, stickerDesignSeeded]);
 
   const groups = useMemo(() => {
     const byCampaign = new Map<string, PushkaItem[]>();
@@ -407,7 +410,11 @@ export function PushkaPage() {
           value={stickerDesign}
           onChange={setStickerDesign}
           content={stickerPreviewContent}
-          onSaveDefault={profile ? () => updateDefaultStickerDesign(profile.uid, stickerDesign) : undefined}
+          savedDesigns={stickerDesignsData.designs}
+          onCreate={stickerDesignsData.create}
+          onUpdateContent={stickerDesignsData.updateContent}
+          onRename={stickerDesignsData.rename}
+          onDelete={stickerDesignsData.remove}
         />
       </Modal>
     </div>

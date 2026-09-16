@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  DEFAULT_STICKER_DESIGN,
   normalizeStickerDesign,
   STICKER_DEDICATION_PHRASES,
   STICKER_DIVIDERS,
@@ -17,27 +18,83 @@ import {
 import { StickerPreview, type StickerContent } from './StickerPreview';
 import { SliderPicker } from '../ui/SliderPicker';
 import { FIELD_LABEL_CLASS } from '../ui/TextField';
-import { Button } from '../ui/Button';
+import type { SavedStickerDesign } from '../../types';
+import { CloseIcon, EditIcon, PlusIcon } from '../ui/icons';
 
 interface StickerDesignEditorProps {
   value: StickerDesign;
   onChange: (design: StickerDesign) => void;
   content: StickerContent;
-  onSaveDefault?: () => Promise<void> | void;
+  /** The designer's saved library, most-recently-updated first — see useStickerDesigns. */
+  savedDesigns: SavedStickerDesign[];
+  onCreate: (design: StickerDesign, name: string) => Promise<SavedStickerDesign>;
+  onUpdateContent: (designId: string, design: StickerDesign) => Promise<void>;
+  onRename: (designId: string, name: string) => Promise<void>;
+  onDelete: (designId: string) => Promise<void>;
 }
 
 const COLOR_KEYS: (keyof StickerColorSet)[] = ['background', 'frame', 'divider', 'flourish', 'label', 'dedication', 'donor'];
-
 const FONT_OPTIONS = STICKER_FONTS.map((opt) => ({ value: opt.value, label: `${opt.en} · ${opt.he}` }));
+const AUTOSAVE_DELAY_MS = 900;
 
-export function StickerDesignEditor({ value: rawValue, onChange, content, onSaveDefault }: StickerDesignEditorProps) {
+/** Every edit here auto-saves to the designer's library (creating a new saved
+ *  design on the first change, then updating that same one) — there is no
+ *  explicit save button. Only the visual choices are persisted (StickerDesign);
+ *  the donation-specific text in `content` never gets written to a saved design. */
+export function StickerDesignEditor({
+  value: rawValue,
+  onChange,
+  content,
+  savedDesigns,
+  onCreate,
+  onUpdateContent,
+  onRename,
+  onDelete,
+}: StickerDesignEditorProps) {
   const { t } = useTranslation();
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  // Defensive: `value` may be a design saved before a schema change (e.g. missing
-  // per-element fonts) — never assume it's actually complete just because its
-  // type says so.
-  const value = normalizeStickerDesign(rawValue);
+  // Memoized so this only produces a new reference when rawValue actually
+  // changes — the auto-save effect below keys off `value`, and an unmemoized
+  // recompute here would give it a "new" object (and re-fire the save) on
+  // every re-render, including ones caused by the save itself completing.
+  const value = useMemo(() => normalizeStickerDesign(rawValue), [rawValue]);
+
+  const [activeDesignId, setActiveDesignId] = useState<string | undefined>(() => savedDesigns[0]?.designId);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  // The raw prop value as of mount (or the last explicit design switch) —
+  // compared by reference below so opening the editor, or loading/starting a
+  // design, never immediately saves on its own. Tracked against `rawValue`
+  // rather than the memoized `value`: normalizeStickerDesign always builds a
+  // fresh object, so it can never reference-equal anything computed from a
+  // separate call, even for identical input. A mutable "have we run once yet"
+  // flag isn't safe here either: React 18 StrictMode's dev-only double-invoke
+  // of this effect would consume a one-shot flag on its first (phantom) call
+  // and treat its second call as a real change. Comparing against a fixed
+  // baseline is correct however many times the effect happens to run.
+  const baselineRawValueRef = useRef(rawValue);
+  const activeDesignIdRef = useRef(activeDesignId);
+  activeDesignIdRef.current = activeDesignId;
+  const savedDesignsCountRef = useRef(savedDesigns.length);
+  savedDesignsCountRef.current = savedDesigns.length;
+
+  // Auto-save: debounce so rapid slider/color changes collapse into one write.
+  useEffect(() => {
+    if (rawValue === baselineRawValueRef.current) return;
+    setSaveState('saving');
+    const timeout = setTimeout(async () => {
+      const currentId = activeDesignIdRef.current;
+      if (currentId) {
+        await onUpdateContent(currentId, value);
+      } else {
+        const name = `${t('sticker.designDefaultName')} ${savedDesignsCountRef.current + 1}`;
+        const created = await onCreate(value, name);
+        setActiveDesignId(created.designId);
+      }
+      setSaveState('saved');
+      setTimeout(() => setSaveState('idle'), 1500);
+    }, AUTOSAVE_DELAY_MS);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawValue]);
 
   function setColor(key: keyof StickerColorSet, color: string) {
     onChange({ ...value, colors: { ...value.colors, [key]: color } });
@@ -47,25 +104,90 @@ export function StickerDesignEditor({ value: rawValue, onChange, content, onSave
     onChange({ ...value, fonts: { ...value.fonts, [key]: font } });
   }
 
-  async function handleSaveDefault() {
-    if (!onSaveDefault) return;
-    setSaving(true);
-    try {
-      await onSaveDefault();
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } finally {
-      setSaving(false);
-    }
+  function handleSelectDesign(saved: SavedStickerDesign) {
+    const next = normalizeStickerDesign(saved.design);
+    baselineRawValueRef.current = next;
+    onChange(next);
+    setActiveDesignId(saved.designId);
+  }
+
+  function handleNewDesign() {
+    baselineRawValueRef.current = DEFAULT_STICKER_DESIGN;
+    onChange(DEFAULT_STICKER_DESIGN);
+    setActiveDesignId(undefined);
+  }
+
+  async function handleRename(saved: SavedStickerDesign) {
+    const name = window.prompt(t('sticker.renamePrompt') ?? '', saved.name);
+    if (!name || !name.trim() || name.trim() === saved.name) return;
+    await onRename(saved.designId, name.trim());
+  }
+
+  async function handleDelete(saved: SavedStickerDesign) {
+    if (!window.confirm(t('sticker.confirmDeleteDesign') ?? '')) return;
+    await onDelete(saved.designId);
+    if (activeDesignId === saved.designId) setActiveDesignId(undefined);
   }
 
   return (
     <div>
       <div className="sticky top-[60px] z-[5] -mx-4 bg-surface px-4 pb-3">
         <StickerPreview design={value} content={content} className="mx-auto max-w-[200px] shadow-card" />
+        <p className="mt-1 text-center text-[10px] text-text-muted">
+          {saveState === 'saving' ? t('sticker.saving') : saveState === 'saved' ? t('sticker.saved') : ' '}
+        </p>
       </div>
 
       <div className="space-y-4">
+        <div>
+          <p className={FIELD_LABEL_CLASS}>{t('sticker.savedDesignsLabel')}</p>
+          {savedDesigns.length > 0 && (
+            <div className="mb-2 space-y-1">
+              {savedDesigns.map((saved) => (
+                <div
+                  key={saved.designId}
+                  className={`flex items-center gap-2 rounded-btn border px-3 py-2 ${
+                    activeDesignId === saved.designId ? 'border-accent bg-accent/5' : 'border-border'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleSelectDesign(saved)}
+                    className="min-w-0 flex-1 truncate text-start text-sm font-medium"
+                  >
+                    {saved.name}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRename(saved)}
+                    aria-label={t('sticker.renamePrompt') ?? ''}
+                    className="shrink-0 text-text-muted hover:text-accent"
+                  >
+                    <EditIcon width={14} height={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(saved)}
+                    aria-label={t('actions.delete') ?? ''}
+                    className="shrink-0 text-text-muted hover:text-error"
+                  >
+                    <CloseIcon width={14} height={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleNewDesign}
+            disabled={!activeDesignId}
+            className="flex items-center gap-1 text-xs font-medium text-accent disabled:opacity-40"
+          >
+            <PlusIcon width={12} height={12} />
+            {t('sticker.newDesign')}
+          </button>
+        </div>
+
         <SliderPicker
           label={t('sticker.layoutLabel')}
           value={value.layout}
@@ -133,12 +255,6 @@ export function StickerDesignEditor({ value: rawValue, onChange, content, onSave
             ))}
           </div>
         </div>
-
-        {onSaveDefault && (
-          <Button variant="secondary" className="w-full" disabled={saving} onClick={handleSaveDefault}>
-            {saved ? t('sticker.saved') : t('sticker.saveAsDefault')}
-          </Button>
-        )}
       </div>
     </div>
   );
