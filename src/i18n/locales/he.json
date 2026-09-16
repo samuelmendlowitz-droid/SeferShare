@@ -201,6 +201,7 @@
     "downloadCsv": "הורדת CSV",
     "selectAll": "בחירת הכול",
     "ordersSelected": "{{count}} נבחרו",
+    "seedTestOrders": "יצירת הזמנות לדוגמה (לבדיקה)",
     "totalRevenue": "סך ההכנסות",
     "itemsSold": "פריטים שנמכרו",
     "addSefer": "הוספת ספר",

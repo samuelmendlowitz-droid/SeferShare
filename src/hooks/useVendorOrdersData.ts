@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Order, Sefer, SeferType } from '../types';
 import { listVendorOrders } from '../services/orders';
 import { listSefarim } from '../services/sefarim';
@@ -8,6 +8,7 @@ interface UseVendorOrdersDataResult {
   orders: Order[];
   sefarimById: Map<string, Sefer>;
   availableSeferTypes: SeferType[];
+  reload: () => Promise<void>;
 }
 
 /** Shared raw fetch for the Orders and Sales tabs — both read the same Order collection. */
@@ -16,16 +17,21 @@ export function useVendorOrdersData(uid: string | undefined): UseVendorOrdersDat
   const [orders, setOrders] = useState<Order[]>([]);
   const [sefarim, setSefarim] = useState<Sefer[]>([]);
 
-  useEffect(() => {
+  const reload = useCallback(async () => {
     if (!uid) return;
     setLoading(true);
-    Promise.all([listVendorOrders(uid), listSefarim()])
-      .then(([o, sef]) => {
-        setOrders(o);
-        setSefarim(sef);
-      })
-      .finally(() => setLoading(false));
+    try {
+      const [o, sef] = await Promise.all([listVendorOrders(uid), listSefarim()]);
+      setOrders(o);
+      setSefarim(sef);
+    } finally {
+      setLoading(false);
+    }
   }, [uid]);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
 
   const sefarimById = useMemo(() => new Map(sefarim.map((s) => [s.seferId, s])), [sefarim]);
 
@@ -40,5 +46,5 @@ export function useVendorOrdersData(uid: string | undefined): UseVendorOrdersDat
     return [...types];
   }, [orders, sefarimById]);
 
-  return { loading, orders, sefarimById, availableSeferTypes };
+  return { loading, orders, sefarimById, availableSeferTypes, reload };
 }

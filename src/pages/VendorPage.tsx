@@ -192,7 +192,12 @@ export function VendorPage() {
           />
         )}
         {tab === 'orders' && (
-          <VendorOrdersTab loading={ordersData.loading} orders={filteredOrders} sefarimById={ordersData.sefarimById} />
+          <VendorOrdersTab
+            loading={ordersData.loading}
+            orders={filteredOrders}
+            sefarimById={ordersData.sefarimById}
+            onSeeded={ordersData.reload}
+          />
         )}
         {tab === 'sales' && <SalesTab loading={ordersData.loading} orders={filteredSales} />}
       </AppLayout>

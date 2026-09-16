@@ -11,3 +11,6 @@ export { setUserBlocked, deleteUserAccount } from './manageUsers';
 // No Stripe secrets involved — an institution is spending its own already-collected
 // gift card balance, not taking a new card payment — so this one can stay enabled.
 export { spendInstitutionBalance } from './spendInstitutionBalance';
+// Lets a signed-in vendor generate a few sample orders against their own catalog,
+// to try out the Orders tab (status cycling, CSV export) without a real donation.
+export { seedTestOrders } from './seedTestOrders';

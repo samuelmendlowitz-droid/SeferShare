@@ -201,6 +201,7 @@
     "downloadCsv": "Download CSV",
     "selectAll": "Select all",
     "ordersSelected": "{{count}} selected",
+    "seedTestOrders": "Generate sample orders (for testing)",
     "totalRevenue": "Total revenue",
     "itemsSold": "Items sold",
     "addSefer": "Add sefer",
