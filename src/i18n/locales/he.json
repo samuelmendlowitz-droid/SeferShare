@@ -334,6 +334,9 @@
     "designDefaultName": "עיצוב",
     "renamePrompt": "תנו שם לעיצוב הזה",
     "confirmDeleteDesign": "למחוק את העיצוב השמור הזה? לא ניתן לבטל פעולה זו.",
+    "unsavedChangesPrompt": "שיניתם עיצוב שמור. לשמור את השינויים, או לשמור כעותק חדש?",
+    "saveChanges": "שמירת השינויים",
+    "saveAsCopy": "שמירה כעותק",
     "element": {
       "background": "רקע",
       "frame": "מסגרת",

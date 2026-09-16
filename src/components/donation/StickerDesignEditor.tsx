@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   DEFAULT_STICKER_DESIGN,
+  nextCopyName,
   normalizeStickerDesign,
   STICKER_DEDICATION_PHRASES,
   STICKER_DIVIDERS,
@@ -18,6 +19,7 @@ import {
 import { StickerPreview, type StickerContent } from './StickerPreview';
 import { SliderPicker } from '../ui/SliderPicker';
 import { FIELD_LABEL_CLASS } from '../ui/TextField';
+import { Button } from '../ui/Button';
 import type { SavedStickerDesign } from '../../types';
 import { CloseIcon, EditIcon, PlusIcon } from '../ui/icons';
 
@@ -60,6 +62,15 @@ export function StickerDesignEditor({
 
   const [activeDesignId, setActiveDesignId] = useState<string | undefined>(() => savedDesigns[0]?.designId);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  // Whether editing an existing design should still prompt "save changes or
+  // save as copy?" before the next edit auto-saves. Starts false whenever an
+  // existing design is the active one (opening the editor onto your most
+  // recent design counts as "opening an existing design"), and flips true —
+  // no more prompting for the rest of this session — once the designer picks
+  // an option, or immediately for a brand-new/unsaved design (nothing to
+  // conflict with, so it can just auto-create/auto-update silently).
+  const hasDecidedRef = useRef(!activeDesignId);
+  const [pendingChoice, setPendingChoice] = useState(false);
   // The raw prop value as of mount (or the last explicit design switch) —
   // compared by reference below so opening the editor, or loading/starting a
   // design, never immediately saves on its own. Tracked against `rawValue`
@@ -73,19 +84,40 @@ export function StickerDesignEditor({
   const baselineRawValueRef = useRef(rawValue);
   const activeDesignIdRef = useRef(activeDesignId);
   activeDesignIdRef.current = activeDesignId;
-  const savedDesignsCountRef = useRef(savedDesigns.length);
-  savedDesignsCountRef.current = savedDesigns.length;
+  const savedDesignsRef = useRef(savedDesigns);
+  savedDesignsRef.current = savedDesigns;
+
+  async function saveInPlace(designId: string) {
+    setSaveState('saving');
+    await onUpdateContent(designId, value);
+    setSaveState('saved');
+    setTimeout(() => setSaveState('idle'), 1500);
+  }
+
+  async function saveAsNew(name: string) {
+    setSaveState('saving');
+    const created = await onCreate(value, name);
+    setActiveDesignId(created.designId);
+    setSaveState('saved');
+    setTimeout(() => setSaveState('idle'), 1500);
+  }
 
   // Auto-save: debounce so rapid slider/color changes collapse into one write.
+  // Skipped entirely while a change to an existing design is awaiting the
+  // designer's save-changes-or-save-as-copy choice.
   useEffect(() => {
     if (rawValue === baselineRawValueRef.current) return;
+    const currentId = activeDesignIdRef.current;
+    if (currentId && !hasDecidedRef.current) {
+      setPendingChoice(true);
+      return;
+    }
     setSaveState('saving');
     const timeout = setTimeout(async () => {
-      const currentId = activeDesignIdRef.current;
       if (currentId) {
         await onUpdateContent(currentId, value);
       } else {
-        const name = `${t('sticker.designDefaultName')} ${savedDesignsCountRef.current + 1}`;
+        const name = `${t('sticker.designDefaultName')} ${savedDesignsRef.current.length + 1}`;
         const created = await onCreate(value, name);
         setActiveDesignId(created.designId);
       }
@@ -95,6 +127,22 @@ export function StickerDesignEditor({
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawValue]);
+
+  async function handleSaveChanges() {
+    const currentId = activeDesignIdRef.current;
+    if (!currentId) return;
+    hasDecidedRef.current = true;
+    setPendingChoice(false);
+    await saveInPlace(currentId);
+  }
+
+  async function handleSaveAsCopy() {
+    const original = savedDesignsRef.current.find((d) => d.designId === activeDesignIdRef.current);
+    const name = nextCopyName(original?.name ?? t('sticker.designDefaultName'), savedDesignsRef.current.map((d) => d.name));
+    hasDecidedRef.current = true;
+    setPendingChoice(false);
+    await saveAsNew(name);
+  }
 
   function setColor(key: keyof StickerColorSet, color: string) {
     onChange({ ...value, colors: { ...value.colors, [key]: color } });
@@ -107,12 +155,16 @@ export function StickerDesignEditor({
   function handleSelectDesign(saved: SavedStickerDesign) {
     const next = normalizeStickerDesign(saved.design);
     baselineRawValueRef.current = next;
+    hasDecidedRef.current = false;
+    setPendingChoice(false);
     onChange(next);
     setActiveDesignId(saved.designId);
   }
 
   function handleNewDesign() {
     baselineRawValueRef.current = DEFAULT_STICKER_DESIGN;
+    hasDecidedRef.current = true;
+    setPendingChoice(false);
     onChange(DEFAULT_STICKER_DESIGN);
     setActiveDesignId(undefined);
   }
@@ -126,16 +178,34 @@ export function StickerDesignEditor({
   async function handleDelete(saved: SavedStickerDesign) {
     if (!window.confirm(t('sticker.confirmDeleteDesign') ?? '')) return;
     await onDelete(saved.designId);
-    if (activeDesignId === saved.designId) setActiveDesignId(undefined);
+    if (activeDesignId === saved.designId) {
+      hasDecidedRef.current = true;
+      setPendingChoice(false);
+      setActiveDesignId(undefined);
+    }
   }
 
   return (
     <div>
       <div className="sticky top-[60px] z-[5] -mx-4 bg-surface px-4 pb-3">
         <StickerPreview design={value} content={content} className="mx-auto max-w-[200px] shadow-card" />
-        <p className="mt-1 text-center text-[10px] text-text-muted">
-          {saveState === 'saving' ? t('sticker.saving') : saveState === 'saved' ? t('sticker.saved') : ' '}
-        </p>
+        {pendingChoice ? (
+          <div className="mt-2 rounded-btn border border-accent/30 bg-accent/5 p-2 text-center">
+            <p className="text-xs text-text">{t('sticker.unsavedChangesPrompt')}</p>
+            <div className="mt-2 flex gap-2">
+              <Button className="flex-1" onClick={handleSaveChanges}>
+                {t('sticker.saveChanges')}
+              </Button>
+              <Button variant="secondary" className="flex-1" onClick={handleSaveAsCopy}>
+                {t('sticker.saveAsCopy')}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-1 text-center text-[10px] text-text-muted">
+            {saveState === 'saving' ? t('sticker.saving') : saveState === 'saved' ? t('sticker.saved') : ' '}
+          </p>
+        )}
       </div>
 
       <div className="space-y-4">

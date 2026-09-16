@@ -130,3 +130,15 @@ export function normalizeStickerDesign(input: Partial<StickerDesign> | null | un
     colors: { ...DEFAULT_STICKER_DESIGN.colors, ...input.colors },
   };
 }
+
+/** Picks "Name (1)", "Name (2)", etc. for a "save as copy" — stripping any
+ *  existing " (n)" suffix first so copying a copy counts up cleanly instead of
+ *  compounding ("Name (1) (1)"), then finds the lowest number not already used
+ *  by one of the designer's other saved designs. */
+export function nextCopyName(name: string, existingNames: string[]): string {
+  const base = name.replace(/\s*\(\d+\)$/, '').trim() || name;
+  const taken = new Set(existingNames);
+  let n = 1;
+  while (taken.has(`${base} (${n})`)) n++;
+  return `${base} (${n})`;
+}

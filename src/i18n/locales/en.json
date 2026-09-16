@@ -334,6 +334,9 @@
     "designDefaultName": "Design",
     "renamePrompt": "Name this design",
     "confirmDeleteDesign": "Delete this saved design? This can't be undone.",
+    "unsavedChangesPrompt": "You've changed a saved design. Save your changes, or save as a new copy?",
+    "saveChanges": "Save changes",
+    "saveAsCopy": "Save as copy",
     "element": {
       "background": "Background",
       "frame": "Frame",
