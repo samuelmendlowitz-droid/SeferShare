@@ -2,10 +2,12 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { Campaign, Institution, Neshama, Sefer } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { campaignDollarFulfilled, campaignDollarTotal } from '../../lib/campaignMath';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import { Card } from '../ui/Card';
+import { EditIcon } from '../ui/icons';
 import { ProgressBar } from './ProgressBar';
 
 interface CampaignCardProps {
@@ -17,10 +19,12 @@ interface CampaignCardProps {
 
 export function CampaignCard({ campaign, institution, neshamas = [], sefarimById }: CampaignCardProps) {
   const { t } = useTranslation();
+  const { profile } = useAuth();
   const { showBilingual } = useLanguage();
   const navigate = useNavigate();
   const dollarTotal = campaignDollarTotal(campaign);
   const dollarFulfilled = campaignDollarFulfilled(campaign);
+  const isOwn = profile?.uid === campaign.createdByUid;
 
   const seferTypesText = useMemo(() => {
     const types = new Set<string>();
@@ -36,7 +40,22 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
       className="mb-3 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
       onClick={() => navigate(`/campaigns/${campaign.campaignId}`)}
     >
-      {campaign.title && <p className="mb-1 text-base font-semibold">{campaign.title}</p>}
+      <div className="flex items-start justify-between gap-2">
+        {campaign.title && <p className="mb-1 text-base font-semibold">{campaign.title}</p>}
+        {isOwn && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/campaigns/${campaign.campaignId}/edit`);
+            }}
+            aria-label={t('campaign.edit') ?? ''}
+            className="shrink-0 text-text-muted hover:text-accent"
+          >
+            <EditIcon width={16} height={16} />
+          </button>
+        )}
+      </div>
 
       {(institution || neshamas.length > 0) && (
         <p className="text-sm text-text">

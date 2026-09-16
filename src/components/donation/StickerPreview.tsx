@@ -1,20 +1,19 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
+  findDedicationPhrase,
   findStickerLayout,
   stickerFontStack,
   STICKER_ASPECT_RATIO,
   type StickerDesign,
   type StickerElementKey,
 } from '../../lib/stickerDesign';
-import { LeafIcon, MenorahIcon, StarOfDavidIcon } from '../ui/icons';
+import { CrownIcon, LeafIcon, MenorahIcon, PomegranateIcon, StarOfDavidIcon } from '../ui/icons';
 
 export interface StickerContent {
   /** Campaign title, or the "your dedication" title — shown as a small label. */
   label?: string;
   dedicationName?: string;
   dedicationHebrewName?: string;
-  message?: string;
   donorName?: string;
 }
 
@@ -28,6 +27,8 @@ function FlourishGlyph({ value, size }: { value: StickerDesign['flourish']; size
   if (value === 'star') return <StarOfDavidIcon width={size} height={size} />;
   if (value === 'leaf') return <LeafIcon width={size} height={size} />;
   if (value === 'menorah') return <MenorahIcon width={size} height={size} />;
+  if (value === 'pomegranate') return <PomegranateIcon width={size} height={size} />;
+  if (value === 'crown') return <CrownIcon width={size} height={size} />;
   return null;
 }
 
@@ -41,61 +42,88 @@ function Divider({ design }: { design: StickerDesign }) {
       </p>
     );
   }
-  if (divider === 'starLine') {
+  if (divider === 'starLine' || divider === 'diamondLine') {
     return (
       <div className="my-1.5 flex items-center gap-2" style={{ color: colors.divider }}>
         <span className="h-px flex-1" style={{ backgroundColor: colors.divider }} />
-        <StarOfDavidIcon width={10} height={10} />
+        {divider === 'starLine' ? (
+          <StarOfDavidIcon width={10} height={10} />
+        ) : (
+          <span className="h-1.5 w-1.5 rotate-45" style={{ backgroundColor: colors.divider }} />
+        )}
         <span className="h-px flex-1" style={{ backgroundColor: colors.divider }} />
+      </div>
+    );
+  }
+  if (divider === 'doubleLine') {
+    return (
+      <div className="my-1.5 space-y-0.5">
+        <hr className="border-t" style={{ borderColor: colors.divider }} />
+        <hr className="border-t" style={{ borderColor: colors.divider }} />
       </div>
     );
   }
   return <hr className="my-1.5 border-t" style={{ borderColor: colors.divider }} />;
 }
 
+const ORNATE_CORNERS = [
+  { top: 3, left: 3 },
+  { top: 3, right: 3 },
+  { bottom: 3, left: 3 },
+  { bottom: 3, right: 3 },
+];
+
+function frameStyle(design: StickerDesign): CSSProperties {
+  const { frame, colors } = design;
+  switch (frame) {
+    case 'none':
+      return {};
+    case 'double':
+      return { borderStyle: 'double', borderWidth: 6, borderColor: colors.frame };
+    case 'dashed':
+      return { borderStyle: 'dashed', borderWidth: 2, borderColor: colors.frame };
+    case 'dotted':
+      return { borderStyle: 'dotted', borderWidth: 3, borderColor: colors.frame };
+    case 'rounded':
+      return { borderStyle: 'solid', borderWidth: 1, borderColor: colors.frame, borderRadius: 16 };
+    case 'ornate':
+      return { borderStyle: 'solid', borderWidth: 3, borderColor: colors.frame };
+    default:
+      return { borderStyle: 'solid', borderWidth: 1, borderColor: colors.frame };
+  }
+}
+
 /** Renders the dedication sticker exactly as it will be printed on a sefer, at a
  *  standard book-cover proportion so it scales to fit whatever slot it's shown in
  *  (the cart editor's preview, a confirmation card, an admin/print view, etc). */
 export function StickerPreview({ design, content, className = '' }: StickerPreviewProps) {
-  const { t } = useTranslation();
   const layout = findStickerLayout(design.layout);
-  const fontStack = stickerFontStack(design.font);
+  const phrase = findDedicationPhrase(design.dedicationPhrase);
   const { colors } = design;
-
-  const frameStyle: CSSProperties =
-    design.frame === 'none'
-      ? {}
-      : design.frame === 'double'
-        ? { borderStyle: 'double', borderWidth: 6, borderColor: colors.frame }
-        : design.frame === 'ornate'
-          ? { borderStyle: 'solid', borderWidth: 3, borderColor: colors.frame }
-          : { borderStyle: 'solid', borderWidth: 1, borderColor: colors.frame };
 
   const elements: Partial<Record<StickerElementKey, ReactNode>> = {
     label: content.label ? (
-      <p className="text-center text-[10px] font-semibold uppercase tracking-wide" style={{ color: colors.label }}>
+      <p
+        className="text-center text-[10px] font-semibold uppercase tracking-wide"
+        style={{ color: colors.label, fontFamily: stickerFontStack(design.fonts.label) }}
+      >
         {content.label}
       </p>
     ) : null,
     dedication: content.dedicationName ? (
-      <div className="text-center" style={{ color: colors.dedication, fontFamily: fontStack }}>
+      <div className="text-center" style={{ color: colors.dedication, fontFamily: stickerFontStack(design.fonts.dedication) }}>
         <p className="text-sm font-semibold leading-snug">
-          {t('neshama.liluyNishmat')} {content.dedicationName}
+          {phrase.en} {content.dedicationName}
         </p>
         {content.dedicationHebrewName && (
           <p dir="rtl" className="mt-0.5 text-sm leading-snug">
-            {content.dedicationHebrewName}
+            {phrase.he} {content.dedicationHebrewName}
           </p>
         )}
       </div>
     ) : null,
-    message: content.message ? (
-      <p className="text-center text-xs italic leading-snug" style={{ color: colors.message }}>
-        {content.message}
-      </p>
-    ) : null,
     donor: content.donorName ? (
-      <p className="text-center text-xs" style={{ color: colors.donor }}>
+      <p className="text-center text-xs" style={{ color: colors.donor, fontFamily: stickerFontStack(design.fonts.donor) }}>
         — {content.donorName}
       </p>
     ) : null,
@@ -105,21 +133,12 @@ export function StickerPreview({ design, content, className = '' }: StickerPrevi
 
   return (
     <div
-      className={`relative flex w-full flex-col items-center justify-center overflow-hidden rounded-sm p-4 ${className}`}
-      style={{ aspectRatio: STICKER_ASPECT_RATIO, backgroundColor: colors.background, ...frameStyle }}
+      className={`relative flex w-full flex-col items-center justify-center overflow-hidden p-4 ${className}`}
+      style={{ aspectRatio: STICKER_ASPECT_RATIO, backgroundColor: colors.background, ...frameStyle(design) }}
     >
       {design.frame === 'ornate' &&
-        [
-          { top: 3, left: 3 },
-          { top: 3, right: 3 },
-          { bottom: 3, left: 3 },
-          { bottom: 3, right: 3 },
-        ].map((pos, idx) => (
-          <span
-            key={idx}
-            className="absolute h-1.5 w-1.5 rotate-45"
-            style={{ ...pos, backgroundColor: colors.frame }}
-          />
+        ORNATE_CORNERS.map((pos, idx) => (
+          <span key={idx} className="absolute h-1.5 w-1.5 rotate-45" style={{ ...pos, backgroundColor: colors.frame }} />
         ))}
 
       {design.flourish !== 'none' && (
@@ -137,7 +156,7 @@ export function StickerPreview({ design, content, className = '' }: StickerPrevi
         ))}
         {visibleKeys.length === 0 && (
           <p className="text-center text-xs" style={{ color: colors.label }}>
-            {t('neshama.liluyNishmat')}
+            {phrase.en}
           </p>
         )}
       </div>

@@ -99,6 +99,8 @@ export interface DonationAd {
   message?: string;
 }
 
+export type StickerElementKey = 'label' | 'dedication' | 'donor';
+
 export interface StickerColorSet {
   background: string;
   frame: string;
@@ -106,7 +108,6 @@ export interface StickerColorSet {
   flourish: string;
   label: string;
   dedication: string;
-  message: string;
   donor: string;
 }
 
@@ -115,10 +116,11 @@ export interface StickerColorSet {
  *  references. Opaque here: the server just stores and echoes it back. */
 export interface StickerDesign {
   layout: string;
-  frame: 'none' | 'thin' | 'double' | 'ornate';
-  divider: 'none' | 'line' | 'dots' | 'starLine';
-  flourish: 'none' | 'star' | 'leaf' | 'menorah';
-  font: 'sans' | 'serif' | 'script';
+  frame: 'none' | 'thin' | 'double' | 'dashed' | 'dotted' | 'rounded' | 'ornate';
+  divider: 'none' | 'line' | 'dots' | 'starLine' | 'diamondLine' | 'doubleLine';
+  flourish: 'none' | 'star' | 'leaf' | 'menorah' | 'pomegranate' | 'crown';
+  dedicationPhrase: string;
+  fonts: Record<StickerElementKey, 'sans' | 'serif' | 'script'>;
   colors: StickerColorSet;
 }
 

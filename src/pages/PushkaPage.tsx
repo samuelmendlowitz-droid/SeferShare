@@ -238,7 +238,6 @@ export function PushkaPage() {
       ? (prefixedName(previewNeshama, false) ?? previewNeshama.name)
       : t('donation.algorithmChoice'),
     dedicationHebrewName: previewNeshama ? prefixedName(previewNeshama, true) : undefined,
-    message: donorMessage || undefined,
     donorName: profile?.displayName,
   };
 

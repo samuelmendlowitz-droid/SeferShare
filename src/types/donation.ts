@@ -1,9 +1,9 @@
 import type { ParentGender } from './neshama';
 
-export type StickerElementKey = 'label' | 'dedication' | 'message' | 'donor';
-export type StickerFrameValue = 'none' | 'thin' | 'double' | 'ornate';
-export type StickerDividerValue = 'none' | 'line' | 'dots' | 'starLine';
-export type StickerFlourishValue = 'none' | 'star' | 'leaf' | 'menorah';
+export type StickerElementKey = 'label' | 'dedication' | 'donor';
+export type StickerFrameValue = 'none' | 'thin' | 'double' | 'dashed' | 'dotted' | 'rounded' | 'ornate';
+export type StickerDividerValue = 'none' | 'line' | 'dots' | 'starLine' | 'diamondLine' | 'doubleLine';
+export type StickerFlourishValue = 'none' | 'star' | 'leaf' | 'menorah' | 'pomegranate' | 'crown';
 export type StickerFontValue = 'sans' | 'serif' | 'script';
 
 export interface StickerColorSet {
@@ -13,7 +13,6 @@ export interface StickerColorSet {
   flourish: string;
   label: string;
   dedication: string;
-  message: string;
   donor: string;
 }
 
@@ -26,7 +25,12 @@ export interface StickerDesign {
   frame: StickerFrameValue;
   divider: StickerDividerValue;
   flourish: StickerFlourishValue;
-  font: StickerFontValue;
+  /** The phrase shown before the dedication name — e.g. "L'iluy Nishmat" or
+   *  "In Loving Memory of" (see STICKER_DEDICATION_PHRASES). */
+  dedicationPhrase: string;
+  /** Font style per text element — label, dedication name, and donor line can
+   *  each use a different one. */
+  fonts: Record<StickerElementKey, StickerFontValue>;
   colors: StickerColorSet;
 }
 

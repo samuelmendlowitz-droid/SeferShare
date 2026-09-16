@@ -8,7 +8,9 @@ import type {
   StickerFrameValue,
 } from '../types';
 
-export type { StickerColorSet, StickerDesign, StickerElementKey } from '../types';
+export type { StickerColorSet, StickerDesign, StickerElementKey, StickerFontValue } from '../types';
+
+export const STICKER_TEXT_ELEMENTS: StickerElementKey[] = ['label', 'dedication', 'donor'];
 
 export interface StickerLayoutOption {
   value: string;
@@ -18,24 +20,29 @@ export interface StickerLayoutOption {
 }
 
 export const STICKER_LAYOUTS: StickerLayoutOption[] = [
-  { value: 'classic', en: 'Classic', he: 'קלאסי', order: ['label', 'dedication', 'message', 'donor'] },
-  { value: 'nameFirst', en: 'Name First', he: 'השם תחילה', order: ['dedication', 'label', 'message', 'donor'] },
-  { value: 'donorFirst', en: 'Donor First', he: 'התורם תחילה', order: ['donor', 'label', 'dedication', 'message'] },
-  { value: 'messageTop', en: 'Message Top', he: 'הודעה למעלה', order: ['message', 'dedication', 'label', 'donor'] },
+  { value: 'classic', en: 'Classic', he: 'קלאסי', order: ['label', 'dedication', 'donor'] },
+  { value: 'nameFirst', en: 'Name First', he: 'השם תחילה', order: ['dedication', 'label', 'donor'] },
+  { value: 'donorFirst', en: 'Donor First', he: 'התורם תחילה', order: ['donor', 'label', 'dedication'] },
+  { value: 'nameOnly', en: 'Name Only', he: 'שם בלבד', order: ['dedication'] },
 ];
 
 export const STICKER_FRAMES: { value: StickerFrameValue; en: string; he: string }[] = [
   { value: 'none', en: 'None', he: 'ללא' },
   { value: 'thin', en: 'Thin', he: 'דק' },
   { value: 'double', en: 'Double', he: 'כפול' },
+  { value: 'dashed', en: 'Dashed', he: 'מקווקו' },
+  { value: 'dotted', en: 'Dotted', he: 'מנוקד' },
+  { value: 'rounded', en: 'Rounded', he: 'מעוגל' },
   { value: 'ornate', en: 'Ornate', he: 'מעוטר' },
 ];
 
 export const STICKER_DIVIDERS: { value: StickerDividerValue; en: string; he: string }[] = [
   { value: 'none', en: 'None', he: 'ללא' },
   { value: 'line', en: 'Line', he: 'קו' },
+  { value: 'doubleLine', en: 'Double Line', he: 'קו כפול' },
   { value: 'dots', en: 'Dots', he: 'נקודות' },
   { value: 'starLine', en: 'Star Line', he: 'קו עם כוכב' },
+  { value: 'diamondLine', en: 'Diamond Line', he: 'קו עם יהלום' },
 ];
 
 export const STICKER_FLOURISHES: { value: StickerFlourishValue; en: string; he: string }[] = [
@@ -43,12 +50,31 @@ export const STICKER_FLOURISHES: { value: StickerFlourishValue; en: string; he: 
   { value: 'star', en: 'Star of David', he: 'מגן דוד' },
   { value: 'leaf', en: 'Floral', he: 'פרחוני' },
   { value: 'menorah', en: 'Menorah', he: 'מנורה' },
+  { value: 'pomegranate', en: 'Pomegranate', he: 'רימון' },
+  { value: 'crown', en: 'Crown', he: 'כתר' },
 ];
 
 export const STICKER_FONTS: { value: StickerFontValue; en: string; he: string; stack: string }[] = [
   { value: 'sans', en: 'Modern', he: 'מודרני', stack: "'Inter', 'Heebo', sans-serif" },
   { value: 'serif', en: 'Classic Serif', he: 'סריף קלאסי', stack: "'Playfair Display', 'Frank Ruhl Libre', serif" },
   { value: 'script', en: 'Script', he: 'סקריפט', stack: "'Dancing Script', 'Suez One', cursive" },
+];
+
+export interface StickerDedicationPhraseOption {
+  value: string;
+  en: string;
+  he: string;
+}
+
+/** The phrase shown before the dedication name — the traditional Hebrew formula,
+ *  or an English alternative. */
+export const STICKER_DEDICATION_PHRASES: StickerDedicationPhraseOption[] = [
+  { value: 'liluyNishmat', en: "L'iluy Nishmat", he: 'לעילוי נשמת' },
+  { value: 'inMemoryOf', en: 'In Memory of', he: 'לזכר' },
+  { value: 'inLovingMemoryOf', en: 'In Loving Memory of', he: 'לזכרו האהוב של' },
+  { value: 'inDedicationTo', en: 'In Dedication to', he: 'לזכות' },
+  { value: 'inHonorOf', en: 'In Honor of', he: 'לכבוד' },
+  { value: 'dedicatedBy', en: 'Dedicated by', he: 'הוקדש על ידי' },
 ];
 
 /** A common book/sefer cover proportion (width:height) — the preview and every
@@ -62,7 +88,6 @@ const DEFAULT_STICKER_COLORS: StickerColorSet = {
   flourish: '#1B3A6B',
   label: '#6B7C93',
   dedication: '#0D1B2A',
-  message: '#6B7C93',
   donor: '#6B7C93',
 };
 
@@ -71,7 +96,8 @@ export const DEFAULT_STICKER_DESIGN: StickerDesign = {
   frame: 'thin',
   divider: 'line',
   flourish: 'none',
-  font: 'serif',
+  dedicationPhrase: 'liluyNishmat',
+  fonts: { label: 'serif', dedication: 'serif', donor: 'serif' },
   colors: DEFAULT_STICKER_COLORS,
 };
 
@@ -81,4 +107,8 @@ export function findStickerLayout(value: string): StickerLayoutOption {
 
 export function stickerFontStack(value: StickerFontValue): string {
   return STICKER_FONTS.find((f) => f.value === value)?.stack ?? STICKER_FONTS[0].stack;
+}
+
+export function findDedicationPhrase(value: string): StickerDedicationPhraseOption {
+  return STICKER_DEDICATION_PHRASES.find((p) => p.value === value) ?? STICKER_DEDICATION_PHRASES[0];
 }

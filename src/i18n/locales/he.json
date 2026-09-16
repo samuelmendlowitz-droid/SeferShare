@@ -314,10 +314,11 @@
     "customize": "עיצוב מדבקת ההקדשה",
     "editorTitle": "עצבו את מדבקת ההקדשה שלכם",
     "layoutLabel": "פריסה",
+    "phraseLabel": "נוסח ההקדשה",
     "frameLabel": "מסגרת",
     "dividerLabel": "קו מפריד",
     "flourishLabel": "קישוט",
-    "fontLabel": "גופן",
+    "fontsLabel": "גופנים",
     "colorsLabel": "צבעים",
     "saveAsDefault": "שמירת ההגדרות האלה לפעם הבאה",
     "saved": "נשמר!",
@@ -328,7 +329,6 @@
       "flourish": "קישוט",
       "label": "תווית",
       "dedication": "שם",
-      "message": "הודעה",
       "donor": "תורם"
     }
   },

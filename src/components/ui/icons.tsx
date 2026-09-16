@@ -182,3 +182,23 @@ export function MenorahIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   );
 }
+
+export function PomegranateIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M12 6c-4 0-6.5 3-6.5 7a6.5 6.5 0 0 0 13 0c0-4-2.5-7-6.5-7Z" />
+      <path d="M9.5 4.5 12 6l2.5-1.5" />
+      <path d="M12 2.5V6" />
+      <path d="M9.5 13.5c0-1.4 1.1-2.5 2.5-2.5s2.5 1.1 2.5 2.5" />
+    </Icon>
+  );
+}
+
+export function CrownIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M4 18h16" />
+      <path d="M4 18 3 9l5 4 4-7 4 7 5-4-1 9Z" />
+    </Icon>
+  );
+}

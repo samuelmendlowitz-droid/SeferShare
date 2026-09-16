@@ -156,13 +156,6 @@ export function CampaignDetailPage() {
             >
               {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
             </Button>
-            <Button
-              variant="secondary"
-              className="w-full"
-              onClick={() => navigate(`/institutions/${institution.institutionId}/edit`)}
-            >
-              {t('institution.edit')}
-            </Button>
           </div>
         )}
       </Card>
