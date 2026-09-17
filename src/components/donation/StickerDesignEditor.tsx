@@ -4,6 +4,7 @@ import {
   DEFAULT_STICKER_DESIGN,
   nextCopyName,
   normalizeStickerDesign,
+  STICKER_DEDICATION_NAME_STYLES,
   STICKER_DEDICATION_PHRASES,
   STICKER_DIVIDERS,
   STICKER_FLOURISHES,
@@ -35,7 +36,16 @@ interface StickerDesignEditorProps {
   onDelete: (designId: string) => Promise<void>;
 }
 
-const COLOR_KEYS: (keyof StickerColorSet)[] = ['background', 'frame', 'divider', 'flourish', 'label', 'dedication', 'donor'];
+const COLOR_KEYS: (keyof StickerColorSet)[] = [
+  'background',
+  'frame',
+  'divider',
+  'flourish',
+  'label',
+  'dedication',
+  'donor',
+  'donatedTo',
+];
 const FONT_OPTIONS = STICKER_FONTS.map((opt) => ({ value: opt.value, label: `${opt.en} · ${opt.he}` }));
 const AUTOSAVE_DELAY_MS = 900;
 
@@ -270,6 +280,13 @@ export function StickerDesignEditor({
           value={value.dedicationPhrase}
           onChange={(v) => onChange({ ...value, dedicationPhrase: v })}
           options={STICKER_DEDICATION_PHRASES.map((opt) => ({ value: opt.value, label: `${opt.en} · ${opt.he}` }))}
+        />
+
+        <SliderPicker
+          label={t('sticker.nameStyleLabel')}
+          value={value.dedicationNameStyle}
+          onChange={(v) => onChange({ ...value, dedicationNameStyle: v as StickerDesign['dedicationNameStyle'] })}
+          options={STICKER_DEDICATION_NAME_STYLES.map((opt) => ({ value: opt.value, label: `${opt.en} · ${opt.he}` }))}
         />
 
         <SliderPicker

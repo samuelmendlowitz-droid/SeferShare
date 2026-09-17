@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { deleteInstitution, getInstitution, updateInstitution } from '../services/institutions';
 import { INSTITUTION_TYPES, type Address, type Institution, type InstitutionType } from '../types';
+import { PageHeading } from '../components/layout/PageHeading';
 import { AddressForm } from '../components/shared/AddressForm';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -104,7 +105,7 @@ export function InstitutionEditPage() {
         {t('actions.back')}
       </Button>
 
-      <h1 className="mb-4 text-lg font-bold">{t('institution.edit')}</h1>
+      <PageHeading page={t('institution.edit')} />
 
       <div className="space-y-2">
         <TextField label={t('institution.name')} value={name} onChange={setName} />

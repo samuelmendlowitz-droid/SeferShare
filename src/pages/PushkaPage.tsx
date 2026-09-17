@@ -5,14 +5,24 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { usePushka, type PushkaGiftCard, type PushkaItem } from '../context/PushkaContext';
 import { getCampaign } from '../services/campaigns';
+import { getInstitution } from '../services/institutions';
 import { getNeshama } from '../services/neshamos';
 import { neshamaDedicationLine, prefixedName } from '../lib/neshamaFormat';
 import { DEFAULT_STICKER_DESIGN, normalizeStickerDesign } from '../lib/stickerDesign';
 import { useStickerDesigns } from '../hooks/useStickerDesigns';
-import type { Campaign, DonationAd, DonationDedication, DonationGiftCard, Neshama, StickerDesign } from '../types';
+import type {
+  Campaign,
+  DonationAd,
+  DonationDedication,
+  DonationGiftCard,
+  Institution,
+  Neshama,
+  StickerDesign,
+} from '../types';
 import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
 import { CartDedicationPicker } from '../components/donation/CartDedicationPicker';
+import { PageHeading } from '../components/layout/PageHeading';
 import { VirtualDedicationCard, type StickerInfo } from '../components/donation/VirtualDedicationCard';
 import { StickerDesignEditor } from '../components/donation/StickerDesignEditor';
 import type { StickerContent } from '../components/donation/StickerPreview';
@@ -195,22 +205,72 @@ export function PushkaPage() {
     return false;
   }, [groups, campaignsById]);
 
+  // The institution behind the donor's own cart-wide dedication / the algorithm's
+  // pick — only knowable here when every item that would use it was added to a
+  // single specific institution (either directly, or via a campaign with no
+  // neshama of its own). Left undefined (nothing shown on the sticker) whenever
+  // that's ambiguous — the real destination is still resolved server-side.
+  const generalInstitutionId = useMemo(() => {
+    const ids = new Set<string>();
+    for (const item of groups.plainItems) {
+      if (item.institutionId) ids.add(item.institutionId);
+    }
+    for (const campaignId of groups.byCampaign.keys()) {
+      const campaign = campaignsById.get(campaignId);
+      if (campaign && !campaign.neshamaIds?.length) ids.add(campaign.institutionId);
+    }
+    return ids.size === 1 ? [...ids][0] : undefined;
+  }, [groups, campaignsById]);
+
+  const [institutionsById, setInstitutionsById] = useState<Map<string, Institution>>(new Map());
+
+  useEffect(() => {
+    const ids = [
+      ...new Set(
+        [
+          ...campaignStickerGroups.map((g) => campaignsById.get(g.campaignId)?.institutionId),
+          generalInstitutionId,
+        ].filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    if (ids.length === 0) {
+      setInstitutionsById(new Map());
+      return;
+    }
+    Promise.all(ids.map((id) => getInstitution(id))).then((results) => {
+      const map = new Map<string, Institution>();
+      results.forEach((inst, idx) => {
+        if (inst) map.set(ids[idx], inst);
+      });
+      setInstitutionsById(map);
+    });
+  }, [campaignStickerGroups, campaignsById, generalInstitutionId]);
+
   async function handlePaid() {
     setPaidItems(pushka.items);
     setPaidGiftCards(pushka.giftCards);
-    const stickers: StickerInfo[] = campaignStickerGroups.map((g) => ({
-      label: g.campaignTitle || t('campaign.untitled'),
-      name: prefixedName(g.neshama, false) ?? g.neshama.name,
-      hebrewName: prefixedName(g.neshama, true),
-    }));
+    const stickers: StickerInfo[] = campaignStickerGroups.map((g) => {
+      const institutionId = campaignsById.get(g.campaignId)?.institutionId;
+      return {
+        label: g.campaignTitle || t('campaign.untitled'),
+        name: prefixedName(g.neshama, false) ?? g.neshama.name,
+        hebrewName: prefixedName(g.neshama, true),
+        fatherHebrewName: g.neshama.fatherHebrewName,
+        parentGender: g.neshama.parentGender,
+        donatedTo: institutionId ? institutionsById.get(institutionId)?.name : undefined,
+      };
+    });
+    const generalDonatedTo = generalInstitutionId ? institutionsById.get(generalInstitutionId)?.name : undefined;
     if (dedicationNeshama) {
       stickers.push({
-        label: t('donation.yourDedicationTitle'),
         name: prefixedName(dedicationNeshama, false) ?? dedicationNeshama.name,
         hebrewName: prefixedName(dedicationNeshama, true),
+        fatherHebrewName: dedicationNeshama.fatherHebrewName,
+        parentGender: dedicationNeshama.parentGender,
+        donatedTo: generalDonatedTo,
       });
     } else if (hasAlgorithmStickerItems) {
-      stickers.push({ label: t('donation.yourDedicationTitle'), name: t('donation.algorithmChoice') });
+      stickers.push({ name: t('donation.algorithmChoice'), donatedTo: generalDonatedTo });
     }
     setPaidStickers(stickers);
     setPaidStickerDesign(stickerDesign);
@@ -236,15 +296,19 @@ export function PushkaPage() {
   // they made one, else the first campaign's neshama, else a placeholder — the same
   // priority the printed sticker itself follows (see stickers[] above).
   const previewNeshama = dedicationNeshama ?? campaignStickerGroups[0]?.neshama;
+  const previewInstitutionId = dedicationNeshama
+    ? generalInstitutionId
+    : campaignsById.get(campaignStickerGroups[0]?.campaignId ?? '')?.institutionId;
   const stickerPreviewContent: StickerContent = {
-    label: dedicationNeshama
-      ? t('donation.yourDedicationTitle')
-      : campaignStickerGroups[0]?.campaignTitle || t('donation.yourDedicationTitle'),
+    label: dedicationNeshama ? undefined : campaignStickerGroups[0]?.campaignTitle,
     dedicationName: previewNeshama
       ? (prefixedName(previewNeshama, false) ?? previewNeshama.name)
       : t('donation.algorithmChoice'),
     dedicationHebrewName: previewNeshama ? prefixedName(previewNeshama, true) : undefined,
+    dedicationFatherHebrewName: previewNeshama?.fatherHebrewName,
+    dedicationParentGender: previewNeshama?.parentGender,
     donorName: profile?.displayName,
+    donatedTo: previewInstitutionId ? institutionsById.get(previewInstitutionId)?.name : undefined,
   };
 
   if (step === 'confirmation') {
@@ -271,7 +335,7 @@ export function PushkaPage() {
         {t('actions.back')}
       </Button>
 
-      <h1 className="mb-4 text-lg font-bold">{t('pushka.title')}</h1>
+      <PageHeading page={t('pushka.title')} />
 
       {pushka.items.length === 0 && pushka.giftCards.length === 0 ? (
         <div className="text-center">

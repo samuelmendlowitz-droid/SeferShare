@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { usePushka } from '../../context/PushkaContext';
 import { CornerButton } from './CornerButton';
 import { FloatingToggleBar, type FilterSortButtonProps, type ToggleOption } from './FloatingToggleBar';
+import { PageHeading } from './PageHeading';
 import { TopSearchBar } from './TopSearchBar';
 import { HomeIcon, PlusIcon, ProfileIcon, PushkaIcon, StoreIcon } from '../ui/icons';
 
@@ -135,7 +136,10 @@ export function AppLayout(props: AppLayoutProps) {
     <div className="min-h-dvh pb-36">
       {/* Extra top clearance while searching so content doesn't render under the
           fixed top search bar. */}
-      <main className={`mx-auto max-w-2xl px-4 ${searchOpen ? 'pt-20' : 'pt-6'}`}>{props.children}</main>
+      <main className={`mx-auto max-w-2xl px-4 ${searchOpen ? 'pt-20' : 'pt-6'}`}>
+        <PageHeading page={t(`nav.${props.variant}`)} className="mb-4 text-xl font-bold" />
+        {props.children}
+      </main>
 
       {searchOpen ? (
         <TopSearchBar query={query} onQueryChange={handleQueryChange} onClose={closeSearch} />

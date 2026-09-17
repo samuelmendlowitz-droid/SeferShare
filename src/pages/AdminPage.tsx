@@ -21,6 +21,7 @@ import {
   updateOrderStatus,
 } from '../services/admin';
 import type { Campaign, Donation, Neshama, Order, OrderStatus, Sefer, User } from '../types';
+import { PageHeading } from '../components/layout/PageHeading';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
@@ -78,7 +79,7 @@ export function AdminPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-      <h1 className="mb-4 text-xl font-bold">{t('admin.title')}</h1>
+      <PageHeading page={t('admin.title')} className="mb-4 text-xl font-bold" />
 
       <div className="mb-4 flex flex-wrap gap-2">
         {sections.map((s) => (

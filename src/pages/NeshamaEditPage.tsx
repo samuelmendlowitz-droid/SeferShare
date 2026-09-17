@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { getNeshama, updateNeshama, deleteNeshama } from '../services/neshamos';
 import { SEFER_TYPES, type Neshama, type ParentGender, type SeferType } from '../types';
 import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../lib/neshamaPrefixes';
+import { PageHeading } from '../components/layout/PageHeading';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
@@ -114,7 +115,7 @@ export function NeshamaEditPage() {
         {t('actions.back')}
       </Button>
 
-      <h1 className="mb-4 text-lg font-bold">{t('neshama.edit')}</h1>
+      <PageHeading page={t('neshama.edit')} />
 
       <div className="space-y-2">
         <TextField label={t('neshama.name')} value={name} onChange={setName} />

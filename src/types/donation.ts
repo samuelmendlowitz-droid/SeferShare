@@ -1,10 +1,14 @@
 import type { ParentGender } from './neshama';
 
-export type StickerElementKey = 'label' | 'dedication' | 'donor';
+export type StickerElementKey = 'label' | 'dedication' | 'donor' | 'donatedTo';
 export type StickerFrameValue = 'none' | 'thin' | 'double' | 'dashed' | 'dotted' | 'rounded' | 'ornate';
 export type StickerDividerValue = 'none' | 'line' | 'dots' | 'starLine' | 'diamondLine' | 'doubleLine';
 export type StickerFlourishValue = 'none' | 'star' | 'leaf' | 'menorah' | 'pomegranate' | 'crown';
 export type StickerFontValue = 'sans' | 'serif' | 'script';
+/** How the dedication element's name text is composed: the plain name
+ *  (default), the full traditional "name, son/daughter of father's [Hebrew]
+ *  name" phrasing, the Hebrew name alone, or the father's name alone. */
+export type StickerDedicationNameStyle = 'default' | 'full' | 'hebrewOnly' | 'fatherOnly';
 
 export interface StickerColorSet {
   background: string;
@@ -14,6 +18,7 @@ export interface StickerColorSet {
   label: string;
   dedication: string;
   donor: string;
+  donatedTo: string;
 }
 
 /** The dedication sticker's editable design — chosen in the cart (see
@@ -30,8 +35,10 @@ export interface StickerDesign {
   /** The phrase shown before the dedication name — e.g. "L'iluy Nishmat" or
    *  "In Loving Memory of" (see STICKER_DEDICATION_PHRASES). */
   dedicationPhrase: string;
-  /** Font style per text element — label, dedication name, and donor line can
-   *  each use a different one. */
+  /** Which parts of the dedication name to show (see STICKER_DEDICATION_NAME_STYLES). */
+  dedicationNameStyle: StickerDedicationNameStyle;
+  /** Font style per text element — label, dedication name, donor line, and
+   *  "donated to" line can each use a different one. */
   fonts: Record<StickerElementKey, StickerFontValue>;
   colors: StickerColorSet;
 }

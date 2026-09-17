@@ -175,7 +175,6 @@
     "dedicationsTitle": "Dedications",
     "stickerAuto": "{{campaignTitle}}: {{liluyNishmat}} {{name}} — printed on the sticker",
     "stickerAutoPlain": "{{liluyNishmat}} {{name}} — printed on the sticker",
-    "yourDedicationTitle": "Your dedication (for the sticker)",
     "yourDedicationHint": "Pick a neshama to print on the sticker for the whole cart — otherwise each sefer keeps its own campaign's default, or gets one chosen for it.",
     "includeAd": "Add a small ad sticker for your business",
     "adBusinessName": "Business name",
@@ -322,6 +321,7 @@
     "editorTitle": "Design your dedication sticker",
     "layoutLabel": "Layout",
     "phraseLabel": "Dedication phrase",
+    "nameStyleLabel": "Dedication name style",
     "frameLabel": "Frame",
     "dividerLabel": "Divider",
     "flourishLabel": "Flourish",
@@ -344,7 +344,8 @@
       "flourish": "Flourish",
       "label": "Label",
       "dedication": "Name",
-      "donor": "Donor"
+      "donor": "Donor",
+      "donatedTo": "Donated To"
     }
   },
   "orderStatus": {

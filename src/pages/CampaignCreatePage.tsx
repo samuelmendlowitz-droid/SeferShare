@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { createCampaign } from '../services/campaigns';
 import type { Address, Institution } from '../types';
 import { SeferPicker, type PickedItem } from '../components/donation/SeferPicker';
+import { PageHeading } from '../components/layout/PageHeading';
 import { InstitutionPicker } from '../components/shared/InstitutionPicker';
 import { NeshamaPicker } from '../components/shared/NeshamaPicker';
 import { AddressForm } from '../components/shared/AddressForm';
@@ -86,7 +87,7 @@ export function CampaignCreatePage() {
         {t('actions.back')}
       </Button>
 
-      <h1 className="mb-4 text-lg font-bold">{t('campaign.create')}</h1>
+      <PageHeading page={t('campaign.create')} />
 
       <TextField
         required

@@ -1,8 +1,10 @@
 import type { CSSProperties, ReactNode } from 'react';
+import type { ParentGender } from '../../types';
 import {
   findDedicationPhrase,
   findStickerLayout,
   normalizeStickerDesign,
+  resolveDedicationName,
   stickerFontStack,
   STICKER_ASPECT_RATIO,
   type StickerDesign,
@@ -11,11 +13,17 @@ import {
 import { CrownIcon, LeafIcon, MenorahIcon, PomegranateIcon, StarOfDavidIcon } from '../ui/icons';
 
 export interface StickerContent {
-  /** Campaign title, or the "your dedication" title — shown as a small label. */
+  /** Campaign title — shown as a small label. */
   label?: string;
   dedicationName?: string;
   dedicationHebrewName?: string;
+  /** Only used when the design's dedicationNameStyle needs it ('full' or 'fatherOnly'). */
+  dedicationFatherHebrewName?: string;
+  dedicationParentGender?: ParentGender;
   donorName?: string;
+  /** The institution/destination this sefer is going to — shown only by layouts
+   *  that include the 'donatedTo' element. */
+  donatedTo?: string;
 }
 
 interface StickerPreviewProps {
@@ -107,6 +115,16 @@ export function StickerPreview({ design: rawDesign, content, className = '' }: S
   const phrase = findDedicationPhrase(design.dedicationPhrase);
   const { colors } = design;
 
+  const dedicationName = resolveDedicationName(
+    {
+      name: content.dedicationName,
+      hebrewName: content.dedicationHebrewName,
+      fatherHebrewName: content.dedicationFatherHebrewName,
+      parentGender: content.dedicationParentGender,
+    },
+    design.dedicationNameStyle,
+  );
+
   const elements: Partial<Record<StickerElementKey, ReactNode>> = {
     label: content.label ? (
       <p
@@ -116,21 +134,35 @@ export function StickerPreview({ design: rawDesign, content, className = '' }: S
         {content.label}
       </p>
     ) : null,
-    dedication: content.dedicationName ? (
-      <div className="text-center" style={{ color: colors.dedication, fontFamily: stickerFontStack(design.fonts.dedication) }}>
-        <p className="text-sm font-semibold leading-snug">
-          {phrase.en} {content.dedicationName}
-        </p>
-        {content.dedicationHebrewName && (
-          <p dir="rtl" className="mt-0.5 text-sm leading-snug">
-            {phrase.he} {content.dedicationHebrewName}
-          </p>
-        )}
-      </div>
-    ) : null,
+    dedication:
+      dedicationName.en || dedicationName.he ? (
+        <div
+          className="text-center"
+          style={{ color: colors.dedication, fontFamily: stickerFontStack(design.fonts.dedication) }}
+        >
+          {dedicationName.en && (
+            <p className="text-sm font-semibold leading-snug">
+              {phrase.en} {dedicationName.en}
+            </p>
+          )}
+          {dedicationName.he && (
+            <p dir="rtl" className={`text-sm leading-snug ${dedicationName.en ? 'mt-0.5' : 'font-semibold'}`}>
+              {phrase.he} {dedicationName.he}
+            </p>
+          )}
+        </div>
+      ) : null,
     donor: content.donorName ? (
       <p className="text-center text-xs" style={{ color: colors.donor, fontFamily: stickerFontStack(design.fonts.donor) }}>
         — {content.donorName}
+      </p>
+    ) : null,
+    donatedTo: content.donatedTo ? (
+      <p
+        className="text-center text-[10px]"
+        style={{ color: colors.donatedTo, fontFamily: stickerFontStack(design.fonts.donatedTo) }}
+      >
+        {content.donatedTo}
       </p>
     ) : null,
   };

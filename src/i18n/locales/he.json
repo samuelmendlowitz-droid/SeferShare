@@ -175,7 +175,6 @@
     "dedicationsTitle": "הקדשות",
     "stickerAuto": "{{campaignTitle}}: {{liluyNishmat}} {{name}} — יודפס על המדבקה",
     "stickerAutoPlain": "{{liluyNishmat}} {{name}} — יודפס על המדבקה",
-    "yourDedicationTitle": "ההקדשה שלכם (למדבקה)",
     "yourDedicationHint": "בחרו נשמה להדפסה על המדבקה עבור כל העגלה — אחרת כל ספר ישמור על ברירת המחדל של הקמפיין שלו, או שתיבחר עבורו נשמה.",
     "includeAd": "הוספת מדבקת פרסום קטנה לעסק שלכם",
     "adBusinessName": "שם העסק",
@@ -322,6 +321,7 @@
     "editorTitle": "עצבו את מדבקת ההקדשה שלכם",
     "layoutLabel": "פריסה",
     "phraseLabel": "נוסח ההקדשה",
+    "nameStyleLabel": "סגנון שם ההקדשה",
     "frameLabel": "מסגרת",
     "dividerLabel": "קו מפריד",
     "flourishLabel": "קישוט",
@@ -344,7 +344,8 @@
       "flourish": "קישוט",
       "label": "תווית",
       "dedication": "שם",
-      "donor": "תורם"
+      "donor": "תורם",
+      "donatedTo": "נתרם ל"
     }
   },
   "orderStatus": {

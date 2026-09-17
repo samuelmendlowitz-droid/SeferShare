@@ -200,8 +200,6 @@ export function HomePage() {
         filterSort={{ active: currentSheet.active, onClick: () => setSheetOpen(true) }}
         createAction={createActionByTab[filter]}
       >
-        <h1 className="mb-4 text-xl font-bold">{t('app.name')}</h1>
-
         {filter === 'all' &&
           (allFeed.loading ? (
             <LoadingSpinner />

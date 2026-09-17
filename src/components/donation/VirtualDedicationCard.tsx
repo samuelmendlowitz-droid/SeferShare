@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { DonationAd, StickerDesign } from '../../types';
+import type { DonationAd, ParentGender, StickerDesign } from '../../types';
 import type { PushkaGiftCard } from '../../context/PushkaContext';
 import type { PickedItem } from './SeferPicker';
 import { DEFAULT_STICKER_DESIGN } from '../../lib/stickerDesign';
@@ -9,10 +9,15 @@ import { Button } from '../ui/Button';
 import { GiftIcon } from '../ui/icons';
 
 export interface StickerInfo {
-  /** Campaign title (or donation.yourDedicationTitle) this sticker is printed for. */
-  label: string;
+  /** Campaign title this sticker is printed for — omitted for the donor's own
+   *  cart-wide dedication or an algorithm-picked one (no campaign to name). */
+  label?: string;
   name: string;
   hebrewName?: string;
+  fatherHebrewName?: string;
+  parentGender?: ParentGender;
+  /** The institution this sefer is going to, when known at confirmation time. */
+  donatedTo?: string;
 }
 
 interface VirtualDedicationCardProps {
@@ -45,7 +50,14 @@ export function VirtualDedicationCard({
             <StickerPreview
               key={idx}
               design={stickerDesign}
-              content={{ label: sticker.label, dedicationName: sticker.name, dedicationHebrewName: sticker.hebrewName }}
+              content={{
+                label: sticker.label,
+                dedicationName: sticker.name,
+                dedicationHebrewName: sticker.hebrewName,
+                dedicationFatherHebrewName: sticker.fatherHebrewName,
+                dedicationParentGender: sticker.parentGender,
+                donatedTo: sticker.donatedTo,
+              }}
               className="max-w-[140px] shadow-card"
             />
           ))}
