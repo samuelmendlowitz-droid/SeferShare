@@ -73,7 +73,7 @@ export function CampaignCreatePage() {
         shippingAddress,
         language,
       });
-      navigate(`/campaigns/${campaignId}`);
+      navigate(`/?popup=campaign:${campaignId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

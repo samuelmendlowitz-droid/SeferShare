@@ -78,7 +78,7 @@ export function InstitutionEditPage() {
         customType: type === 'other' ? customType.trim() || undefined : undefined,
         address,
       });
-      navigate(`/institutions/${institution.institutionId}`);
+      navigate(`/?popup=institution:${institution.institutionId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -101,7 +101,7 @@ export function InstitutionEditPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/institutions/${institution.institutionId}`)}>
+      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/?popup=institution:${institution.institutionId}`)}>
         {t('actions.back')}
       </Button>
 

@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { PushkaProvider } from './context/PushkaContext';
@@ -118,6 +118,10 @@ export default function App() {
                     </RequireAuth>
                   }
                 />
+                {/* Catches stale links to routes that no longer exist (e.g. the old
+                    /campaigns/:id, /institutions/:id, /neshamos/:id detail pages,
+                    now popups — see DetailStackContext) instead of rendering blank. */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
               <DetailStackOverlay />
             </DetailStackProvider>

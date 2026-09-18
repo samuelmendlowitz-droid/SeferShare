@@ -169,7 +169,7 @@ export function CampaignEditPage() {
         shippingAddress,
         language: campaign.language,
       });
-      navigate(`/campaigns/${campaign.campaignId}`);
+      navigate(`/?popup=campaign:${campaign.campaignId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -192,7 +192,7 @@ export function CampaignEditPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/campaigns/${campaign.campaignId}`)}>
+      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/?popup=campaign:${campaign.campaignId}`)}>
         {t('actions.back')}
       </Button>
 

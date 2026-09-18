@@ -91,7 +91,7 @@ export function InstitutionSpendPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-32 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/institutions/${institution.institutionId}`)}>
+      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/?popup=institution:${institution.institutionId}`)}>
         {t('actions.back')}
       </Button>
 

@@ -88,7 +88,7 @@ export function NeshamaEditPage() {
         fatherHebrewName: fatherHebrewName.trim(),
         seferTypes,
       });
-      navigate(`/neshamos/${neshama.neshamaId}`);
+      navigate(`/?popup=neshama:${neshama.neshamaId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -111,7 +111,7 @@ export function NeshamaEditPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/neshamos/${neshama.neshamaId}`)}>
+      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/?popup=neshama:${neshama.neshamaId}`)}>
         {t('actions.back')}
       </Button>
 
