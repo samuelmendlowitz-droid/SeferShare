@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useDetailStack } from '../../context/DetailStackContext';
 import type { InstitutionSummary } from '../../hooks/useMekomosFeed';
 import { Card } from '../ui/Card';
 import { EditIcon } from '../ui/icons';
@@ -15,6 +16,7 @@ export function InstitutionSummaryCard({ summary }: InstitutionSummaryCardProps)
   const { profile } = useAuth();
   const { showBilingual } = useLanguage();
   const navigate = useNavigate();
+  const { open } = useDetailStack();
   const { institution, totalNeeded, totalFulfilled, seferTypes } = summary;
   const seferTypesText = seferTypes.map((type) => t(`sefer.${type}`)).join(', ');
   const isOwn = profile?.uid === institution.createdByUid;
@@ -22,7 +24,7 @@ export function InstitutionSummaryCard({ summary }: InstitutionSummaryCardProps)
   return (
     <Card
       className="mb-3 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
-      onClick={() => navigate(`/institutions/${institution.institutionId}`)}
+      onClick={() => open('institution', institution.institutionId)}
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-base font-semibold">

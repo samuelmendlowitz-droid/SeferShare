@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Campaign, Institution, Neshama, Sefer } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useDetailStack } from '../../context/DetailStackContext';
 import { campaignDollarFulfilled, campaignDollarTotal } from '../../lib/campaignMath';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import { Card } from '../ui/Card';
@@ -22,6 +23,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
   const { profile } = useAuth();
   const { showBilingual } = useLanguage();
   const navigate = useNavigate();
+  const { open } = useDetailStack();
   const dollarTotal = campaignDollarTotal(campaign);
   const dollarFulfilled = campaignDollarFulfilled(campaign);
   const isOwn = profile?.uid === campaign.createdByUid;
@@ -38,7 +40,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
   return (
     <Card
       className="mb-3 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
-      onClick={() => navigate(`/campaigns/${campaign.campaignId}`)}
+      onClick={() => open('campaign', campaign.campaignId)}
     >
       <div className="flex items-start justify-between gap-2">
         {campaign.title && <p className="mb-1 text-base font-semibold">{campaign.title}</p>}
@@ -60,15 +62,37 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
       {(institution || neshamas.length > 0) && (
         <p className="text-sm text-text">
           {institution && (
-            <span>
+            <button
+              type="button"
+              className="hover:underline"
+              onClick={(e) => {
+                e.stopPropagation();
+                open('institution', institution.institutionId);
+              }}
+            >
               {institution.name}
               {showBilingual && institution.hebrewName ? ` · ${institution.hebrewName}` : ''}
-            </span>
+            </button>
           )}
           {institution && neshamas.length > 0 && ' • '}
           {neshamas.length > 0 && (
             <span className={institution ? 'text-text-muted' : ''}>
-              {t('neshama.liluyNishmat')} {neshamas.map((n) => neshamaDedicationLine(n, showBilingual)).join(', ')}
+              {t('neshama.liluyNishmat')}{' '}
+              {neshamas.map((n, idx) => (
+                <span key={n.neshamaId}>
+                  {idx > 0 && ', '}
+                  <button
+                    type="button"
+                    className="hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      open('neshama', n.neshamaId);
+                    }}
+                  >
+                    {neshamaDedicationLine(n, showBilingual)}
+                  </button>
+                </span>
+              ))}
             </span>
           )}
         </p>

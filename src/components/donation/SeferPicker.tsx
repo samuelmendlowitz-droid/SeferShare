@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SEFER_TYPES, type Sefer, type SeferType } from '../../types';
 import { listSefarim } from '../../services/sefarim';
 import { useLanguage } from '../../context/LanguageContext';
+import { useDetailStack } from '../../context/DetailStackContext';
 import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../layout/FilterSortSheet';
 import { Card } from '../ui/Card';
@@ -35,6 +36,7 @@ interface SeferPickerProps {
 export function SeferPicker({ picked, onChange }: SeferPickerProps) {
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
+  const { open } = useDetailStack();
   const [allSefarim, setAllSefarim] = useState<Sefer[]>([]);
   const [query, setQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -150,9 +152,13 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
               <Card key={sefer.seferId} className="flex items-center gap-3">
                 <SeferThumbnail imageUrl={listing.imageUrls?.[0]} alt={sefer.englishName} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">
+                  <button
+                    type="button"
+                    className="truncate text-start text-sm font-semibold text-accent hover:underline"
+                    onClick={() => open('sefer', sefer.seferId)}
+                  >
                     {sefer.englishName} · {sefer.hebrewName}
-                  </p>
+                  </button>
                   <p className="truncate text-xs text-text-muted">
                     {seferTypeText(sefer.type, sefer.customType, t(`sefer.${sefer.type}`))}
                     {subtypeLabel(sefer.type, sefer.subType, showBilingual, sefer.customSubType)

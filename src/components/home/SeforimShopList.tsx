@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePushka } from '../../context/PushkaContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useDetailStack } from '../../context/DetailStackContext';
 import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
 import type { SeforimShopItem } from '../../hooks/useSeforimShopFeed';
 import { GiftCardOption } from '../donation/GiftCardOption';
@@ -20,6 +21,7 @@ export function SeforimShopList({ items, institutionId, institutionName }: Sefor
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
   const pushka = usePushka();
+  const { open } = useDetailStack();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   function quantityFor(itemKey: string): number {
@@ -64,9 +66,13 @@ export function SeforimShopList({ items, institutionId, institutionName }: Sefor
           <Card key={item.sefer.seferId} className="flex items-center gap-3">
             <SeferThumbnail imageUrl={item.listing?.imageUrls?.[0]} alt={item.sefer.englishName} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">
+              <button
+                type="button"
+                className="truncate text-start text-sm font-semibold text-accent hover:underline"
+                onClick={() => open('sefer', item.sefer.seferId)}
+              >
                 {item.sefer.englishName} · {item.sefer.hebrewName}
-              </p>
+              </button>
               <p className="text-xs text-text-muted">
                 {seferTypeText(item.sefer.type, item.sefer.customType, t(`sefer.${item.sefer.type}`))}
                 {subtypeLabel(item.sefer.type, item.sefer.subType, showBilingual, item.sefer.customSubType)

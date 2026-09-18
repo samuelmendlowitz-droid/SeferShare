@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import type { Donation } from '../../types';
+import { useDetailStack } from '../../context/DetailStackContext';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
@@ -12,7 +12,7 @@ interface DonationsTabProps {
 
 export function DonationsTab({ loading, donations }: DonationsTabProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { open } = useDetailStack();
 
   if (loading) return <LoadingSpinner />;
   if (donations.length === 0) return <p className="text-text-muted">{t('home.empty')}</p>;
@@ -30,7 +30,7 @@ export function DonationsTab({ loading, donations }: DonationsTabProps) {
             <Button
               variant="secondary"
               className="mt-2"
-              onClick={() => navigate(`/campaigns/${donation.campaignAssignments[0].campaignId}`)}
+              onClick={() => open('campaign', donation.campaignAssignments[0].campaignId)}
             >
               {t('campaign.view')}
             </Button>

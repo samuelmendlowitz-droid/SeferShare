@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useDetailStack } from '../../context/DetailStackContext';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import type { NeshamaSummary } from '../../hooks/useNeshamosFeed';
 import { Card } from '../ui/Card';
@@ -16,6 +17,7 @@ export function NeshamaSummaryCard({ summary }: NeshamaSummaryCardProps) {
   const { profile } = useAuth();
   const { showBilingual } = useLanguage();
   const navigate = useNavigate();
+  const { open } = useDetailStack();
   const { neshama } = summary;
   const seferTypesText = (neshama.seferTypes ?? []).map((type) => t(`sefer.${type}`)).join(', ');
   const isOwn = profile?.uid === neshama.createdByUid;
@@ -23,7 +25,7 @@ export function NeshamaSummaryCard({ summary }: NeshamaSummaryCardProps) {
   return (
     <Card
       className="mb-3 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
-      onClick={() => navigate(`/neshamos/${neshama.neshamaId}`)}
+      onClick={() => open('neshama', neshama.neshamaId)}
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-base font-semibold">

@@ -57,6 +57,18 @@ export async function listCampaignsByNeshama(neshamaId: string): Promise<Campaig
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
+/**
+ * Active campaigns requesting a given sefer, for the Sefer detail popup.
+ * `items` holds objects (not primitive values), so Firestore can't query this
+ * with `array-contains` directly — filtered in memory instead, the same
+ * pattern the campaign detail view already uses to resolve sefer names from
+ * the full catalog.
+ */
+export async function listCampaignsBySefer(seferId: string): Promise<Campaign[]> {
+  const campaigns = await listActiveCampaigns();
+  return campaigns.filter((c) => c.items.some((item) => item.seferId === seferId));
+}
+
 export interface CreateCampaignInput {
   createdByUid: string;
   title?: string;

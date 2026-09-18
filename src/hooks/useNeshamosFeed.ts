@@ -15,7 +15,7 @@ export interface NeshamaSummary {
 
 /** The Neshamas tab: every neshama in the system — they're independent records now,
  *  not tied to having an active campaign (a campaign is just one optional way to
- *  donate in their honor; see NeshamaDetailPage). */
+ *  donate in their honor; see NeshamaPopupContent). */
 export function useNeshamosFeed(searchQuery: string, options: NeshamosFeedOptions = {}) {
   const { seferTypes = [], sortKey = 'recommended' } = options;
   const [loading, setLoading] = useState(true);

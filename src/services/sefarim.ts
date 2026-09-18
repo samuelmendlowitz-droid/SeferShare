@@ -9,6 +9,11 @@ export async function listSefarim(): Promise<Sefer[]> {
   return snap.docs.map((d) => ({ ...(d.data() as Sefer), seferId: d.id }));
 }
 
+export async function getSefer(seferId: string): Promise<Sefer | null> {
+  const snap = await getDoc(doc(db, 'sefarim', seferId));
+  return snap.exists() ? { ...(snap.data() as Sefer), seferId: snap.id } : null;
+}
+
 /**
  * Matches an existing catalog entry by (englishName, type, subType) so vendor
  * submissions for the same sefer merge into one master record instead of
