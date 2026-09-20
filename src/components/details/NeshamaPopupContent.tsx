@@ -72,8 +72,13 @@ export function NeshamaPopupContent({ id: neshamaId, isTop, zIndex, onClose }: N
   const isOwn = profile?.uid === neshama.createdByUid;
 
   return (
-    <DetailPopup title={prefixedName(neshama, false) ?? neshama.name} onClose={onClose} isTop={isTop} zIndex={zIndex}>
-      <Card className="mb-4">
+    <DetailPopup
+      title={`${t('neshama.singular')} - ${prefixedName(neshama, false) ?? neshama.name}`}
+      onClose={onClose}
+      isTop={isTop}
+      zIndex={zIndex}
+    >
+      <div className="mb-4 border-b border-border pb-4">
         {neshama.hebrewName && (
           <p dir="rtl" className="text-sm text-text">
             {prefixedName(neshama, true)}
@@ -87,7 +92,7 @@ export function NeshamaPopupContent({ id: neshamaId, isTop, zIndex, onClose }: N
             </Button>
           </div>
         )}
-      </Card>
+      </div>
 
       {(dedicatedSefarim.length > 0 || (neshama.seferTypes ?? []).length > 0) && (
         <div className="mb-4">

@@ -63,8 +63,13 @@ export function SeferPopupContent({ id: seferId, isTop, zIndex, onClose }: Sefer
   const subLabel = subtypeLabel(sefer.type, sefer.subType, showBilingual, sefer.customSubType);
 
   return (
-    <DetailPopup title={sefer.englishName} onClose={onClose} isTop={isTop} zIndex={zIndex}>
-      <Card className="mb-4">
+    <DetailPopup
+      title={`${t('sefer.singular')} - ${sefer.englishName}`}
+      onClose={onClose}
+      isTop={isTop}
+      zIndex={zIndex}
+    >
+      <div className="mb-4 border-b border-border pb-4">
         {sefer.hebrewName && (
           <p dir="rtl" className="text-sm text-text">
             {sefer.hebrewName}
@@ -74,7 +79,7 @@ export function SeferPopupContent({ id: seferId, isTop, zIndex, onClose }: Sefer
           {typeText}
           {subLabel ? ` · ${subLabel}` : ''}
         </p>
-      </Card>
+      </div>
 
       <h2 className="mb-2 text-base font-semibold">{t('sefer.requestedByCampaigns')}</h2>
       {campaigns.length === 0 ? (

@@ -73,8 +73,13 @@ export function InstitutionPopupContent({ id: institutionId, isTop, zIndex, onCl
   const isOwn = profile?.uid === institution.createdByUid;
 
   return (
-    <DetailPopup title={institution.name} onClose={onClose} isTop={isTop} zIndex={zIndex}>
-      <Card className="mb-4">
+    <DetailPopup
+      title={`${t('institution.singular')} - ${institution.name}`}
+      onClose={onClose}
+      isTop={isTop}
+      zIndex={zIndex}
+    >
+      <div className="mb-4 border-b border-border pb-4">
         <p className="text-sm text-text-muted">{institutionTypeText(institution.type, institution.customType, t(`institution.${institution.type}`))}</p>
         <p className="mt-1 text-sm text-text">{addressLine(institution)}</p>
         {isOwn && (
@@ -87,20 +92,23 @@ export function InstitutionPopupContent({ id: institutionId, isTop, zIndex, onCl
             </Button>
           </div>
         )}
-      </Card>
+      </div>
 
       {campaigns.length > 0 && (
-        <div className="mb-4 space-y-2">
-          {campaigns.map((campaign) => (
-            <Card
-              key={campaign.campaignId}
-              className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
-              onClick={() => open('campaign', campaign.campaignId)}
-            >
-              <p className="text-sm font-semibold">{campaign.title || t('campaign.untitled')}</p>
-            </Card>
-          ))}
-        </div>
+        <>
+          <h2 className="mb-2 text-base font-semibold">{t('campaign.campaignsHeading')}</h2>
+          <div className="mb-4 space-y-2">
+            {campaigns.map((campaign) => (
+              <Card
+                key={campaign.campaignId}
+                className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+                onClick={() => open('campaign', campaign.campaignId)}
+              >
+                <p className="text-sm font-semibold">{campaign.title || t('campaign.untitled')}</p>
+              </Card>
+            ))}
+          </div>
+        </>
       )}
 
       <GiftCardOption

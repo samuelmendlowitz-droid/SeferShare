@@ -39,6 +39,7 @@
     "country": "Country"
   },
   "campaign": {
+    "singular": "Campaign",
     "create": "New Campaign",
     "campaignsHeading": "Campaigns",
     "selectWhere": "Select an institution",
@@ -65,6 +66,7 @@
     "quantityLabel": "Quantity"
   },
   "neshama": {
+    "singular": "Neshama",
     "name": "Name",
     "hebrewName": "Hebrew name",
     "namePrefixLabel": "Prefix (optional)",
@@ -93,6 +95,7 @@
     "deleteHint": "Deleting a neshama removes it permanently, including from any campaign it's dedicated to."
   },
   "institution": {
+    "singular": "Mokom",
     "name": "Institution name",
     "hebrewName": "Hebrew name",
     "type": "Type",
@@ -119,6 +122,7 @@
     "deleteHint": "Deleting an institution removes it permanently, including any gift card balance it holds."
   },
   "sefer": {
+    "singular": "Sefer",
     "hebrewName": "Hebrew name",
     "englishName": "English name",
     "phoneticName": "Phonetic name",

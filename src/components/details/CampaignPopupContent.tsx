@@ -124,7 +124,7 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
 
   return (
     <DetailPopup
-      title={campaign.title || t('campaign.untitled')}
+      title={`${t('campaign.singular')} - ${campaign.title || t('campaign.untitled')}`}
       onClose={onClose}
       isTop={isTop}
       zIndex={zIndex}
@@ -145,7 +145,7 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
           </div>
         )}
 
-        <Card>
+        <div className="mb-4 border-b border-border pb-4">
           {institution && (
             <p className="text-sm">
               <button type="button" className="text-accent hover:underline" onClick={() => open('institution', institution.institutionId)}>
@@ -192,9 +192,9 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
               </Button>
             </div>
           )}
-        </Card>
+        </div>
 
-        <h2 className="mb-2 mt-4 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
+        <h2 className="mb-2 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
         <GiftCardOption
           onAdd={(amount) =>
             pushka.addGiftCard({

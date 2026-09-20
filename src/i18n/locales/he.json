@@ -39,6 +39,7 @@
     "country": "מדינה"
   },
   "campaign": {
+    "singular": "קמפיין",
     "create": "קמפיין חדש",
     "campaignsHeading": "קמפיינים",
     "selectWhere": "בחרו מוסד",
@@ -65,6 +66,7 @@
     "quantityLabel": "כמות"
   },
   "neshama": {
+    "singular": "נשמה",
     "name": "שם",
     "hebrewName": "שם בעברית",
     "namePrefixLabel": "תואר (אופציונלי)",
@@ -93,6 +95,7 @@
     "deleteHint": "מחיקת נשמה מסירה אותה לצמיתות, כולל מכל קמפיין שהיא מוקדשת לו."
   },
   "institution": {
+    "singular": "מקום",
     "name": "שם המוסד",
     "hebrewName": "שם בעברית",
     "type": "סוג",
@@ -119,6 +122,7 @@
     "deleteHint": "מחיקת מוסד מסירה אותו לצמיתות, כולל כל יתרת כרטיס מתנה שיש לו."
   },
   "sefer": {
+    "singular": "ספר",
     "hebrewName": "שם בעברית",
     "englishName": "שם באנגלית",
     "phoneticName": "תעתיק פונטי",
