@@ -5,11 +5,12 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useDetailStack } from '../../context/DetailStackContext';
 import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
 import type { SeforimShopItem } from '../../hooks/useSeforimShopFeed';
+import type { Campaign } from '../../types';
+import { SeferAddToCartModal } from './SeferAddToCartModal';
 import { GiftCardOption } from '../donation/GiftCardOption';
 import { Card } from '../ui/Card';
-import { Button } from '../ui/Button';
 import { SeferThumbnail } from '../ui/SeferThumbnail';
-import { MinusIcon, PlusIcon } from '../ui/icons';
+import { PlusIcon } from '../ui/icons';
 
 interface SeforimShopListProps {
   items: SeforimShopItem[];
@@ -17,115 +18,112 @@ interface SeforimShopListProps {
   institutionName?: string;
 }
 
+/** Shopping-platform-style grid: a card per sefer (photo, name, type/subtype,
+ *  price, a "+" to add to cart) — tapping the name opens its detail popup
+ *  instead of adding to cart. */
 export function SeforimShopList({ items, institutionId, institutionName }: SeforimShopListProps) {
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
   const pushka = usePushka();
   const { open } = useDetailStack();
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [activeItem, setActiveItem] = useState<SeforimShopItem | null>(null);
 
-  function quantityFor(itemKey: string): number {
-    return quantities[itemKey] ?? 1;
-  }
-
-  function adjust(itemKey: string, delta: number) {
-    setQuantities((prev) => ({ ...prev, [itemKey]: Math.max(1, quantityFor(itemKey) + delta) }));
-  }
-
-  function addToPushka(item: SeforimShopItem) {
-    if (!item.listing) return;
-    const itemKey = `${item.sefer.seferId}_${item.listing.vendorId}`;
-    pushka.addItem(
-      {
-        seferId: item.sefer.seferId,
-        vendorId: item.listing.vendorId,
-        vendorName: item.listing.vendorName,
-        englishName: item.sefer.englishName,
-        hebrewName: item.sefer.hebrewName,
-        price: item.listing.price,
-        imageUrl: item.listing.imageUrls?.[0],
-        institutionId,
-      },
-      quantityFor(itemKey),
-    );
-    setQuantities((prev) => ({ ...prev, [itemKey]: 1 }));
+  function handleConfirmAdd(item: SeforimShopItem, quantity: number, campaign?: Campaign) {
+    if (campaign) {
+      const campaignItem = campaign.items.find((ci) => ci.seferId === item.sefer.seferId);
+      if (!campaignItem) return;
+      const listing = item.sefer.vendorListings.find((l) => l.vendorId === campaignItem.vendorId);
+      pushka.addItem(
+        {
+          seferId: item.sefer.seferId,
+          vendorId: campaignItem.vendorId,
+          vendorName: listing?.vendorName ?? '',
+          englishName: item.sefer.englishName,
+          hebrewName: item.sefer.hebrewName,
+          price: campaignItem.retailPrice,
+          imageUrl: listing?.imageUrls?.[0],
+          campaignId: campaign.campaignId,
+          campaignTitle: campaign.title ?? undefined,
+          institutionId: campaign.institutionId,
+        },
+        quantity,
+      );
+    } else if (item.listing) {
+      pushka.addItem(
+        {
+          seferId: item.sefer.seferId,
+          vendorId: item.listing.vendorId,
+          vendorName: item.listing.vendorName,
+          englishName: item.sefer.englishName,
+          hebrewName: item.sefer.hebrewName,
+          price: item.listing.price,
+          imageUrl: item.listing.imageUrls?.[0],
+          institutionId,
+        },
+        quantity,
+      );
+    }
+    setActiveItem(null);
   }
 
   return (
-    <div className="space-y-2">
+    <div>
       <GiftCardOption onAdd={(amount) => pushka.addGiftCard({ institutionId, institutionName, amount })} />
-      {items.map((item) => {
-        const itemKey = `${item.sefer.seferId}_${item.listing?.vendorId ?? 'none'}`;
-        const inPushkaCount = item.listing
-          ? pushka.items.find(
-              (p) => pushka.keyFor(p) === pushka.keyFor({ seferId: item.sefer.seferId, vendorId: item.listing!.vendorId }),
-            )?.quantity ?? 0
-          : 0;
 
-        return (
-          <Card key={item.sefer.seferId} className="flex items-center gap-3">
-            <SeferThumbnail imageUrl={item.listing?.imageUrls?.[0]} alt={item.sefer.englishName} />
-            <div className="min-w-0 flex-1">
+      <div className="grid grid-cols-2 gap-3">
+        {items.map((item) => {
+          const inCartCount = pushka.items
+            .filter((p) => p.seferId === item.sefer.seferId)
+            .reduce((sum, p) => sum + p.quantity, 0);
+          const subLabel = subtypeLabel(item.sefer.type, item.sefer.subType, showBilingual, item.sefer.customSubType);
+
+          return (
+            <Card key={item.sefer.seferId} className="flex flex-col items-center gap-1 text-center">
+              <SeferThumbnail imageUrl={item.listing?.imageUrls?.[0]} alt={item.sefer.englishName} size={112} />
               <button
                 type="button"
-                className="truncate text-start text-sm font-semibold text-accent hover:underline"
+                className="mt-1 line-clamp-2 text-sm font-semibold text-accent hover:underline"
                 onClick={() => open('sefer', item.sefer.seferId)}
               >
-                {item.sefer.englishName} · {item.sefer.hebrewName}
+                {item.sefer.englishName}
               </button>
               <p className="text-xs text-text-muted">
                 {seferTypeText(item.sefer.type, item.sefer.customType, t(`sefer.${item.sefer.type}`))}
-                {subtypeLabel(item.sefer.type, item.sefer.subType, showBilingual, item.sefer.customSubType)
-                  ? ` · ${subtypeLabel(item.sefer.type, item.sefer.subType, showBilingual, item.sefer.customSubType)}`
-                  : ''}
+                {subLabel ? ` · ${subLabel}` : ''}
               </p>
-              {item.sefer.languages && item.sefer.languages.length > 0 && (
-                <p className="text-xs text-text-muted">
-                  {item.sefer.languages.map((lang) => t(`sefer.languages.${lang}`)).join(', ')}
-                </p>
-              )}
               {item.listing ? (
-                <p className="text-sm">${item.listing.price.toFixed(2)}</p>
+                <p className="text-sm font-medium">${item.listing.price.toFixed(2)}</p>
               ) : (
                 <p className="text-xs text-text-muted">{t('actions.noResults')}</p>
               )}
-              {inPushkaCount > 0 && (
-                <p className="text-xs font-medium text-accent">{t('pushka.inPushka', { count: inPushkaCount })}</p>
+              {inCartCount > 0 && (
+                <p className="text-xs font-medium text-accent">{t('pushka.inPushka', { count: inCartCount })}</p>
               )}
-              {item.listing && !item.inStock && (
-                <p className="text-xs font-medium text-error">{t('filterSort.outOfStock')}</p>
-              )}
-            </div>
 
-            {item.listing && item.inStock && (
-              <div className="flex shrink-0 flex-col items-end gap-2">
-                <div className="flex items-center gap-1 rounded-btn border border-border">
-                  <button
-                    type="button"
-                    onClick={() => adjust(itemKey, -1)}
-                    aria-label={t('pushka.decreaseQuantity') ?? ''}
-                    className="flex h-8 w-8 items-center justify-center text-text-muted"
-                  >
-                    <MinusIcon width={14} height={14} />
-                  </button>
-                  <span className="w-6 text-center text-sm">{quantityFor(itemKey)}</span>
-                  <button
-                    type="button"
-                    onClick={() => adjust(itemKey, 1)}
-                    aria-label={t('pushka.increaseQuantity') ?? ''}
-                    className="flex h-8 w-8 items-center justify-center text-text-muted"
-                  >
-                    <PlusIcon width={14} height={14} />
-                  </button>
-                </div>
-                <Button variant="secondary" onClick={() => addToPushka(item)}>
-                  {t('pushka.addToPushka')}
-                </Button>
-              </div>
-            )}
-          </Card>
-        );
-      })}
+              {item.listing && item.inStock ? (
+                <button
+                  type="button"
+                  onClick={() => setActiveItem(item)}
+                  aria-label={t('pushka.addToPushka') ?? ''}
+                  className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-accent text-white"
+                >
+                  <PlusIcon width={18} height={18} />
+                </button>
+              ) : (
+                item.listing && <p className="mt-1 text-xs font-medium text-error">{t('filterSort.outOfStock')}</p>
+              )}
+            </Card>
+          );
+        })}
+      </div>
+
+      {activeItem && (
+        <SeferAddToCartModal
+          item={activeItem}
+          onClose={() => setActiveItem(null)}
+          onConfirm={(quantity, campaign) => handleConfirmAdd(activeItem, quantity, campaign)}
+        />
+      )}
     </div>
   );
 }

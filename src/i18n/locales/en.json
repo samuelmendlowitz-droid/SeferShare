@@ -319,6 +319,8 @@
     "goHome": "Go to Home",
     "addToPushka": "Add to pushka",
     "inPushka": "{{count}} in your pushka",
+    "pickForMe": "Pick for me",
+    "whichCampaignLabel": "Which campaign needs this?",
     "completeDonation": "Complete Donation ({{count}} · ${{amount}})",
     "otherSeforim": "Other seforim",
     "increaseQuantity": "Increase quantity",

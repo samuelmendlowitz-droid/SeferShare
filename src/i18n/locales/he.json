@@ -319,6 +319,8 @@
     "goHome": "לדף הבית",
     "addToPushka": "הוספה לפושקע",
     "inPushka": "{{count}} בפושקע שלכם",
+    "pickForMe": "בחרו עבורי",
+    "whichCampaignLabel": "לאיזה קמפיין זה מיועד?",
     "completeDonation": "השלמת תרומה ({{count}} · ${{amount}})",
     "otherSeforim": "ספרים נוספים",
     "increaseQuantity": "הגדלת כמות",
