@@ -124,7 +124,12 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
 
   return (
     <DetailPopup
-      title={`${t('campaign.singular')} - ${campaign.title || t('campaign.untitled')}`}
+      title={
+        <>
+          <span className="font-normal text-text-muted">{t('campaign.singular')} - </span>
+          {campaign.title || t('campaign.untitled')}
+        </>
+      }
       onClose={onClose}
       isTop={isTop}
       zIndex={zIndex}
@@ -137,17 +142,10 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
       }
     >
       <div>
-        {profile?.uid === campaign.createdByUid && (
-          <div className="mb-4 flex justify-end">
-            <Button variant="secondary" onClick={() => navigate(`/campaigns/${campaign.campaignId}/edit`)}>
-              {t('campaign.edit')}
-            </Button>
-          </div>
-        )}
-
         <div className="mb-4 border-b border-border pb-4">
+          <h1 className="text-2xl font-bold">{campaign.title || t('campaign.untitled')}</h1>
           {institution && (
-            <p className="text-sm">
+            <p className="mt-1 text-sm">
               <button type="button" className="text-accent hover:underline" onClick={() => open('institution', institution.institutionId)}>
                 {institution.name}
               </button>
@@ -170,7 +168,7 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
           {campaign.description && <p className="mt-3 text-sm text-text">{campaign.description}</p>}
 
           <div className="mt-4">
-            <p className="text-xl font-bold text-accent">
+            <p className="text-base font-semibold text-accent">
               {t('home.itemsNeeded', { fulfilled: campaign.totalItemsFulfilled, needed: campaign.totalItemsNeeded })}
             </p>
             <p className="text-sm text-text-muted">
@@ -180,18 +178,6 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
           <div className="mt-2">
             <ProgressBar fulfilled={campaign.totalItemsFulfilled} needed={campaign.totalItemsNeeded} />
           </div>
-
-          {institution && profile?.uid === institution.createdByUid && (
-            <div className="mt-4 space-y-2">
-              <Button
-                variant="secondary"
-                className="w-full"
-                onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}
-              >
-                {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
-              </Button>
-            </div>
-          )}
         </div>
 
         <h2 className="mb-2 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
@@ -276,6 +262,25 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
             );
           })}
         </div>
+
+        {(profile?.uid === campaign.createdByUid || (institution && profile?.uid === institution.createdByUid)) && (
+          <div className="mt-4 space-y-2 border-t border-border pt-4">
+            {institution && profile?.uid === institution.createdByUid && (
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}
+              >
+                {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
+              </Button>
+            )}
+            {profile?.uid === campaign.createdByUid && (
+              <Button variant="secondary" className="w-full" onClick={() => navigate(`/campaigns/${campaign.campaignId}/edit`)}>
+                {t('campaign.edit')}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </DetailPopup>
   );

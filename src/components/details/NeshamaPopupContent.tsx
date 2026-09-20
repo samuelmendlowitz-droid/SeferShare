@@ -6,7 +6,7 @@ import { useDetailStack } from '../../context/DetailStackContext';
 import { getNeshama } from '../../services/neshamos';
 import { listCampaignsByNeshama } from '../../services/campaigns';
 import { getSefer } from '../../services/sefarim';
-import { prefixedName } from '../../lib/neshamaFormat';
+import { formatNeshamaDedication, prefixedName } from '../../lib/neshamaFormat';
 import type { Campaign, Neshama, Sefer } from '../../types';
 import { DetailPopup } from './DetailPopup';
 import { Card } from '../ui/Card';
@@ -71,51 +71,42 @@ export function NeshamaPopupContent({ id: neshamaId, isTop, zIndex, onClose }: N
 
   const isOwn = profile?.uid === neshama.createdByUid;
 
+  const hasDedicatedInfo = dedicatedSefarim.length > 0 || (neshama.seferTypes ?? []).length > 0;
+
   return (
     <DetailPopup
-      title={`${t('neshama.singular')} - ${prefixedName(neshama, false) ?? neshama.name}`}
+      title={
+        <>
+          <span className="font-normal text-text-muted">{t('neshama.singular')} - </span>
+          {prefixedName(neshama, false) ?? neshama.name}
+        </>
+      }
       onClose={onClose}
       isTop={isTop}
       zIndex={zIndex}
     >
       <div className="mb-4 border-b border-border pb-4">
+        <h1 className="text-2xl font-bold">{prefixedName(neshama, false) ?? neshama.name}</h1>
         {neshama.hebrewName && (
-          <p dir="rtl" className="text-sm text-text">
-            {prefixedName(neshama, true)}
+          <p dir="rtl" className="mt-1 text-base text-text">
+            {formatNeshamaDedication(neshama, true)}
           </p>
         )}
-        <p className="mt-1 text-sm text-text-muted">{neshama.fatherHebrewName}</p>
-        {isOwn && (
-          <div className="mt-3">
-            <Button variant="secondary" onClick={() => navigate(`/neshamos/${neshama.neshamaId}/edit`)}>
-              {t('neshama.edit')}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {(dedicatedSefarim.length > 0 || (neshama.seferTypes ?? []).length > 0) && (
-        <div className="mb-4">
-          <h2 className="mb-2 text-base font-semibold">{t('neshama.dedicatedSeforim')}</h2>
-          {dedicatedSefarim.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-2">
-              {dedicatedSefarim.map((sefer) => (
-                <button
-                  key={sefer.seferId}
-                  type="button"
-                  className="rounded-pill border border-accent px-3 py-1 text-xs font-medium text-accent hover:bg-accent/5"
-                  onClick={() => open('sefer', sefer.seferId)}
-                >
+        {hasDedicatedInfo && (
+          <p className="mt-2 text-xs text-text-muted">
+            {dedicatedSefarim.map((sefer, idx) => (
+              <span key={sefer.seferId}>
+                {idx > 0 && ', '}
+                <button type="button" className="text-accent hover:underline" onClick={() => open('sefer', sefer.seferId)}>
                   {sefer.englishName}
                 </button>
-              ))}
-            </div>
-          )}
-          {(neshama.seferTypes ?? []).length > 0 && (
-            <p className="text-xs text-text-muted">{(neshama.seferTypes ?? []).map((type) => t(`sefer.${type}`)).join(', ')}</p>
-          )}
-        </div>
-      )}
+              </span>
+            ))}
+            {dedicatedSefarim.length > 0 && (neshama.seferTypes ?? []).length > 0 && ', '}
+            {(neshama.seferTypes ?? []).map((type) => t(`sefer.${type}`)).join(', ')}
+          </p>
+        )}
+      </div>
 
       <h2 className="mb-2 text-base font-semibold">{t('neshama.chooseCampaign')}</h2>
       {campaigns.length === 0 ? (
@@ -134,9 +125,16 @@ export function NeshamaPopupContent({ id: neshamaId, isTop, zIndex, onClose }: N
         </div>
       )}
 
-      <Button className="w-full" onClick={() => navigate(`/neshamos/${neshama.neshamaId}/donate`)}>
-        {t('neshama.donateInTheirName')}
-      </Button>
+      <div className="space-y-2 border-t border-border pt-4">
+        <Button className="w-full" onClick={() => navigate(`/neshamos/${neshama.neshamaId}/donate`)}>
+          {t('neshama.donateInTheirName')}
+        </Button>
+        {isOwn && (
+          <Button variant="secondary" className="w-full" onClick={() => navigate(`/neshamos/${neshama.neshamaId}/edit`)}>
+            {t('neshama.edit')}
+          </Button>
+        )}
+      </div>
     </DetailPopup>
   );
 }

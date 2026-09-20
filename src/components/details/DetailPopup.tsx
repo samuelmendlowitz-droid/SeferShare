@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { CloseIcon } from '../ui/icons';
 
 interface DetailPopupProps {
-  /** Shown in the frozen header bar — the campaign/mokom/neshama/sefer's name,
-   *  or a loading placeholder while it's still being fetched. */
-  title: string;
+  /** Shown in the frozen header bar — typically "<Type> - <Name>" (the type
+   *  faded, the name plain — see each PopupContent's title prop), or a
+   *  loading placeholder while it's still being fetched. */
+  title: ReactNode;
   onClose: () => void;
   /** False for a popup frozen behind another one — it stays mounted (so its
    *  scroll position/local state survive) but can't be interacted with. */
@@ -35,7 +36,7 @@ export function DetailPopup({ title, onClose, isTop, zIndex, children, footer }:
       aria-hidden={!isTop}
     >
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-        <h1 className="truncate pe-2 text-base font-bold">{title}</h1>
+        <h1 className="truncate pe-2 text-sm font-semibold">{title}</h1>
         <button
           type="button"
           onClick={onClose}

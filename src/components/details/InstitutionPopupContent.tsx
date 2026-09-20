@@ -74,24 +74,20 @@ export function InstitutionPopupContent({ id: institutionId, isTop, zIndex, onCl
 
   return (
     <DetailPopup
-      title={`${t('institution.singular')} - ${institution.name}`}
+      title={
+        <>
+          <span className="font-normal text-text-muted">{t('institution.singular')} - </span>
+          {institution.name}
+        </>
+      }
       onClose={onClose}
       isTop={isTop}
       zIndex={zIndex}
     >
       <div className="mb-4 border-b border-border pb-4">
-        <p className="text-sm text-text-muted">{institutionTypeText(institution.type, institution.customType, t(`institution.${institution.type}`))}</p>
+        <h1 className="text-2xl font-bold">{institution.name}</h1>
+        <p className="mt-1 text-sm text-text-muted">{institutionTypeText(institution.type, institution.customType, t(`institution.${institution.type}`))}</p>
         <p className="mt-1 text-sm text-text">{addressLine(institution)}</p>
-        {isOwn && (
-          <div className="mt-3 flex flex-col gap-2">
-            <Button variant="secondary" onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}>
-              {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
-            </Button>
-            <Button variant="secondary" onClick={() => navigate(`/institutions/${institution.institutionId}/edit`)}>
-              {t('institution.edit')}
-            </Button>
-          </div>
-        )}
       </div>
 
       {campaigns.length > 0 && (
@@ -114,6 +110,17 @@ export function InstitutionPopupContent({ id: institutionId, isTop, zIndex, onCl
       <GiftCardOption
         onAdd={(amount) => pushka.addGiftCard({ institutionId: institution.institutionId, institutionName: institution.name, amount })}
       />
+
+      {isOwn && (
+        <div className="mt-4 space-y-2 border-t border-border pt-4">
+          <Button variant="secondary" className="w-full" onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}>
+            {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
+          </Button>
+          <Button variant="secondary" className="w-full" onClick={() => navigate(`/institutions/${institution.institutionId}/edit`)}>
+            {t('institution.edit')}
+          </Button>
+        </div>
+      )}
     </DetailPopup>
   );
 }

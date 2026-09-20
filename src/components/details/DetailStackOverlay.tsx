@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useDetailStack, type DetailStackEntry } from '../../context/DetailStackContext';
 import { CampaignPopupContent } from './CampaignPopupContent';
 import { InstitutionPopupContent } from './InstitutionPopupContent';
@@ -11,6 +12,23 @@ const BASE_Z_INDEX = 50;
  *  of route. */
 export function DetailStackOverlay() {
   const { stack, closeTop } = useDetailStack();
+
+  // Freeze the page underneath while any popup is open — only the popup's own
+  // body should scroll, not whatever's behind it. Locking just <body> isn't
+  // reliable across browsers (the actual scrolling element is often <html>),
+  // so both get it.
+  useEffect(() => {
+    if (stack.length === 0) return;
+    const { documentElement, body } = document;
+    const previousHtmlOverflow = documentElement.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+    documentElement.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    return () => {
+      documentElement.style.overflow = previousHtmlOverflow;
+      body.style.overflow = previousBodyOverflow;
+    };
+  }, [stack.length]);
 
   return (
     <>
