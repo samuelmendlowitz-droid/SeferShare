@@ -7,21 +7,23 @@ import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
 import type { SeforimShopItem } from '../../hooks/useSeforimShopFeed';
 import type { Campaign } from '../../types';
 import { SeferAddToCartModal } from './SeferAddToCartModal';
-import { GiftCardOption } from '../donation/GiftCardOption';
 import { Card } from '../ui/Card';
 import { SeferThumbnail } from '../ui/SeferThumbnail';
 import { PlusIcon } from '../ui/icons';
 
 interface SeforimShopListProps {
   items: SeforimShopItem[];
-  institutionId: string;
-  institutionName?: string;
 }
 
 /** Shopping-platform-style grid: a card per sefer (photo, name, type/subtype,
  *  price, a "+" to add to cart) — tapping the name opens its detail popup
- *  instead of adding to cart. */
-export function SeforimShopList({ items, institutionId, institutionName }: SeforimShopListProps) {
+ *  instead of adding to cart. Every sefer with a vendor listing is shown; the
+ *  browsing donor doesn't pick an institution up front (see HomePage's "what"
+ *  tab filter/sort sheet for narrowing by institution instead) — an item
+ *  added without picking a specific campaign in SeferAddToCartModal goes in
+ *  untagged, same as any other "pick for me" item, for the server-side
+ *  algorithm to assign both an institution and a campaign at checkout. */
+export function SeforimShopList({ items }: SeforimShopListProps) {
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
   const pushka = usePushka();
@@ -58,7 +60,6 @@ export function SeforimShopList({ items, institutionId, institutionName }: Sefor
           hebrewName: item.sefer.hebrewName,
           price: item.listing.price,
           imageUrl: item.listing.imageUrls?.[0],
-          institutionId,
         },
         quantity,
       );
@@ -68,8 +69,6 @@ export function SeforimShopList({ items, institutionId, institutionName }: Sefor
 
   return (
     <div>
-      <GiftCardOption onAdd={(amount) => pushka.addGiftCard({ institutionId, institutionName, amount })} />
-
       <div className="grid grid-cols-2 gap-3">
         {items.map((item) => {
           const inCartCount = pushka.items

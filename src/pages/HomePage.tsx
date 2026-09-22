@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getInstitution } from '../services/institutions';
+import { listInstitutions } from '../services/institutions';
 import { AppLayout, type HomeFilter } from '../components/layout/AppLayout';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../components/layout/FilterSortSheet';
 import { CampaignCard } from '../components/campaign/CampaignCard';
 import { InstitutionSummaryCard } from '../components/home/InstitutionSummaryCard';
 import { NeshamaSummaryCard } from '../components/home/NeshamaSummaryCard';
 import { SeforimShopList } from '../components/home/SeforimShopList';
-import { InstitutionPicker } from '../components/shared/InstitutionPicker';
 import { InstitutionCreateForm } from '../components/shared/InstitutionCreateForm';
 import { NeshamaCreateForm } from '../components/shared/NeshamaCreateForm';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
@@ -27,7 +26,7 @@ export function HomePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const navigationState = location.state as { tab?: HomeFilter; institutionId?: string } | null;
+  const navigationState = location.state as { tab?: HomeFilter } | null;
   const [filter, setFilter] = useState<HomeFilter>(navigationState?.tab ?? 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -62,19 +61,18 @@ export function HomePage() {
 
   // Seforim tab: a shopping-style browse of the whole catalog
   const [seforimSeferTypes, setSeforimSeferTypes] = useState<SeferType[]>([]);
-  const [seforimSort, setSeforimSort] = useState<SeforimShopSortKey>('name-az');
-  const [seforimInstitutionId, setSeforimInstitutionId] = useState<string | undefined>(
-    navigationState?.institutionId,
-  );
-  const [seforimInstitution, setSeforimInstitution] = useState<Institution>();
+  const [seforimInstitutionIds, setSeforimInstitutionIds] = useState<string[]>([]);
+  const [seforimSort, setSeforimSort] = useState<SeforimShopSortKey>('most-requested');
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
   const seforimFeed = useSeforimShopFeed(searchQuery, {
     seferTypes: seforimSeferTypes,
+    institutionIds: seforimInstitutionIds,
     sortKey: seforimSort,
+    translateSeferType: (type) => t(`sefer.${type}`),
   });
 
   useEffect(() => {
-    if (navigationState?.institutionId) getInstitution(navigationState.institutionId).then((i) => i && setSeforimInstitution(i));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    listInstitutions().then(setInstitutions);
   }, []);
 
   const institutionTypeFilterGroup: FilterGroup = {
@@ -86,6 +84,18 @@ export function HomePage() {
     key: 'seferType',
     label: t('filterSort.filterBySeferType'),
     options: SEFER_TYPES.map((type) => ({ value: type, label: t(`sefer.${type}`) })),
+  };
+  const seforimSeferTypeFilterGroup: FilterGroup = {
+    ...seferTypeFilterGroup,
+    searchable: true,
+    searchPlaceholder: t('filterSort.searchSeferTypes') ?? undefined,
+  };
+  const seforimInstitutionFilterGroup: FilterGroup = {
+    key: 'institution',
+    label: t('filterSort.filterByInstitution'),
+    options: institutions.map((inst) => ({ value: inst.institutionId, label: inst.name })),
+    searchable: true,
+    searchPlaceholder: t('filterSort.searchInstitutions') ?? undefined,
   };
   const nameAndSizeSortOptions: SortOption[] = [
     { value: 'name-az', label: t('filterSort.sortNameAZ') },
@@ -162,23 +172,27 @@ export function HomePage() {
       active: neshamosSeferTypes.length > 0 || neshamosSort !== 'recommended',
     },
     what: {
-      filterGroups: [seferTypeFilterGroup],
-      selectedFilters: { seferType: seforimSeferTypes },
+      filterGroups: [seforimSeferTypeFilterGroup, seforimInstitutionFilterGroup],
+      selectedFilters: { seferType: seforimSeferTypes, institution: seforimInstitutionIds },
       onToggleFilter: (groupKey, value) => {
         if (groupKey === 'seferType') setSeforimSeferTypes((prev) => toggleValue(prev, value as SeferType));
+        else if (groupKey === 'institution') setSeforimInstitutionIds((prev) => toggleValue(prev, value));
       },
       sortOptions: [
+        { value: 'most-requested', label: t('filterSort.sortMostRequested') },
+        { value: 'price-high', label: t('filterSort.sortPriceHighLow') },
+        { value: 'price-low', label: t('filterSort.sortPriceLowHigh') },
+        { value: 'type-az', label: t('filterSort.sortTypeAZ') },
         { value: 'name-az', label: t('filterSort.sortNameAZ') },
-        { value: 'cost-high', label: t('filterSort.sortCostHighLow') },
-        { value: 'cost-low', label: t('filterSort.sortCostLowHigh') },
       ],
       sortValue: seforimSort,
       onSortChange: (v) => setSeforimSort(v as SeforimShopSortKey),
       onReset: () => {
         setSeforimSeferTypes([]);
-        setSeforimSort('name-az');
+        setSeforimInstitutionIds([]);
+        setSeforimSort('most-requested');
       },
-      active: seforimSeferTypes.length > 0 || seforimSort !== 'name-az',
+      active: seforimSeferTypes.length > 0 || seforimInstitutionIds.length > 0 || seforimSort !== 'most-requested',
     },
   };
 
@@ -241,34 +255,15 @@ export function HomePage() {
             ))
           ))}
 
-        {filter === 'what' && (
-          <>
-            <div className="mb-3">
-              <p className="mb-1 text-sm font-medium">{t('seforim.selectInstitution')}</p>
-              <InstitutionPicker
-                value={seforimInstitutionId}
-                onChange={(id, inst) => {
-                  setSeforimInstitutionId(id);
-                  setSeforimInstitution(inst);
-                }}
-              />
-            </div>
-            {!seforimInstitutionId ? (
-              <p className="text-text-muted">{t('seforim.selectInstitutionHint')}</p>
-            ) : seforimFeed.loading ? (
-              <LoadingSpinner />
-            ) : (
-              <>
-                <SeforimShopList
-                  items={seforimFeed.items}
-                  institutionId={seforimInstitutionId}
-                  institutionName={seforimInstitution?.name}
-                />
-                {seforimFeed.items.length === 0 && <p className="text-text-muted">{t('home.seforimEmpty')}</p>}
-              </>
-            )}
-          </>
-        )}
+        {filter === 'what' &&
+          (seforimFeed.loading ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              <SeforimShopList items={seforimFeed.items} />
+              {seforimFeed.items.length === 0 && <p className="text-text-muted">{t('home.seforimEmpty')}</p>}
+            </>
+          ))}
       </AppLayout>
 
       <FilterSortSheet

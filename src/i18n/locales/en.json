@@ -167,10 +167,6 @@
       "other": "Other"
     }
   },
-  "seforim": {
-    "selectInstitution": "Which institution should receive these?",
-    "selectInstitutionHint": "Pick an institution above to browse and add seforim for them."
-  },
   "donation": {
     "message": "Message to campaigner (optional)",
     "checkout": "Checkout",
@@ -291,15 +287,21 @@
     "lowStock": "Low stock",
     "outOfStock": "Out of stock",
     "sortRecommended": "Recommended",
+    "sortMostRequested": "Most requested",
     "sortAZ": "A–Z",
     "sortZA": "Z–A",
     "sortInstitutionAZ": "Institution A–Z",
     "sortNeshamaAZ": "Neshama A–Z",
     "sortSeferAZ": "Sefer A–Z",
+    "sortTypeAZ": "Type A–Z",
     "sortCampaignSize": "Campaign size",
     "sortNameAZ": "Name A–Z",
     "sortCostHighLow": "Cost: high to low",
     "sortCostLowHigh": "Cost: low to high",
+    "sortPriceHighLow": "Price: high to low",
+    "sortPriceLowHigh": "Price: low to high",
+    "searchSeferTypes": "Search sefer types…",
+    "searchInstitutions": "Search institutions…",
     "sortStockHighLow": "Stock: high to low",
     "sortStockLowHigh": "Stock: low to high",
     "sortDateNewOld": "Newest first",

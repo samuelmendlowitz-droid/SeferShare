@@ -167,10 +167,6 @@
       "other": "אחר"
     }
   },
-  "seforim": {
-    "selectInstitution": "לאיזה מוסד יועברו הספרים?",
-    "selectInstitutionHint": "בחרו מוסד למעלה כדי לעיין ולהוסיף ספרים עבורו."
-  },
   "donation": {
     "message": "הודעה לעורך הקמפיין (אופציונלי)",
     "checkout": "לתשלום",
@@ -291,15 +287,21 @@
     "lowStock": "מלאי נמוך",
     "outOfStock": "אזל מהמלאי",
     "sortRecommended": "מומלץ",
+    "sortMostRequested": "המבוקש ביותר",
     "sortAZ": "א-ת",
     "sortZA": "ת-א",
     "sortInstitutionAZ": "מוסד א-ת",
     "sortNeshamaAZ": "נשמה א-ת",
     "sortSeferAZ": "ספר א-ת",
+    "sortTypeAZ": "סוג א-ת",
     "sortCampaignSize": "גודל הקמפיין",
     "sortNameAZ": "שם א-ת",
     "sortCostHighLow": "מחיר: מהגבוה לנמוך",
     "sortCostLowHigh": "מחיר: מהנמוך לגבוה",
+    "sortPriceHighLow": "מחיר: מהגבוה לנמוך",
+    "sortPriceLowHigh": "מחיר: מהנמוך לגבוה",
+    "searchSeferTypes": "חיפוש סוגי ספרים…",
+    "searchInstitutions": "חיפוש מוסדות…",
     "sortStockHighLow": "מלאי: מהגבוה לנמוך",
     "sortStockLowHigh": "מלאי: מהנמוך לגבוה",
     "sortDateNewOld": "החדש ביותר",
