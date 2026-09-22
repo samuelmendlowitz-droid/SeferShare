@@ -67,7 +67,7 @@ export const spendInstitutionBalance = onCall<SpendInstitutionBalanceRequest>(as
     });
   });
 
-  const campaignAssignments = await assignDonationToCampaigns({
+  const { assignments: campaignAssignments, campaignsById } = await assignDonationToCampaigns({
     items,
     requestedInstitutionId: institutionId,
   });
@@ -90,7 +90,7 @@ export const spendInstitutionBalance = onCall<SpendInstitutionBalanceRequest>(as
   }
   await batch.commit();
 
-  await notifyCampaigners(campaignAssignments, donorMessage, donationRef.id);
+  await notifyCampaigners(campaignAssignments, campaignsById, donorMessage, donationRef.id);
 
   return { donationId: donationRef.id, totalSpent: subtotal };
 });

@@ -47,6 +47,7 @@ export const createPaymentIntent = onCall<CreatePaymentIntentRequest>(
     await donationRef.set({
       donorUid: uid,
       stripePaymentIntentId: null,
+      paymentMethod: 'stripe',
       items: items ?? [],
       giftCards,
       requestedInstitutionId: requestedInstitutionId ?? null,

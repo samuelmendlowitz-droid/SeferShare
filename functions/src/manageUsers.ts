@@ -1,12 +1,6 @@
-import { onCall, HttpsError, type CallableRequest } from 'firebase-functions/v2/https';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { auth, db } from './lib/firebaseAdmin';
-
-function requireAdmin(request: CallableRequest<unknown>): string {
-  if (request.auth?.token.isAdmin !== true) {
-    throw new HttpsError('permission-denied', 'Admin only');
-  }
-  return request.auth.uid;
-}
+import { requireAdmin } from './lib/adminAuth';
 
 interface SetUserBlockedRequest {
   uid: string;
@@ -17,11 +11,19 @@ interface SetUserBlockedRequest {
 export const setUserBlocked = onCall<SetUserBlockedRequest>(async (request) => {
   const callerUid = requireAdmin(request);
   const { uid, blocked } = request.data;
+  if (typeof uid !== 'string' || !uid || typeof blocked !== 'boolean') {
+    throw new HttpsError('invalid-argument', 'uid (string) and blocked (boolean) are required');
+  }
   if (uid === callerUid) {
     throw new HttpsError('failed-precondition', "You can't block your own account");
   }
 
   await auth.updateUser(uid, { disabled: blocked });
+  if (blocked) {
+    // Disabling the account doesn't invalidate tokens already issued — revoke them
+    // too, so a session signed in before the block doesn't keep working until it expires.
+    await auth.revokeRefreshTokens(uid);
+  }
   await db.collection('users').doc(uid).set({ blocked }, { merge: true });
   return { success: true };
 });
@@ -33,6 +35,9 @@ interface DeleteUserAccountRequest {
 export const deleteUserAccount = onCall<DeleteUserAccountRequest>(async (request) => {
   const callerUid = requireAdmin(request);
   const { uid } = request.data;
+  if (typeof uid !== 'string' || !uid) {
+    throw new HttpsError('invalid-argument', 'uid (string) is required');
+  }
   if (uid === callerUid) {
     throw new HttpsError('failed-precondition', "You can't delete your own account");
   }

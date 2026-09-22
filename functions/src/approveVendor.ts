@@ -1,5 +1,6 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db } from './lib/firebaseAdmin';
+import { requireAdmin } from './lib/adminAuth';
 import { notify } from './notify';
 
 interface ApproveVendorRequest {
@@ -9,11 +10,13 @@ interface ApproveVendorRequest {
 
 /** Admin-only: grants or denies vendor status (spec §4.3, §15, §16). */
 export const approveVendor = onCall<ApproveVendorRequest>(async (request) => {
-  if (request.auth?.token.isAdmin !== true) {
-    throw new HttpsError('permission-denied', 'Admin only');
-  }
+  requireAdmin(request);
 
   const { uid, approve } = request.data;
+  if (typeof uid !== 'string' || !uid || typeof approve !== 'boolean') {
+    throw new HttpsError('invalid-argument', 'uid (string) and approve (boolean) are required');
+  }
+
   await db.collection('users').doc(uid).update({
     isVendor: approve,
     vendorApproved: approve,

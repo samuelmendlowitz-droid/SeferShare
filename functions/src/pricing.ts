@@ -7,9 +7,13 @@ import type { DonationGiftCard, DonationItem, Sefer } from './types';
  * server-side — the client-supplied `priceEach` is never trusted (spec §8, §16, §18).
  */
 export async function priceItems(items: DonationItem[]): Promise<number> {
+  const seferIds = [...new Set(items.map((item) => item.seferId))];
+  const snaps = await Promise.all(seferIds.map((id) => db.collection('sefarim').doc(id).get()));
+  const snapById = new Map(seferIds.map((id, idx) => [id, snaps[idx]]));
+
   let total = 0;
   for (const item of items) {
-    const snap = await db.collection('sefarim').doc(item.seferId).get();
+    const snap = snapById.get(item.seferId)!;
     if (!snap.exists) throw new HttpsError('not-found', `Sefer ${item.seferId} not found`);
     const sefer = snap.data() as Sefer;
     const listing = sefer.vendorListings.find((l) => l.vendorId === item.vendorId);

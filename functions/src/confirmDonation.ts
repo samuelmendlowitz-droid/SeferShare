@@ -24,6 +24,24 @@ export const confirmDonation = onRequest(
       return;
     }
 
+    if (event.type === 'payment_intent.payment_failed') {
+      const failedIntent = event.data.object as { id: string; metadata: { donationId?: string } };
+      const failedDonationId = failedIntent.metadata.donationId;
+      if (failedDonationId) {
+        const failedRef = db.collection('donations').doc(failedDonationId);
+        // Only a still-pending donation can be marked failed — a late/duplicate failure
+        // event must never clobber a donation some other event already confirmed paid.
+        await db.runTransaction(async (tx) => {
+          const snap = await tx.get(failedRef);
+          if (snap.exists && (snap.data() as Donation).status === 'pending') {
+            tx.update(failedRef, { status: 'failed' });
+          }
+        });
+      }
+      res.status(200).send('payment failed recorded');
+      return;
+    }
+
     if (event.type !== 'payment_intent.succeeded') {
       res.status(200).send('ignored');
       return;
@@ -37,18 +55,22 @@ export const confirmDonation = onRequest(
     }
 
     const donationRef = db.collection('donations').doc(donationId);
-    const donationSnap = await donationRef.get();
-    if (!donationSnap.exists) {
-      res.status(200).send('donation not found');
-      return;
-    }
-    const donation = donationSnap.data() as Donation;
-    if (donation.status !== 'pending') {
-      res.status(200).send('already processed');
+    // Claim the donation atomically: a duplicate/retried webhook delivery for the same
+    // payment intent must only run the assignment/notification side effects once.
+    const donation = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(donationRef);
+      if (!snap.exists) return null;
+      const data = snap.data() as Donation;
+      if (data.status !== 'pending') return null;
+      tx.update(donationRef, { status: 'paid' });
+      return data;
+    });
+    if (!donation) {
+      res.status(200).send('donation not found or already processed');
       return;
     }
 
-    const campaignAssignments = await assignDonationToCampaigns({
+    const { assignments: campaignAssignments, campaignsById } = await assignDonationToCampaigns({
       items: donation.items,
       requestedInstitutionId: donation.requestedInstitutionId ?? undefined,
       requestedNeshamaId: donation.requestedNeshamaId ?? undefined,
@@ -101,7 +123,7 @@ export const confirmDonation = onRequest(
     }
     await batch.commit();
 
-    await notifyCampaigners(campaignAssignments, donation.donorMessage ?? undefined, donationId);
+    await notifyCampaigners(campaignAssignments, campaignsById, donation.donorMessage ?? undefined, donationId);
     await notify({
       recipientUid: donation.donorUid,
       kind: 'payment_confirmed',

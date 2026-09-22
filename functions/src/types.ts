@@ -35,7 +35,7 @@ export interface Campaign {
   updatedAt: FirebaseFirestore.Timestamp;
 }
 
-export type DonationStatus = 'pending' | 'paid' | 'fulfilled' | 'refunded';
+export type DonationStatus = 'pending' | 'paid' | 'fulfilled' | 'refunded' | 'failed';
 
 export interface DonationItem {
   seferId: string;
@@ -242,7 +242,6 @@ export type NotificationKind =
   | 'donation_received'
   | 'campaign_fulfilled'
   | 'payment_confirmed'
-  | 'order_shipped'
   | 'vendor_application_received'
   | 'vendor_application_approved'
   | 'vendor_application_declined';

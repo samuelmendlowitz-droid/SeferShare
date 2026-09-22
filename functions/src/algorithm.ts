@@ -68,9 +68,16 @@ export interface AssignDonationInput {
   requestedNeshamaId?: string;
 }
 
+export interface AssignDonationResult {
+  assignments: CampaignAssignment[];
+  /** The full campaign record behind each assignment, already loaded in memory here
+   *  from the same query — lets callers notify campaigners without refetching. */
+  campaignsById: Map<string, Campaign>;
+}
+
 export async function assignDonationToCampaigns(
   input: AssignDonationInput,
-): Promise<CampaignAssignment[]> {
+): Promise<AssignDonationResult> {
   const available = new Map<string, number>();
   const taggedByCampaign = new Map<string, Map<string, number>>();
   const taggedByInstitution = new Map<string, Map<string, number>>();
@@ -191,8 +198,13 @@ export async function assignDonationToCampaigns(
     await batch.commit();
   }
 
-  return Array.from(assignedByCampaign.entries()).map(([campaignId, itemsFulfilled]) => ({
-    campaignId,
-    itemsFulfilled,
-  }));
+  return {
+    assignments: Array.from(assignedByCampaign.entries()).map(([campaignId, itemsFulfilled]) => ({
+      campaignId,
+      itemsFulfilled,
+    })),
+    campaignsById: new Map(
+      Array.from(assignedByCampaign.keys()).map((campaignId) => [campaignId, campaignsById.get(campaignId)!]),
+    ),
+  };
 }

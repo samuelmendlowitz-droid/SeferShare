@@ -369,6 +369,7 @@
     "pending": "ממתין",
     "paid": "שולם",
     "fulfilled": "הושלם",
-    "refunded": "זוכה"
+    "refunded": "זוכה",
+    "failed": "התשלום נכשל"
   }
 }

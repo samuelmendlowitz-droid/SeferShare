@@ -2,7 +2,6 @@ export type NotificationKind =
   | 'donation_received'
   | 'campaign_fulfilled'
   | 'payment_confirmed'
-  | 'order_shipped'
   | 'vendor_application_received'
   | 'vendor_application_approved'
   | 'vendor_application_declined';

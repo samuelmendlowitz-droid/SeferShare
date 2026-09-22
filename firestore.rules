@@ -27,7 +27,8 @@ service cloud.firestore {
       allow create: if signedIn() && request.auth.uid == uid;
       allow update: if signedIn() && request.auth.uid == uid &&
         request.resource.data.vendorApproved == resource.data.vendorApproved &&
-        request.resource.data.get('isAdmin', false) == resource.data.get('isAdmin', false);
+        request.resource.data.get('isAdmin', false) == resource.data.get('isAdmin', false) &&
+        request.resource.data.get('blocked', false) == resource.data.get('blocked', false);
       allow update: if isAdmin();
     }
 

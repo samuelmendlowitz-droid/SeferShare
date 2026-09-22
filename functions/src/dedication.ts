@@ -1,15 +1,5 @@
 import { db } from './lib/firebaseAdmin';
-import type { DonationDedication, DonationItem, Neshama, Sefer } from './types';
-
-export type DonationStickerSource = 'donor' | 'campaign' | 'algorithm';
-
-export interface DonationSticker {
-  seferId: string;
-  vendorId: string;
-  copyIndex: number;
-  dedication: DonationDedication;
-  source: DonationStickerSource;
-}
+import type { DonationDedication, DonationItem, DonationSticker, Neshama, Sefer } from './types';
 
 interface Candidate {
   neshama: Neshama;

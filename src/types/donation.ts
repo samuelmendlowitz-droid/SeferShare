@@ -56,9 +56,9 @@ export interface SavedStickerDesign {
   updatedAt: number;
 }
 
-export type DonationStatus = 'pending' | 'paid' | 'fulfilled' | 'refunded';
+export type DonationStatus = 'pending' | 'paid' | 'fulfilled' | 'refunded' | 'failed';
 
-export const DONATION_STATUSES: DonationStatus[] = ['pending', 'paid', 'fulfilled', 'refunded'];
+export const DONATION_STATUSES: DonationStatus[] = ['pending', 'paid', 'fulfilled', 'refunded', 'failed'];
 
 export interface DonationItem {
   seferId: string;

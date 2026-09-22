@@ -1,6 +1,6 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from './lib/firebaseAdmin';
-import type { CampaignAssignment, NotificationKind } from './types';
+import type { Campaign, CampaignAssignment, NotificationKind } from './types';
 
 interface NotifyInput {
   recipientUid: string;
@@ -20,16 +20,18 @@ export async function notify(input: NotifyInput): Promise<void> {
   });
 }
 
-/** Notifies each campaign's creator that a donation (and optional message) landed on it (spec §12). */
+/** Notifies each campaign's creator that a donation (and optional message) landed on it (spec §12).
+ *  `campaignsById` is the same in-memory campaign data assignDonationToCampaigns already
+ *  loaded to compute `assignments` — passed through so this doesn't refetch every campaign. */
 export async function notifyCampaigners(
   assignments: CampaignAssignment[],
+  campaignsById: Map<string, Campaign>,
   donorMessage: string | undefined,
   donationId: string,
 ): Promise<void> {
   for (const assignment of assignments) {
-    const campaignSnap = await db.collection('campaigns').doc(assignment.campaignId).get();
-    if (!campaignSnap.exists) continue;
-    const campaign = campaignSnap.data()!;
+    const campaign = campaignsById.get(assignment.campaignId);
+    if (!campaign) continue;
 
     await notify({
       recipientUid: campaign.createdByUid,
