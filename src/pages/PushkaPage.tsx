@@ -31,9 +31,10 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import { NumberField } from '../components/ui/NumberField';
+import { QuantityStepper } from '../components/ui/QuantityStepper';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
 import { TextField, TextAreaField } from '../components/ui/TextField';
-import { GiftIcon, MinusIcon, PlusIcon, CloseIcon } from '../components/ui/icons';
+import { GiftIcon, CloseIcon } from '../components/ui/icons';
 
 function toPickedItem(item: PushkaItem): PickedItem {
   return {
@@ -551,25 +552,7 @@ function PushkaRow({ item }: { item: PushkaItem }) {
         </button>
         <p className="text-xs text-text-muted">${item.price.toFixed(2)} each</p>
       </div>
-      <div className="flex shrink-0 items-center gap-1 rounded-btn border border-border">
-        <button
-          type="button"
-          onClick={() => pushka.updateQuantity(key, item.quantity - 1)}
-          aria-label={t('pushka.decreaseQuantity') ?? ''}
-          className="flex h-8 w-8 items-center justify-center text-text-muted"
-        >
-          <MinusIcon width={14} height={14} />
-        </button>
-        <span className="w-6 text-center text-sm">{item.quantity}</span>
-        <button
-          type="button"
-          onClick={() => pushka.updateQuantity(key, item.quantity + 1)}
-          aria-label={t('pushka.increaseQuantity') ?? ''}
-          className="flex h-8 w-8 items-center justify-center text-text-muted"
-        >
-          <PlusIcon width={14} height={14} />
-        </button>
-      </div>
+      <QuantityStepper value={item.quantity} onChange={(quantity) => pushka.updateQuantity(key, quantity)} />
       <button
         type="button"
         onClick={() => pushka.removeItem(key)}

@@ -101,7 +101,7 @@ export function CampaignEditPage() {
   if (profile?.uid !== campaign.createdByUid) {
     return (
       <div className="mx-auto max-w-2xl px-4 pt-6">
-        <p className="text-text-muted">Not authorized.</p>
+        <p className="text-text-muted">{t('actions.notAuthorized')}</p>
       </div>
     );
   }
@@ -214,17 +214,17 @@ export function CampaignEditPage() {
         containerClassName="mb-4"
       />
 
-      <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWhere')}</p>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectWhere')}</h2>
       <div className="mb-4">
         <InstitutionPicker value={institutionId} onChange={handleInstitutionChange} />
       </div>
 
-      <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWho')}</p>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectWho')}</h2>
       <div className="mb-4">
         <NeshamaPicker values={neshamaIds} onChange={setNeshamaIds} />
       </div>
 
-      <h2 className="mb-2 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
       <div className="mb-4 space-y-2">
         {existingItems.map((item, index) => {
           const sefer = sefarimById.get(item.seferId);
@@ -264,7 +264,7 @@ export function CampaignEditPage() {
         })}
       </div>
 
-      <p className="mb-2 text-sm text-text-muted">{t('campaign.addMoreSeforim')}</p>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.addMoreSeforim')}</h2>
       <SeferPicker picked={newItems} onChange={setNewItems} />
 
       {institution && (
@@ -292,7 +292,7 @@ export function CampaignEditPage() {
 
       <Card className="mt-6 border-error/30">
         <p className="mb-3 text-sm text-text-muted">{t('campaign.deleteHint')}</p>
-        <Button variant="secondary" className="w-full text-error" disabled={deleting} onClick={handleDelete}>
+        <Button variant="destructive" className="w-full" disabled={deleting} onClick={handleDelete}>
           {t('campaign.delete')}
         </Button>
       </Card>

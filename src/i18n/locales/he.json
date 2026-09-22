@@ -204,7 +204,6 @@
     "downloadCsv": "הורדת CSV",
     "selectAll": "בחירת הכול",
     "ordersSelected": "{{count}} נבחרו",
-    "seedTestOrders": "יצירת הזמנות לדוגמה (לבדיקה)",
     "totalRevenue": "סך ההכנסות",
     "itemsSold": "פריטים שנמכרו",
     "addSefer": "הוספת ספר",
@@ -235,10 +234,20 @@
   },
   "admin": {
     "title": "ניהול",
+    "tabs": {
+      "vendors": "ספקים",
+      "sefarim": "ספרים",
+      "neshamos": "נשמות",
+      "campaigns": "קמפיינים",
+      "donations": "תרומות",
+      "orders": "הזמנות",
+      "users": "משתמשים"
+    },
     "vendorApplications": "בקשות ספקים",
     "approve": "אישור",
     "reject": "דחייה",
     "mergeSeforim": "מיזוג ספרים כפולים",
+    "selectTwoToMerge": "יש לבחור בדיוק שניים למיזוג (הראשון יישאר הרשומה הקנונית).",
     "campaigns": "קמפיינים",
     "donations": "תרומות",
     "orders": "הזמנות",
@@ -268,12 +277,14 @@
     "cancel": "ביטול",
     "add": "הוספה",
     "delete": "מחיקה",
+    "merge": "מיזוג",
     "filterSort": "סינון ומיון",
     "sortBy": "מיון לפי",
     "reset": "איפוס",
     "done": "סיום",
     "noResults": "אין תוצאות",
-    "groupBy": "קיבוץ לפי"
+    "groupBy": "קיבוץ לפי",
+    "notAuthorized": "אין הרשאה."
   },
   "filterSort": {
     "filterByInstitutionType": "סוג מוסד",
@@ -371,5 +382,10 @@
     "fulfilled": "הושלם",
     "refunded": "זוכה",
     "failed": "התשלום נכשל"
+  },
+  "campaignStatus": {
+    "active": "פעיל",
+    "fulfilled": "הושלם",
+    "paused": "מושהה"
   }
 }

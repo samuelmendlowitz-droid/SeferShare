@@ -105,17 +105,17 @@ export function CampaignCreatePage() {
         containerClassName="mb-4"
       />
 
-      <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWhere')}</p>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectWhere')}</h2>
       <div className="mb-4">
         <InstitutionPicker value={institutionId} onChange={handleInstitutionChange} />
       </div>
 
-      <p className="mb-2 text-sm text-text-muted">{t('campaign.selectWho')}</p>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectWho')}</h2>
       <div className="mb-4">
         <NeshamaPicker values={neshamaIds} onChange={setNeshamaIds} />
       </div>
 
-      <h2 className="mb-2 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
       <SeferPicker picked={items} onChange={setItems} />
 
       {institution && (

@@ -61,7 +61,7 @@ export function InstitutionEditPage() {
   if (profile?.uid !== institution.createdByUid) {
     return (
       <div className="mx-auto max-w-2xl px-4 pt-6">
-        <p className="text-text-muted">Not authorized.</p>
+        <p className="text-text-muted">{t('actions.notAuthorized')}</p>
       </div>
     );
   }
@@ -130,7 +130,7 @@ export function InstitutionEditPage() {
 
       <Card className="mt-6 border-error/30">
         <p className="mb-3 text-sm text-text-muted">{t('institution.deleteHint')}</p>
-        <Button variant="secondary" className="w-full text-error" disabled={deleting} onClick={handleDelete}>
+        <Button variant="destructive" className="w-full" disabled={deleting} onClick={handleDelete}>
           {t('institution.delete')}
         </Button>
       </Card>

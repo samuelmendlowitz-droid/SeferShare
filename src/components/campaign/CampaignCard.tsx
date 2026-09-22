@@ -52,7 +52,8 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
               navigate(`/campaigns/${campaign.campaignId}/edit`);
             }}
             aria-label={t('campaign.edit') ?? ''}
-            className="shrink-0 text-text-muted hover:text-accent"
+            title={t('campaign.edit') ?? ''}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-text-muted hover:bg-bg hover:text-accent"
           >
             <EditIcon width={16} height={16} />
           </button>

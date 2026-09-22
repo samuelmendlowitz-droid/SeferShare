@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getInstitution, spendInstitutionBalance } from '../services/institutions';
-import type { DonationAd, Institution } from '../types';
+import type { DonationAd, Institution, ParentGender } from '../types';
+import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../lib/neshamaPrefixes';
 import { SeferPicker, type PickedItem } from '../components/donation/SeferPicker';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { TextField, TextAreaField } from '../components/ui/TextField';
+import { FIELD_LABEL_CLASS, TextField, TextAreaField } from '../components/ui/TextField';
 
 export function InstitutionSpendPage() {
   const { t } = useTranslation();
@@ -20,6 +21,10 @@ export function InstitutionSpendPage() {
   const [picked, setPicked] = useState<PickedItem[]>([]);
   const [dedicationName, setDedicationName] = useState('');
   const [dedicationHebrewName, setDedicationHebrewName] = useState('');
+  const [dedicationNamePrefix, setDedicationNamePrefix] = useState<string | undefined>(undefined);
+  const [dedicationCustomNamePrefix, setDedicationCustomNamePrefix] = useState('');
+  const [dedicationParentGender, setDedicationParentGender] = useState<ParentGender>('son');
+  const [dedicationFatherHebrewName, setDedicationFatherHebrewName] = useState('');
   const [includeAd, setIncludeAd] = useState(false);
   const [ad, setAd] = useState<DonationAd>({ businessName: '', message: '' });
   const [donorMessage, setDonorMessage] = useState('');
@@ -51,7 +56,7 @@ export function InstitutionSpendPage() {
   if (profile?.uid !== institution.createdByUid && !profile?.isAdmin) {
     return (
       <div className="mx-auto max-w-2xl px-4 pt-6">
-        <p className="text-text-muted">Not authorized.</p>
+        <p className="text-text-muted">{t('actions.notAuthorized')}</p>
       </div>
     );
   }
@@ -70,7 +75,15 @@ export function InstitutionSpendPage() {
         items: picked.map((i) => ({ seferId: i.seferId, vendorId: i.vendorId, quantity: i.quantity, priceEach: i.price })),
         donorMessage: donorMessage || undefined,
         donorDedication: dedicationName.trim()
-          ? { name: dedicationName.trim(), hebrewName: dedicationHebrewName.trim() || undefined }
+          ? {
+              name: dedicationName.trim(),
+              hebrewName: dedicationHebrewName.trim() || undefined,
+              namePrefix: dedicationNamePrefix,
+              customNamePrefix:
+                dedicationNamePrefix === OTHER_PREFIX_VALUE ? dedicationCustomNamePrefix.trim() || undefined : undefined,
+              parentGender: dedicationFatherHebrewName.trim() ? dedicationParentGender : undefined,
+              fatherHebrewName: dedicationFatherHebrewName.trim() || undefined,
+            }
           : undefined,
         ad: includeAd && ad.businessName.trim() ? ad : undefined,
       });
@@ -79,6 +92,10 @@ export function InstitutionSpendPage() {
       setPicked([]);
       setDedicationName('');
       setDedicationHebrewName('');
+      setDedicationNamePrefix(undefined);
+      setDedicationCustomNamePrefix('');
+      setDedicationParentGender('son');
+      setDedicationFatherHebrewName('');
       setIncludeAd(false);
       setAd({ businessName: '', message: '' });
       setDonorMessage('');
@@ -114,6 +131,66 @@ export function InstitutionSpendPage() {
         <div className="space-y-2">
           <TextField label={t('neshama.name')} value={dedicationName} onChange={setDedicationName} />
           <TextField label={t('neshama.hebrewName')} value={dedicationHebrewName} onChange={setDedicationHebrewName} />
+          <div>
+            <p className={FIELD_LABEL_CLASS}>{t('neshama.namePrefixLabel')}</p>
+            <div className="flex flex-wrap gap-2">
+              {NESHAMA_PREFIXES.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setDedicationNamePrefix((prev) => (prev === option.value ? undefined : option.value))}
+                  className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
+                    dedicationNamePrefix === option.value
+                      ? 'border-accent bg-accent text-white'
+                      : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
+                  }`}
+                >
+                  {option.en} · {option.he}
+                </button>
+              ))}
+            </div>
+            {dedicationNamePrefix === OTHER_PREFIX_VALUE && (
+              <div className="mt-2">
+                <TextField
+                  label={t('neshama.customNamePrefixLabel')}
+                  value={dedicationCustomNamePrefix}
+                  onChange={setDedicationCustomNamePrefix}
+                />
+              </div>
+            )}
+          </div>
+          <TextField
+            label={t('neshama.fatherHebrewName')}
+            value={dedicationFatherHebrewName}
+            onChange={setDedicationFatherHebrewName}
+          />
+          {dedicationFatherHebrewName.trim() && (
+            <div>
+              <p className={FIELD_LABEL_CLASS}>{t('neshama.parentGenderLabel')}</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDedicationParentGender('son')}
+                  className={`flex-1 rounded-btn border px-3 py-2 text-sm font-medium ${
+                    dedicationParentGender === 'son' ? 'border-accent bg-accent text-white' : 'border-border text-text-muted'
+                  }`}
+                >
+                  {t('neshama.son')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDedicationParentGender('daughter')}
+                  className={`flex-1 rounded-btn border px-3 py-2 text-sm font-medium ${
+                    dedicationParentGender === 'daughter'
+                      ? 'border-accent bg-accent text-white'
+                      : 'border-border text-text-muted'
+                  }`}
+                >
+                  {t('neshama.daughter')}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 

@@ -140,8 +140,6 @@ export function ProfilePage() {
   return (
     <>
       <AppLayout variant="profile" tab={tab} onTabChange={setTab} onSearch={setSearchQuery} filterSort={filterSort}>
-        <h1 className="mb-4 text-xl font-bold">{t(`nav.${tab === 'campaigns' ? 'myCampaigns' : tab}`)}</h1>
-
         {tab === 'campaigns' && (
           <MyCampaignsTab
             loading={campaignsFeed.loading}

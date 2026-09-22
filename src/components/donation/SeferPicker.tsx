@@ -7,7 +7,7 @@ import { useDetailStack } from '../../context/DetailStackContext';
 import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../layout/FilterSortSheet';
 import { Card } from '../ui/Card';
-import { NumberField } from '../ui/NumberField';
+import { QuantityStepper } from '../ui/QuantityStepper';
 import { SeferThumbnail } from '../ui/SeferThumbnail';
 import { FilterIcon } from '../ui/icons';
 
@@ -191,12 +191,9 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
               <span className="flex-1 truncate text-sm">
                 {item.englishName} · {item.hebrewName}
               </span>
-              <NumberField
-                label={t('campaign.quantityLabel')}
+              <QuantityStepper
                 value={item.quantity}
                 onChange={(quantity) => updateQuantity(item.seferId, item.vendorId, quantity)}
-                min={0}
-                containerClassName="w-20 shrink-0"
               />
             </div>
           ))}

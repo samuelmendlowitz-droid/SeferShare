@@ -121,7 +121,7 @@ export function FilterSortSheet({
                   className="mb-2 w-full rounded-btn border border-border px-3 py-2 text-sm"
                 />
               )}
-              <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto">
+              <div className="flex flex-wrap gap-2">
                 {visibleOptions.map((opt) => (
                   <Chip
                     key={opt.value}

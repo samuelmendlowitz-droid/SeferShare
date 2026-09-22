@@ -1,11 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  markOrderFulfilled,
-  markOrderShipped,
-  resetOrderToPending,
-  seedTestOrders,
-} from '../../services/orders';
+import { markOrderFulfilled, markOrderShipped, resetOrderToPending } from '../../services/orders';
 import { downloadCsv, ordersToCsv } from '../../lib/orderCsv';
 import type { Order, OrderStatus, Sefer } from '../../types';
 import { Card } from '../ui/Card';
@@ -17,7 +12,6 @@ interface VendorOrdersTabProps {
   loading: boolean;
   orders: Order[];
   sefarimById: Map<string, Sefer>;
-  onSeeded?: () => void;
 }
 
 const STATUS_BADGE_CLASS: Record<OrderStatus, string> = {
@@ -26,27 +20,12 @@ const STATUS_BADGE_CLASS: Record<OrderStatus, string> = {
   delivered: 'bg-success/10 text-success',
 };
 
-export function VendorOrdersTab({ loading, orders, sefarimById, onSeeded }: VendorOrdersTabProps) {
+export function VendorOrdersTab({ loading, orders, sefarimById }: VendorOrdersTabProps) {
   const { t } = useTranslation();
   // Optimistic per-order status, layered over the fetched list so the button/badge
   // update immediately without waiting on a refetch from the parent.
   const [statusOverrides, setStatusOverrides] = useState<Map<string, OrderStatus>>(new Map());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [seeding, setSeeding] = useState(false);
-  const [seedError, setSeedError] = useState<string | null>(null);
-
-  async function handleSeedTestOrders() {
-    setSeeding(true);
-    setSeedError(null);
-    try {
-      await seedTestOrders();
-      onSeeded?.();
-    } catch (err) {
-      setSeedError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setSeeding(false);
-    }
-  }
 
   const ordersWithStatus = useMemo(
     () => orders.map((o) => ({ ...o, status: statusOverrides.get(o.orderId) ?? o.status })),
@@ -109,16 +88,7 @@ export function VendorOrdersTab({ loading, orders, sefarimById, onSeeded }: Vend
   return (
     <div className="space-y-3">
       {ordersWithStatus.length === 0 ? (
-        <div>
-          <p className="text-text-muted">{t('home.empty')}</p>
-          {/* Temporary testing aid — lets a vendor try the Orders tab (status
-              cycling, CSV export) against sample data instead of waiting for a
-              real donation. Scoped server-side to the caller's own account. */}
-          <Button variant="secondary" className="mt-3" disabled={seeding} onClick={handleSeedTestOrders}>
-            {seeding ? '…' : t('vendor.seedTestOrders')}
-          </Button>
-          {seedError && <p className="mt-2 text-sm text-error">{seedError}</p>}
-        </div>
+        <p className="text-text-muted">{t('home.empty')}</p>
       ) : (
         <>
           <div className="flex items-center justify-between gap-2 rounded-btn border border-border bg-surface px-3 py-2">

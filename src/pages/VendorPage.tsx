@@ -159,7 +159,7 @@ export function VendorPage() {
   if (!profile?.isVendor || !profile.vendorApproved) {
     return (
       <div className="mx-auto max-w-2xl px-4 pt-6">
-        <p className="text-text-muted">Not authorized.</p>
+        <p className="text-text-muted">{t('actions.notAuthorized')}</p>
       </div>
     );
   }
@@ -182,8 +182,6 @@ export function VendorPage() {
   return (
     <>
       <AppLayout variant="vendor" tab={tab} onTabChange={setTab} onSearch={setSearchQuery} filterSort={filterSort}>
-        <h1 className="mb-4 text-xl font-bold">{t(`vendor.${tab}`)}</h1>
-
         {tab === 'catalog' && (
           <CatalogTab
             filters={{ seferTypes: catalogSeferTypes, stockStatuses: catalogStockStatuses }}
@@ -192,14 +190,11 @@ export function VendorPage() {
           />
         )}
         {tab === 'orders' && (
-          <VendorOrdersTab
-            loading={ordersData.loading}
-            orders={filteredOrders}
-            sefarimById={ordersData.sefarimById}
-            onSeeded={ordersData.reload}
-          />
+          <VendorOrdersTab loading={ordersData.loading} orders={filteredOrders} sefarimById={ordersData.sefarimById} />
         )}
-        {tab === 'sales' && <SalesTab loading={ordersData.loading} orders={filteredSales} />}
+        {tab === 'sales' && (
+          <SalesTab loading={ordersData.loading} orders={filteredSales} sefarimById={ordersData.sefarimById} />
+        )}
       </AppLayout>
 
       {tab === 'catalog' && (

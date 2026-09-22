@@ -42,6 +42,8 @@ export function NeshamaDonatePage() {
 
   if (!neshama) return <LoadingSpinner fullScreen />;
 
+  const backToPopup = () => navigate(`/?popup=neshama:${neshama.neshamaId}`);
+
   function handleAddToPushka() {
     if (!neshama || !institutionId || picked.length === 0) return;
     for (const item of picked) {
@@ -82,16 +84,14 @@ export function NeshamaDonatePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-32 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate('/')}>
+      <Button variant="secondary" className="mb-4" onClick={backToPopup}>
         {t('actions.back')}
       </Button>
 
       <Card className="mb-4">
-        <p className="text-sm text-text-muted">{t('neshama.donatingInMemoryOf')}</p>
-        <h1 className="text-lg font-bold">
-          {t('neshama.liluyNishmat')} {neshama.name}
-          {neshama.hebrewName ? ` · ${neshama.hebrewName}` : ''}
-        </h1>
+        <p className="text-sm text-text-muted">
+          {t('neshama.donatingInMemoryOf')} <span className="font-semibold text-text">{neshama.name}</span>
+        </p>
       </Card>
 
       <h2 className="mb-2 text-base font-semibold">{t('campaign.selectWhere')}</h2>

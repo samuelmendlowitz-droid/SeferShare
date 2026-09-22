@@ -72,7 +72,7 @@ export function AdminPage() {
 
   if (loading) return <LoadingSpinner fullScreen />;
   if (!profile?.isAdmin) {
-    return <div className="mx-auto max-w-2xl px-4 pt-6 text-text-muted">Not authorized.</div>;
+    return <div className="mx-auto max-w-2xl px-4 pt-6 text-text-muted">{t('actions.notAuthorized')}</div>;
   }
 
   const sections: Section[] = ['vendors', 'sefarim', 'neshamos', 'campaigns', 'donations', 'orders', 'users'];
@@ -84,7 +84,7 @@ export function AdminPage() {
       <div className="mb-4 flex flex-wrap gap-2">
         {sections.map((s) => (
           <Button key={s} variant={section === s ? 'primary' : 'secondary'} onClick={() => setSection(s)}>
-            {s}
+            {t(`admin.tabs.${s}`)}
           </Button>
         ))}
       </div>
@@ -167,7 +167,7 @@ export function AdminPage() {
           )}
 
           <h2 className="pt-2 text-base font-semibold">{t('admin.mergeSeforim')}</h2>
-          <p className="text-xs text-text-muted">Select exactly two to merge (the first stays canonical).</p>
+          <p className="text-xs text-text-muted">{t('admin.selectTwoToMerge')}</p>
           {sefarim.map((s) => (
             <label key={s.seferId} className="flex items-center gap-2 rounded-btn border border-border p-2 text-sm">
               <input
@@ -191,7 +191,7 @@ export function AdminPage() {
               reload();
             }}
           >
-            Merge
+            {t('actions.merge')}
           </Button>
         </div>
       )}
@@ -199,7 +199,7 @@ export function AdminPage() {
       {section === 'neshamos' && (
         <div className="space-y-3">
           <h2 className="text-base font-semibold">{t('admin.neshamaDedup')}</h2>
-          <p className="text-xs text-text-muted">Select exactly two to merge (the first stays canonical).</p>
+          <p className="text-xs text-text-muted">{t('admin.selectTwoToMerge')}</p>
           {neshamos.map((n) => (
             <label key={n.neshamaId} className="flex items-center gap-2 rounded-btn border border-border p-2 text-sm">
               <input
@@ -222,7 +222,7 @@ export function AdminPage() {
               reload();
             }}
           >
-            Merge
+            {t('actions.merge')}
           </Button>
         </div>
       )}
@@ -235,7 +235,7 @@ export function AdminPage() {
               <div>
                 <p className="text-sm font-semibold">{c.title ?? c.campaignId}</p>
                 <p className="text-xs text-text-muted">
-                  {c.status} · {c.totalItemsFulfilled}/{c.totalItemsNeeded}
+                  {t(`campaignStatus.${c.status}`)} · {c.totalItemsFulfilled}/{c.totalItemsNeeded}
                 </p>
               </div>
               <Button
@@ -259,7 +259,7 @@ export function AdminPage() {
           {donations.map((d) => (
             <Card key={d.donationId}>
               <p className="text-sm font-semibold">${d.totalCharged.toFixed(2)}</p>
-              <p className="text-xs text-text-muted">{d.status}</p>
+              <p className="text-xs text-text-muted">{t(`donationStatus.${d.status}`)}</p>
             </Card>
           ))}
         </div>
@@ -284,7 +284,7 @@ export function AdminPage() {
               >
                 {ORDER_STATUSES.map((status) => (
                   <option key={status} value={status}>
-                    {status}
+                    {t(`orderStatus.${status}`)}
                   </option>
                 ))}
               </select>

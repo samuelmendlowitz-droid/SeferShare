@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { getInstitution } from '../services/institutions';
@@ -9,10 +9,12 @@ import { listSefarim } from '../services/sefarim';
 import { prefixedName } from '../lib/neshamaFormat';
 import type { Donation, Institution, Neshama, Sefer } from '../types';
 import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 
 export function DonationConfirmationPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const donationId = params.get('donationId');
   const [donation, setDonation] = useState<Donation | null>(null);
@@ -81,6 +83,9 @@ export function DonationConfirmationPage() {
             {donation.ad.message && <p className="text-xs text-text-muted">{donation.ad.message}</p>}
           </div>
         )}
+        <Button className="mt-4 w-full" onClick={() => navigate('/')}>
+          {t('actions.done')}
+        </Button>
       </Card>
     </div>
   );

@@ -1,14 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import type { Order } from '../../types';
+import type { Order, Sefer } from '../../types';
 import { Card } from '../ui/Card';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 interface SalesTabProps {
   loading: boolean;
   orders: Order[];
+  sefarimById: Map<string, Sefer>;
 }
 
-export function SalesTab({ loading, orders }: SalesTabProps) {
+export function SalesTab({ loading, orders, sefarimById }: SalesTabProps) {
   const { t } = useTranslation();
 
   if (loading) return <LoadingSpinner />;
@@ -42,7 +43,8 @@ export function SalesTab({ loading, orders }: SalesTabProps) {
               <ul className="mt-1 text-sm">
                 {order.items.map((item, idx) => (
                   <li key={idx}>
-                    {item.quantity}× {item.seferId} — ${((item.priceEach ?? 0) * item.quantity).toFixed(2)}
+                    {item.quantity}× {sefarimById.get(item.seferId)?.englishName ?? item.seferId} — $
+                    {((item.priceEach ?? 0) * item.quantity).toFixed(2)}
                   </li>
                 ))}
               </ul>

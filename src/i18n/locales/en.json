@@ -204,7 +204,6 @@
     "downloadCsv": "Download CSV",
     "selectAll": "Select all",
     "ordersSelected": "{{count}} selected",
-    "seedTestOrders": "Generate sample orders (for testing)",
     "totalRevenue": "Total revenue",
     "itemsSold": "Items sold",
     "addSefer": "Add sefer",
@@ -235,10 +234,20 @@
   },
   "admin": {
     "title": "Admin",
+    "tabs": {
+      "vendors": "Vendors",
+      "sefarim": "Seforim",
+      "neshamos": "Neshamos",
+      "campaigns": "Campaigns",
+      "donations": "Donations",
+      "orders": "Orders",
+      "users": "Users"
+    },
     "vendorApplications": "Vendor Applications",
     "approve": "Approve",
     "reject": "Reject",
     "mergeSeforim": "Merge Duplicate Seforim",
+    "selectTwoToMerge": "Select exactly two to merge (the first stays canonical).",
     "campaigns": "Campaigns",
     "donations": "Donations",
     "orders": "Orders",
@@ -268,12 +277,14 @@
     "cancel": "Cancel",
     "add": "Add",
     "delete": "Delete",
+    "merge": "Merge",
     "filterSort": "Filter & sort",
     "sortBy": "Sort by",
     "reset": "Reset",
     "done": "Done",
     "noResults": "No results",
-    "groupBy": "Group by"
+    "groupBy": "Group by",
+    "notAuthorized": "Not authorized."
   },
   "filterSort": {
     "filterByInstitutionType": "Institution type",
@@ -371,5 +382,10 @@
     "fulfilled": "Fulfilled",
     "refunded": "Refunded",
     "failed": "Payment failed"
+  },
+  "campaignStatus": {
+    "active": "Active",
+    "fulfilled": "Fulfilled",
+    "paused": "Paused"
   }
 }

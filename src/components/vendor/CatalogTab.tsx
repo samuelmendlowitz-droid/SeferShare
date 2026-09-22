@@ -172,13 +172,11 @@ export function CatalogTab({ filters, sortKey, groupKey }: CatalogTabProps) {
         </div>
       ))}
 
-      {showAddForm ? (
-        <Card>
-          <SeferForm onSaved={handleSaved} onCancel={() => setShowAddForm(false)} />
-        </Card>
-      ) : (
-        <Button onClick={() => setShowAddForm(true)}>{t('vendor.addSefer')}</Button>
-      )}
+      <Button onClick={() => setShowAddForm(true)}>{t('vendor.addSefer')}</Button>
+
+      <Modal open={showAddForm} onClose={() => setShowAddForm(false)} title={t('vendor.addSefer')}>
+        <SeferForm onSaved={handleSaved} onCancel={() => setShowAddForm(false)} />
+      </Modal>
 
       <Modal open={editingSefer !== null} onClose={() => setEditingSefer(null)} title={t('vendor.editSefer')}>
         {editingSefer && (
