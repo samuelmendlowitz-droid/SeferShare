@@ -57,7 +57,9 @@ export function BubbleGrid({ options, isSelected, onToggle, search, emptyMessage
   }
 
   return (
-    <div className={`grid grid-flow-col ${search ? 'grid-rows-3' : 'grid-rows-2'} gap-2 overflow-x-auto pb-1`}>
+    <div
+      className={`grid grid-flow-col justify-start ${search ? 'grid-rows-3' : 'grid-rows-2'} gap-2 overflow-x-auto pb-1`}
+    >
       {search &&
         (searchExpanded ? (
           <div
