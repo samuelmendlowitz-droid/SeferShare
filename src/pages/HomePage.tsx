@@ -84,9 +84,6 @@ export function HomePage() {
     key: 'seferType',
     label: t('filterSort.filterBySeferType'),
     options: SEFER_TYPES.map((type) => ({ value: type, label: t(`sefer.${type}`) })),
-  };
-  const seforimSeferTypeFilterGroup: FilterGroup = {
-    ...seferTypeFilterGroup,
     searchable: true,
     searchPlaceholder: t('filterSort.searchSeferTypes') ?? undefined,
   };
@@ -172,7 +169,7 @@ export function HomePage() {
       active: neshamosSeferTypes.length > 0 || neshamosSort !== 'recommended',
     },
     what: {
-      filterGroups: [seforimSeferTypeFilterGroup, seforimInstitutionFilterGroup],
+      filterGroups: [seferTypeFilterGroup, seforimInstitutionFilterGroup],
       selectedFilters: { seferType: seforimSeferTypes, institution: seforimInstitutionIds },
       onToggleFilter: (groupKey, value) => {
         if (groupKey === 'seferType') setSeforimSeferTypes((prev) => toggleValue(prev, value as SeferType));

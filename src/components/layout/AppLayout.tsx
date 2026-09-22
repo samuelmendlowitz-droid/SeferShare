@@ -57,9 +57,9 @@ export function AppLayout(props: AppLayoutProps) {
   const homeOptions: ToggleOption[] = useMemo(
     () => [
       { key: 'all', label: t('nav.allCampaigns') },
+      { key: 'what', label: t('nav.what') },
       { key: 'where', label: t('nav.where') },
       { key: 'who', label: t('nav.who') },
-      { key: 'what', label: t('nav.what') },
     ],
     [t],
   );
