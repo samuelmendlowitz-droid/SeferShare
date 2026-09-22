@@ -5,9 +5,9 @@ import { INSTITUTION_TYPES } from '../../types';
 import { listInstitutions } from '../../services/institutions';
 import { listActiveCampaigns } from '../../services/campaigns';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../layout/FilterSortSheet';
+import { BubbleGrid } from '../ui/BubbleGrid';
 import { Modal } from '../ui/Modal';
 import { InstitutionCreateForm } from './InstitutionCreateForm';
-import { institutionTypeText } from '../../lib/institutionFormat';
 import { FilterIcon, PlusIcon } from '../ui/icons';
 
 type SortKey = 'recommended' | 'az' | 'za';
@@ -88,14 +88,8 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
   }
 
   return (
-    <div className="rounded-btn border border-border">
-      <div className="flex items-center gap-2 border-b border-border p-2">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('institution.searchPlaceholder') ?? ''}
-          className="min-w-0 flex-1 rounded-btn border border-border px-3 py-2 text-sm"
-        />
+    <div className="rounded-btn border border-border p-2">
+      <div className="mb-2 flex items-center justify-end gap-2">
         <button
           type="button"
           onClick={() => setSheetOpen(true)}
@@ -117,30 +111,24 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
         </button>
       </div>
 
-      <div className="max-h-56 overflow-y-auto p-2">
-        {results.length === 0 && <p className="p-2 text-sm text-text-muted">{t('actions.noResults')}</p>}
-        {results.map((inst) => {
-          const selected = value === inst.institutionId;
-          return (
-            <button
-              key={inst.institutionId}
-              type="button"
-              onClick={() => onChange(selected ? undefined : inst.institutionId, selected ? undefined : inst)}
-              className={`mb-1 flex w-full items-center justify-between rounded-btn px-3 py-2 text-left text-sm last:mb-0 ${
-                selected ? 'bg-accent text-white' : 'hover:bg-bg'
-              }`}
-            >
-              <span className="truncate">
-                {inst.name}
-                {inst.hebrewName ? ` · ${inst.hebrewName}` : ''}
-              </span>
-              <span className={`shrink-0 text-xs ${selected ? 'text-white/80' : 'text-text-muted'}`}>
-                {institutionTypeText(inst.type, inst.customType, t(`institution.${inst.type}`))}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <BubbleGrid
+        options={results.map((inst) => ({
+          value: inst.institutionId,
+          label: inst.hebrewName ? `${inst.name} · ${inst.hebrewName}` : inst.name,
+        }))}
+        isSelected={(id) => value === id}
+        onToggle={(id) => {
+          const inst = results.find((i) => i.institutionId === id);
+          onChange(value === id ? undefined : id, value === id ? undefined : inst);
+        }}
+        emptyMessage={t('actions.noResults') ?? ''}
+        search={{
+          query,
+          onQueryChange: setQuery,
+          placeholder: t('institution.searchPlaceholder') ?? '',
+          label: t('institution.searchPlaceholder') ?? '',
+        }}
+      />
 
       <FilterSortSheet
         open={sheetOpen}

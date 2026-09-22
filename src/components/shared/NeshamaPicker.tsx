@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import { useNeshamaSearch } from '../../hooks/useNeshamaSearch';
 import { FilterSortSheet, type SortOption } from '../layout/FilterSortSheet';
+import { BubbleGrid } from '../ui/BubbleGrid';
 import { Modal } from '../ui/Modal';
-import { Button } from '../ui/Button';
 import { NeshamaCreateForm } from './NeshamaCreateForm';
-import { FilterIcon, PlusIcon, CloseIcon, EditIcon } from '../ui/icons';
+import { FilterIcon, PlusIcon, CloseIcon } from '../ui/icons';
 
 interface NeshamaPickerProps {
   /** Selected neshamaIds, in the order added — the first is the sticker default
@@ -20,7 +19,6 @@ interface NeshamaPickerProps {
 /** Multi-select: a campaign can carry any number of neshamas as optional add-ons. */
 export function NeshamaPicker({ values, onChange }: NeshamaPickerProps) {
   const { t } = useTranslation();
-  const { profile } = useAuth();
   const { showBilingual } = useLanguage();
   const { neshamos, query, setQuery, sortKey, setSortKey, results, addCreated } = useNeshamaSearch();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -58,70 +56,41 @@ export function NeshamaPicker({ values, onChange }: NeshamaPickerProps) {
         </div>
       )}
 
-      <div className="flex items-center gap-2 border-b border-border p-2">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('neshama.searchPlaceholder') ?? ''}
-          className="min-w-0 flex-1 rounded-btn border border-border px-3 py-2 text-sm"
-        />
-        <button
-          type="button"
-          onClick={() => setSheetOpen(true)}
-          aria-label={t('actions.filterSort') ?? ''}
-          className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-btn border border-border ${
-            filtersActive ? 'text-accent' : 'text-text-muted'
-          }`}
-        >
-          <FilterIcon width={16} height={16} />
-          {filtersActive && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-accent" />}
-        </button>
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          aria-label={t('neshama.addNew') ?? ''}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-btn bg-accent text-white"
-        >
-          <PlusIcon width={16} height={16} />
-        </button>
-      </div>
+      <div className="p-2">
+        <div className="mb-2 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            aria-label={t('actions.filterSort') ?? ''}
+            className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-btn border border-border ${
+              filtersActive ? 'text-accent' : 'text-text-muted'
+            }`}
+          >
+            <FilterIcon width={16} height={16} />
+            {filtersActive && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-accent" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            aria-label={t('neshama.addNew') ?? ''}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-btn bg-accent text-white"
+          >
+            <PlusIcon width={16} height={16} />
+          </button>
+        </div>
 
-      <div className="max-h-56 overflow-y-auto p-2">
-        {results.length === 0 && <p className="p-2 text-sm text-text-muted">{t('actions.noResults')}</p>}
-        {results.map((n) => {
-          const selected = values.includes(n.neshamaId);
-          const isOwn = n.createdByUid === profile?.uid;
-          return (
-            <div
-              key={n.neshamaId}
-              className={`mb-1 flex w-full items-center justify-between rounded-btn text-sm last:mb-0 ${
-                selected ? 'bg-accent text-white' : 'hover:bg-bg'
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => toggle(n.neshamaId)}
-                className="min-w-0 flex-1 truncate px-3 py-2 text-left"
-              >
-                {neshamaDedicationLine(n, showBilingual)}
-              </button>
-              {isOwn && (
-                <a
-                  href={`/neshamos/${n.neshamaId}/edit`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={t('neshama.edit') ?? ''}
-                  onClick={(e) => e.stopPropagation()}
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center ${
-                    selected ? 'text-white/80' : 'text-text-muted hover:text-accent'
-                  }`}
-                >
-                  <EditIcon width={16} height={16} />
-                </a>
-              )}
-            </div>
-          );
-        })}
+        <BubbleGrid
+          options={results.map((n) => ({ value: n.neshamaId, label: neshamaDedicationLine(n, showBilingual) }))}
+          isSelected={(id) => values.includes(id)}
+          onToggle={toggle}
+          emptyMessage={t('actions.noResults') ?? ''}
+          search={{
+            query,
+            onQueryChange: setQuery,
+            placeholder: t('neshama.searchPlaceholder') ?? '',
+            label: t('neshama.searchPlaceholder') ?? '',
+          }}
+        />
       </div>
 
       <FilterSortSheet

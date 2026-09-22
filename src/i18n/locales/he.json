@@ -284,7 +284,8 @@
     "done": "סיום",
     "noResults": "אין תוצאות",
     "groupBy": "קיבוץ לפי",
-    "notAuthorized": "אין הרשאה."
+    "notAuthorized": "אין הרשאה.",
+    "closeSearch": "סגירת חיפוש"
   },
   "filterSort": {
     "filterByInstitutionType": "סוג מוסד",

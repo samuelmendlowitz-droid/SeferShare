@@ -284,7 +284,8 @@
     "done": "Done",
     "noResults": "No results",
     "groupBy": "Group by",
-    "notAuthorized": "Not authorized."
+    "notAuthorized": "Not authorized.",
+    "closeSearch": "Close search"
   },
   "filterSort": {
     "filterByInstitutionType": "Institution type",

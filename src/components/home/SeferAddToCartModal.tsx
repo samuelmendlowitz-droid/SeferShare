@@ -5,6 +5,7 @@ import type { SeforimShopItem } from '../../hooks/useSeforimShopFeed';
 import type { Campaign } from '../../types';
 import { Modal } from '../ui/Modal';
 import { NumberField } from '../ui/NumberField';
+import { BubbleGrid } from '../ui/BubbleGrid';
 import { Button } from '../ui/Button';
 
 const PICK_FOR_ME = 'pickForMe';
@@ -26,6 +27,7 @@ export function SeferAddToCartModal({ item, onClose, onConfirm }: SeferAddToCart
   const [loading, setLoading] = useState(true);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>(PICK_FOR_ME);
   const [quantity, setQuantity] = useState(1);
+  const [campaignQuery, setCampaignQuery] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -64,34 +66,26 @@ export function SeferAddToCartModal({ item, onClose, onConfirm }: SeferAddToCart
         {!loading && campaigns.length > 0 && (
           <div>
             <p className="mb-2 text-sm font-medium">{t('pushka.whichCampaignLabel')}</p>
-            <div className="space-y-1">
-              <button
-                type="button"
-                onClick={() => setSelectedCampaignId(PICK_FOR_ME)}
-                className={`w-full rounded-btn border px-3 py-2 text-start text-sm ${
-                  selectedCampaignId === PICK_FOR_ME ? 'border-accent bg-accent/5 font-medium' : 'border-border'
-                }`}
-              >
-                {t('pushka.pickForMe')}
-              </button>
-              {campaigns.map((c) => {
-                const fulfilled = remainingFor(c) <= 0;
-                return (
-                  <button
-                    key={c.campaignId}
-                    type="button"
-                    disabled={fulfilled}
-                    onClick={() => setSelectedCampaignId(c.campaignId)}
-                    className={`w-full rounded-btn border px-3 py-2 text-start text-sm disabled:opacity-40 ${
-                      selectedCampaignId === c.campaignId ? 'border-accent bg-accent/5 font-medium' : 'border-border'
-                    }`}
-                  >
-                    {c.title || t('campaign.untitled')}
-                    {fulfilled ? ` (${t('home.fulfilled')})` : ''}
-                  </button>
-                );
-              })}
-            </div>
+            <BubbleGrid
+              options={[
+                { value: PICK_FOR_ME, label: t('pushka.pickForMe') },
+                ...campaigns
+                  .filter((c) => (c.title ?? '').toLowerCase().includes(campaignQuery.trim().toLowerCase()))
+                  .map((c) => ({
+                    value: c.campaignId,
+                    label: remainingFor(c) <= 0 ? `${c.title || t('campaign.untitled')} (${t('home.fulfilled')})` : c.title || t('campaign.untitled'),
+                  })),
+              ]}
+              isSelected={(id) => selectedCampaignId === id}
+              onToggle={setSelectedCampaignId}
+              disabledValues={new Set(campaigns.filter((c) => remainingFor(c) <= 0).map((c) => c.campaignId))}
+              search={{
+                query: campaignQuery,
+                onQueryChange: setCampaignQuery,
+                placeholder: t('pushka.whichCampaignLabel') ?? '',
+                label: t('pushka.whichCampaignLabel') ?? '',
+              }}
+            />
           </div>
         )}
 

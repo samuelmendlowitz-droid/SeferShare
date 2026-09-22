@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../ui/Button';
+import { BubbleGrid } from '../ui/BubbleGrid';
 import { CloseIcon } from '../ui/icons';
 
 export interface FilterOption {
@@ -12,9 +13,9 @@ export interface FilterGroup {
   key: string;
   label: string;
   options: FilterOption[];
-  /** Shows a text box above this group's chips that narrows them client-side
-   *  by label — for a group with enough options (sefer types, institutions)
-   *  that scanning for one gets tedious. */
+  /** Gives this group's bubble grid a frozen search bubble that narrows its
+   *  options client-side by label — for a group with enough options (sefer
+   *  types, institutions) that scanning for one gets tedious. */
   searchable?: boolean;
   searchPlaceholder?: string;
 }
@@ -42,30 +43,6 @@ interface FilterSortSheetProps {
   sortValue: string;
   onSortChange: (value: string) => void;
   onReset: () => void;
-}
-
-function Chip({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
-        active
-          ? 'border-accent bg-accent text-white'
-          : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
-      }`}
-    >
-      {label}
-    </button>
-  );
 }
 
 /** Bottom sheet shared by every page that offers filter/sort — schema varies per page. */
@@ -106,34 +83,27 @@ export function FilterSortSheet({
 
         {filterGroups.map((group) => {
           const query = (groupSearch[group.key] ?? '').trim().toLowerCase();
-          const visibleOptions =
-            group.searchable && query ? group.options.filter((opt) => opt.label.toLowerCase().includes(query)) : group.options;
+          const visibleOptions = query ? group.options.filter((opt) => opt.label.toLowerCase().includes(query)) : group.options;
 
           return (
             <div key={group.key} className="mb-4">
               <p className="mb-2 text-sm font-semibold text-text-muted">{group.label}</p>
-              {group.searchable && (
-                <input
-                  type="text"
-                  value={groupSearch[group.key] ?? ''}
-                  onChange={(e) => setGroupSearch((prev) => ({ ...prev, [group.key]: e.target.value }))}
-                  placeholder={group.searchPlaceholder}
-                  className="mb-2 w-full rounded-btn border border-border px-3 py-2 text-sm"
-                />
-              )}
-              <div className="flex flex-wrap gap-2">
-                {visibleOptions.map((opt) => (
-                  <Chip
-                    key={opt.value}
-                    label={opt.label}
-                    active={(selectedFilters[group.key] ?? []).includes(opt.value)}
-                    onClick={() => onToggleFilter(group.key, opt.value)}
-                  />
-                ))}
-                {group.searchable && visibleOptions.length === 0 && (
-                  <p className="text-xs text-text-muted">{t('actions.noResults')}</p>
-                )}
-              </div>
+              <BubbleGrid
+                options={visibleOptions}
+                isSelected={(value) => (selectedFilters[group.key] ?? []).includes(value)}
+                onToggle={(value) => onToggleFilter(group.key, value)}
+                emptyMessage={t('actions.noResults') ?? ''}
+                search={
+                  group.searchable
+                    ? {
+                        query: groupSearch[group.key] ?? '',
+                        onQueryChange: (v) => setGroupSearch((prev) => ({ ...prev, [group.key]: v })),
+                        placeholder: group.searchPlaceholder,
+                        label: group.searchPlaceholder ?? t('actions.filterSort') ?? '',
+                      }
+                    : undefined
+                }
+              />
             </div>
           );
         })}
@@ -141,22 +111,14 @@ export function FilterSortSheet({
         {groupOptions && groupOptions.length > 0 && onGroupChange && (
           <div className="mb-4">
             <p className="mb-2 text-sm font-semibold text-text-muted">{t('actions.groupBy')}</p>
-            <div className="flex flex-wrap gap-2">
-              {groupOptions.map((opt) => (
-                <Chip key={opt.value} label={opt.label} active={groupValue === opt.value} onClick={() => onGroupChange(opt.value)} />
-              ))}
-            </div>
+            <BubbleGrid options={groupOptions} isSelected={(v) => groupValue === v} onToggle={onGroupChange} />
           </div>
         )}
 
         {sortOptions.length > 0 && (
           <div className="mb-4">
             <p className="mb-2 text-sm font-semibold text-text-muted">{t('actions.sortBy')}</p>
-            <div className="flex flex-wrap gap-2">
-              {sortOptions.map((opt) => (
-                <Chip key={opt.value} label={opt.label} active={sortValue === opt.value} onClick={() => onSortChange(opt.value)} />
-              ))}
-            </div>
+            <BubbleGrid options={sortOptions} isSelected={(v) => sortValue === v} onToggle={onSortChange} />
           </div>
         )}
 
