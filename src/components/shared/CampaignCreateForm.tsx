@@ -1,24 +1,27 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
-import { createCampaign } from '../services/campaigns';
-import type { Address, Institution } from '../types';
-import { SeferPicker, type PickedItem } from '../components/donation/SeferPicker';
-import { PageHeading } from '../components/layout/PageHeading';
-import { InstitutionPicker } from '../components/shared/InstitutionPicker';
-import { NeshamaPicker } from '../components/shared/NeshamaPicker';
-import { AddressForm } from '../components/shared/AddressForm';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { TextField, TextAreaField } from '../components/ui/TextField';
+import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { createCampaign } from '../../services/campaigns';
+import type { Address, Institution } from '../../types';
+import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
+import { InstitutionPicker } from './InstitutionPicker';
+import { NeshamaPicker } from './NeshamaPicker';
+import { AddressForm } from './AddressForm';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { TextField, TextAreaField } from '../ui/TextField';
 
 const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
 
-export function CampaignCreatePage() {
+interface CampaignCreateFormProps {
+  onCreated: (campaignId: string) => void;
+}
+
+/** Shared "add a campaign" fields — used wherever the app's + Campaign button
+ *  appears, inside the same popup shell as the add-mokom/add-neshama forms. */
+export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { profile } = useAuth();
   const { language } = useLanguage();
 
@@ -73,7 +76,7 @@ export function CampaignCreatePage() {
         shippingAddress,
         language,
       });
-      navigate(`/?popup=campaign:${campaignId}`);
+      onCreated(campaignId);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -82,13 +85,7 @@ export function CampaignCreatePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate(-1)}>
-        {t('actions.back')}
-      </Button>
-
-      <PageHeading page={t('campaign.create')} />
-
+    <div>
       <TextField
         required
         label={t('campaign.titlePlaceholder')}
@@ -120,11 +117,7 @@ export function CampaignCreatePage() {
 
       {institution && (
         <label className="my-4 flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={addressDiffers}
-            onChange={(e) => setAddressDiffers(e.target.checked)}
-          />
+          <input type="checkbox" checked={addressDiffers} onChange={(e) => setAddressDiffers(e.target.checked)} />
           {t('campaign.shippingAddressDiffers')}
         </label>
       )}

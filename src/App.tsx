@@ -10,7 +10,6 @@ import { ProfilePage } from './pages/ProfilePage';
 import { LoginPage } from './pages/LoginPage';
 import { PushkaPage } from './pages/PushkaPage';
 import { DonationConfirmationPage } from './pages/DonationConfirmationPage';
-import { CampaignCreatePage } from './pages/CampaignCreatePage';
 import { CampaignEditPage } from './pages/CampaignEditPage';
 import { InstitutionEditPage } from './pages/InstitutionEditPage';
 import { InstitutionSpendPage } from './pages/InstitutionSpendPage';
@@ -54,14 +53,6 @@ export default function App() {
                   }
                 />
                 <Route path="/donate/confirmation" element={<DonationConfirmationPage />} />
-                <Route
-                  path="/campaigns/new"
-                  element={
-                    <RequireAuth>
-                      <CampaignCreatePage />
-                    </RequireAuth>
-                  }
-                />
                 <Route
                   path="/campaigns/:campaignId/edit"
                   element={
@@ -120,7 +111,8 @@ export default function App() {
                 />
                 {/* Catches stale links to routes that no longer exist (e.g. the old
                     /campaigns/:id, /institutions/:id, /neshamos/:id detail pages,
-                    now popups — see DetailStackContext) instead of rendering blank. */}
+                    now popups — see DetailStackContext; or /campaigns/new, now the
+                    + Campaign button's popup form) instead of rendering blank. */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
               <DetailStackOverlay />

@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { AppLayout, type ProfileTab } from '../components/layout/AppLayout';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../components/layout/FilterSortSheet';
 import { MyCampaignsTab } from '../components/profile/MyCampaignsTab';
 import { DonationsTab } from '../components/profile/DonationsTab';
 import { NotificationsTab } from '../components/profile/NotificationsTab';
 import { SettingsTab } from '../components/profile/SettingsTab';
+import { CampaignCreateForm } from '../components/shared/CampaignCreateForm';
+import { Modal } from '../components/ui/Modal';
 import { useAuth } from '../context/AuthContext';
 import { useMyCampaignsFeed, type MyCampaignsSortKey } from '../hooks/useMyCampaignsFeed';
 import { useMyDonationsFeed, type MyDonationsSortKey } from '../hooks/useMyDonationsFeed';
@@ -13,10 +16,12 @@ import { DONATION_STATUSES, type DonationStatus, type SeferType } from '../types
 
 export function ProfilePage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const [tab, setTab] = useState<ProfileTab>('campaigns');
   const [searchQuery, setSearchQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [createCampaignOpen, setCreateCampaignOpen] = useState(false);
 
   // My Campaigns filter/sort state
   const [campaignInstitutionIds, setCampaignInstitutionIds] = useState<string[]>([]);
@@ -139,7 +144,14 @@ export function ProfilePage() {
 
   return (
     <>
-      <AppLayout variant="profile" tab={tab} onTabChange={setTab} onSearch={setSearchQuery} filterSort={filterSort}>
+      <AppLayout
+        variant="profile"
+        tab={tab}
+        onTabChange={setTab}
+        onSearch={setSearchQuery}
+        filterSort={filterSort}
+        createAction={tab === 'campaigns' ? { caption: t('nav.newCampaign'), onClick: () => setCreateCampaignOpen(true) } : undefined}
+      >
         {tab === 'campaigns' && (
           <MyCampaignsTab
             loading={campaignsFeed.loading}
@@ -189,6 +201,15 @@ export function ProfilePage() {
           onReset={resetDonationFilters}
         />
       )}
+
+      <Modal open={createCampaignOpen} onClose={() => setCreateCampaignOpen(false)} title={t('campaign.create')}>
+        <CampaignCreateForm
+          onCreated={(campaignId) => {
+            setCreateCampaignOpen(false);
+            navigate(`/?popup=campaign:${campaignId}`);
+          }}
+        />
+      </Modal>
     </>
   );
 }

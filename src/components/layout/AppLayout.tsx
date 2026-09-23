@@ -31,6 +31,9 @@ interface ProfileLayoutProps {
   onTabChange: (tab: ProfileTab) => void;
   onSearch: (query: string) => void;
   filterSort?: FilterSortButtonProps;
+  /** Shown as a "+ Campaign" pill only while viewing the My Campaigns tab
+   *  (same button as Home's own create action) — omitted on every other tab. */
+  createAction?: { caption: string; onClick: () => void };
   children: ReactNode;
 }
 
@@ -99,14 +102,7 @@ export function AppLayout(props: AppLayoutProps) {
   const otherPages = pages.filter((p) => p.key !== props.variant);
 
   const actionButton =
-    props.variant === 'profile' && props.tab === 'campaigns' ? (
-      <CornerButton
-        label={t('nav.newCampaign')}
-        caption={t('nav.newCampaign')}
-        icon={<PlusIcon width={16} height={16} />}
-        onClick={() => navigate('/campaigns/new')}
-      />
-    ) : props.variant === 'home' && props.createAction ? (
+    (props.variant === 'home' || (props.variant === 'profile' && props.tab === 'campaigns')) && props.createAction ? (
       <CornerButton
         label={props.createAction.caption}
         caption={props.createAction.caption}

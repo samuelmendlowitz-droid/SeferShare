@@ -8,6 +8,7 @@ import { CampaignCard } from '../components/campaign/CampaignCard';
 import { InstitutionSummaryCard } from '../components/home/InstitutionSummaryCard';
 import { NeshamaSummaryCard } from '../components/home/NeshamaSummaryCard';
 import { SeforimShopList } from '../components/home/SeforimShopList';
+import { CampaignCreateForm } from '../components/shared/CampaignCreateForm';
 import { InstitutionCreateForm } from '../components/shared/InstitutionCreateForm';
 import { NeshamaCreateForm } from '../components/shared/NeshamaCreateForm';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
@@ -32,6 +33,7 @@ export function HomePage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [createInstitutionOpen, setCreateInstitutionOpen] = useState(false);
   const [createNeshamaOpen, setCreateNeshamaOpen] = useState(false);
+  const [createCampaignOpen, setCreateCampaignOpen] = useState(false);
 
   // All Campaigns tab
   const [allInstitutionTypes, setAllInstitutionTypes] = useState<InstitutionType[]>([]);
@@ -196,7 +198,7 @@ export function HomePage() {
   const currentSheet = sheetsByTab[filter];
 
   const createActionByTab: Partial<Record<HomeFilter, { caption: string; onClick: () => void }>> = {
-    all: { caption: t('nav.newCampaign'), onClick: () => navigate('/campaigns/new') },
+    all: { caption: t('nav.newCampaign'), onClick: () => setCreateCampaignOpen(true) },
     where: { caption: t('nav.newMokom'), onClick: () => setCreateInstitutionOpen(true) },
     who: { caption: t('nav.newNeshama'), onClick: () => setCreateNeshamaOpen(true) },
   };
@@ -284,6 +286,15 @@ export function HomePage() {
           onCreated={(created) => {
             neshamosFeed.addCreated(created);
             setCreateNeshamaOpen(false);
+          }}
+        />
+      </Modal>
+
+      <Modal open={createCampaignOpen} onClose={() => setCreateCampaignOpen(false)} title={t('campaign.create')}>
+        <CampaignCreateForm
+          onCreated={(campaignId) => {
+            setCreateCampaignOpen(false);
+            navigate(`/?popup=campaign:${campaignId}`);
           }}
         />
       </Modal>
