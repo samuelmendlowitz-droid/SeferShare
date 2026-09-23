@@ -5,7 +5,8 @@ import { INSTITUTION_TYPES } from '../../types';
 import { createInstitution } from '../../services/institutions';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
-import { SelectField, TextField } from '../ui/TextField';
+import { BubbleGrid } from '../ui/BubbleGrid';
+import { FIELD_LABEL_CLASS, TextField } from '../ui/TextField';
 import { AddressForm } from './AddressForm';
 
 const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
@@ -64,12 +65,14 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
     <div className="space-y-2">
       <TextField label={t('institution.name')} value={name} onChange={setName} />
       <TextField label={t('institution.hebrewName')} value={hebrewName} onChange={setHebrewName} />
-      <SelectField
-        label={t('institution.type')}
-        value={type}
-        onChange={setType}
-        options={INSTITUTION_TYPES.map((t2) => ({ value: t2, label: t(`institution.${t2}`) }))}
-      />
+      <div>
+        <p className={FIELD_LABEL_CLASS}>{t('institution.type')}</p>
+        <BubbleGrid
+          options={INSTITUTION_TYPES.map((t2) => ({ value: t2, label: t(`institution.${t2}`) }))}
+          isSelected={(v) => type === v}
+          onToggle={(v) => setType(v as InstitutionType)}
+        />
+      </div>
       {type === 'other' && (
         <TextField required label={t('institution.customTypeLabel')} value={customType} onChange={setCustomType} />
       )}

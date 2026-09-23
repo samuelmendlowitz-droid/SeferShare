@@ -83,7 +83,7 @@ export function CampaignCreatePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate('/profile')}>
+      <Button variant="secondary" className="mb-4" onClick={() => navigate(-1)}>
         {t('actions.back')}
       </Button>
 
