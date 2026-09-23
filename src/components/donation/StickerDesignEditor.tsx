@@ -202,7 +202,7 @@ export function StickerDesignEditor({
     // (the cart's Modal vs. the Profile "Stickers" tab's own page scroll).
     <div className="flex h-full flex-col">
       <div className="shrink-0 border-b border-border px-4 pb-3 pt-4">
-        <StickerPreview design={value} content={content} className="mx-auto max-w-[200px] shadow-card" />
+        <StickerPreview design={value} content={content} className="mx-auto max-w-[150px] shadow-card" />
         {pendingChoice ? (
           <div className="mt-2 rounded-btn border border-accent/30 bg-accent/5 p-2 text-center">
             <p className="text-xs text-text">{t('sticker.unsavedChangesPrompt')}</p>

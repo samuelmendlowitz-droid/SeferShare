@@ -29,10 +29,13 @@ export function DetailPopup({ title, onClose, isTop, zIndex, children, footer }:
 
   return (
     <div
-      className={`fixed inset-2 flex flex-col overflow-hidden rounded-card bg-surface shadow-navbar sm:inset-4 ${
+      className={`fixed inset-x-2 top-2 flex flex-col overflow-hidden rounded-card bg-surface shadow-navbar sm:inset-x-4 sm:top-4 ${
         isTop ? '' : 'pointer-events-none'
       }`}
-      style={{ zIndex }}
+      // Bottom inset alone (unlike inset-2/sm:inset-4) also clears a device's
+      // home-indicator/gesture-bar safe area, so the last bit of content never
+      // sits underneath it or gets visually cut off there.
+      style={{ zIndex, bottom: 'max(0.5rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
       aria-hidden={!isTop}
     >
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">

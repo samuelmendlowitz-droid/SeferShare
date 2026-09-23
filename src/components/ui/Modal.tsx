@@ -40,7 +40,13 @@ export function Modal({ open, onClose, title, children, fillBody }: ModalProps) 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-2 z-50 flex flex-col overflow-hidden rounded-card bg-surface shadow-navbar sm:inset-4">
+    <div
+      className="fixed inset-x-2 top-2 z-50 flex flex-col overflow-hidden rounded-card bg-surface shadow-navbar sm:inset-x-4 sm:top-4"
+      // Bottom inset alone (unlike inset-2/sm:inset-4) also clears a device's
+      // home-indicator/gesture-bar safe area, so the last bit of content never
+      // sits underneath it or gets visually cut off there.
+      style={{ bottom: 'max(0.5rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
+    >
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
         <h2 className="truncate pe-2 text-sm font-semibold">{title}</h2>
         <button

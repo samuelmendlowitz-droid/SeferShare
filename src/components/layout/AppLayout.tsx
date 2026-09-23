@@ -146,14 +146,22 @@ export function AppLayout(props: AppLayoutProps) {
       {searchOpen ? (
         <TopSearchBar query={query} onQueryChange={handleQueryChange} onClose={closeSearch} />
       ) : (
-        // Fixed bottom cluster: same outer margin (px-4 / bottom-4, plus the safe-area
-        // inset on notched/home-indicator devices) as `main`, and the same gap (gap-4)
-        // between the button row and the nav bar below it. Hidden entirely while
-        // searching so the keyboard/search bar have the full screen.
-        <div
-          className="fixed inset-x-0 z-40 mx-auto flex max-w-2xl flex-col gap-4 px-4"
-          style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
-        >
+        <>
+          {/* Fades scrolled-past content out before it reaches the fixed buttons,
+              instead of it being cut off hard underneath them — spans the same
+              height as the bottom cluster's own reserved space (pb-36 above),
+              from fully opaque at the screen edge up to transparent at the top
+              of the home/cart button row. */}
+          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-36 bg-gradient-to-t from-bg via-bg/70 to-transparent" />
+
+          {/* Fixed bottom cluster: same outer margin (px-4 / bottom-4, plus the safe-area
+              inset on notched/home-indicator devices) as `main`, and the same gap (gap-4)
+              between the button row and the nav bar below it. Hidden entirely while
+              searching so the keyboard/search bar have the full screen. */}
+          <div
+            className="fixed inset-x-0 z-40 mx-auto flex max-w-2xl flex-col gap-4 px-4"
+            style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
+          >
           <div className="flex items-center justify-between">
             <div className="flex gap-2">
               {otherPages.map((p) => (
@@ -191,7 +199,8 @@ export function AppLayout(props: AppLayoutProps) {
               filterSort={props.filterSort}
             />
           )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
