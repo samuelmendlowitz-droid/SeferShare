@@ -34,6 +34,12 @@ interface StickerDesignEditorProps {
   onUpdateContent: (designId: string, design: StickerDesign) => Promise<void>;
   onRename: (designId: string, name: string) => Promise<void>;
   onDelete: (designId: string) => Promise<void>;
+  /** Renders as a normal, page-scrolling block (no internal frozen-header/
+   *  scroll split, no own horizontal padding) instead of filling a bounded
+   *  container — for embedding directly in a page that already scrolls as a
+   *  whole and fades near its own fixed nav, like the Profile "Stickers" tab,
+   *  matching every other tab there instead of behaving like its own mini popup. */
+  flow?: boolean;
 }
 
 const COLOR_KEYS: (keyof StickerColorSet)[] = [
@@ -62,6 +68,7 @@ export function StickerDesignEditor({
   onUpdateContent,
   onRename,
   onDelete,
+  flow,
 }: StickerDesignEditorProps) {
   const { t } = useTranslation();
   // Memoized so this only produces a new reference when rawValue actually
@@ -196,12 +203,15 @@ export function StickerDesignEditor({
   }
 
   return (
-    // A real frozen-top / scrollable-bottom split via flex, not `position:
-    // sticky` — sticky here used to jitter and leave a stray gap once this
-    // editor started being embedded in places with different scroll ancestors
-    // (the cart's Modal vs. the Profile "Stickers" tab's own page scroll).
-    <div className="flex h-full flex-col">
-      <div className="shrink-0 border-b border-border px-4 pb-3 pt-4">
+    // Two layouts share the same content below: `flow` (Profile's Stickers tab)
+    // is a normal block that scrolls with the rest of that page, exactly like
+    // its other tabs — no internal scroll container, no bounded height, so it's
+    // faded out by AppLayout's own bottom gradient like everything else there.
+    // The default is a real frozen-top / scrollable-bottom split via flex (not
+    // `position: sticky`, which used to jitter and leave a stray gap) — for the
+    // cart's Modal, which is its own bounded full-screen shell.
+    <div className={flow ? undefined : 'flex h-full flex-col'}>
+      <div className={flow ? 'border-b border-border pb-3' : 'shrink-0 border-b border-border px-4 pb-3 pt-4'}>
         <StickerPreview design={value} content={content} className="mx-auto max-w-[150px] shadow-card" />
         {pendingChoice ? (
           <div className="mt-2 rounded-btn border border-accent/30 bg-accent/5 p-2 text-center">
@@ -222,7 +232,7 @@ export function StickerDesignEditor({
         )}
       </div>
 
-      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
+      <div className={flow ? 'space-y-4 pt-4' : 'flex-1 space-y-4 overflow-y-auto px-4 py-4'}>
         <div>
           <p className={FIELD_LABEL_CLASS}>{t('sticker.savedDesignsLabel')}</p>
           {savedDesigns.length > 0 && (
