@@ -9,9 +9,11 @@ import { getSefer } from '../../services/sefarim';
 import { formatNeshamaDedication, prefixedName } from '../../lib/neshamaFormat';
 import type { Campaign, Neshama, Sefer } from '../../types';
 import { DetailPopup } from './DetailPopup';
+import { NeshamaEditForm } from '../shared/NeshamaEditForm';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { Modal } from '../ui/Modal';
 
 interface NeshamaPopupContentProps {
   id: string;
@@ -29,6 +31,7 @@ export function NeshamaPopupContent({ id: neshamaId, isTop, zIndex, onClose }: N
   const [notFound, setNotFound] = useState(false);
   const [campaigns, setCampaigns] = useState<Campaign[] | undefined>(undefined);
   const [dedicatedSefarim, setDedicatedSefarim] = useState<Sefer[]>([]);
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,6 +55,11 @@ export function NeshamaPopupContent({ id: neshamaId, isTop, zIndex, onClose }: N
       cancelled = true;
     };
   }, [neshamaId]);
+
+  async function refetchNeshama() {
+    const nesh = await getNeshama(neshamaId);
+    if (nesh) setNeshama(nesh);
+  }
 
   if (notFound) {
     return (
@@ -130,11 +138,25 @@ export function NeshamaPopupContent({ id: neshamaId, isTop, zIndex, onClose }: N
           {t('neshama.donateInTheirName')}
         </Button>
         {isOwn && (
-          <Button variant="secondary" className="w-full" onClick={() => navigate(`/neshamos/${neshama.neshamaId}/edit`)}>
+          <Button variant="secondary" className="w-full" onClick={() => setEditOpen(true)}>
             {t('neshama.edit')}
           </Button>
         )}
       </div>
+
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title={t('neshama.edit')}>
+        <NeshamaEditForm
+          neshama={neshama}
+          onSaved={() => {
+            setEditOpen(false);
+            void refetchNeshama();
+          }}
+          onDeleted={() => {
+            setEditOpen(false);
+            onClose();
+          }}
+        />
+      </Modal>
     </DetailPopup>
   );
 }

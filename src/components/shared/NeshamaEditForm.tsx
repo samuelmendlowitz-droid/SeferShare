@@ -1,83 +1,42 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { getNeshama, updateNeshama, deleteNeshama } from '../services/neshamos';
-import { SEFER_TYPES, type Neshama, type ParentGender, type SeferType } from '../types';
-import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../lib/neshamaPrefixes';
-import { PageHeading } from '../components/layout/PageHeading';
-import { Button } from '../components/ui/Button';
-import { BubbleGrid } from '../components/ui/BubbleGrid';
-import { Card } from '../components/ui/Card';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { FIELD_LABEL_CLASS, TextField } from '../components/ui/TextField';
+import { deleteNeshama, updateNeshama } from '../../services/neshamos';
+import { SEFER_TYPES, type Neshama, type ParentGender, type SeferType } from '../../types';
+import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../../lib/neshamaPrefixes';
+import { Button } from '../ui/Button';
+import { BubbleGrid } from '../ui/BubbleGrid';
+import { Card } from '../ui/Card';
+import { FIELD_LABEL_CLASS, TextField } from '../ui/TextField';
 
-export function NeshamaEditPage() {
+interface NeshamaEditFormProps {
+  neshama: Neshama;
+  onSaved: () => void;
+  onDeleted: () => void;
+}
+
+/** Shared "edit a neshama" fields — same shape as NeshamaCreateForm, plus the
+ *  delete action that only applies once a neshama exists. */
+export function NeshamaEditForm({ neshama, onSaved, onDeleted }: NeshamaEditFormProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { profile } = useAuth();
-  const { neshamaId } = useParams();
 
-  const [neshama, setNeshama] = useState<Neshama | null>(null);
-  const [notFound, setNotFound] = useState(false);
-
-  const [name, setName] = useState('');
-  const [hebrewName, setHebrewName] = useState('');
-  const [namePrefix, setNamePrefix] = useState<string | undefined>(undefined);
-  const [customNamePrefix, setCustomNamePrefix] = useState('');
-  const [parentGender, setParentGender] = useState<ParentGender>('son');
-  const [fatherHebrewName, setFatherHebrewName] = useState('');
-  const [seferTypes, setSeferTypes] = useState<SeferType[]>([]);
+  const [name, setName] = useState(neshama.name);
+  const [hebrewName, setHebrewName] = useState(neshama.hebrewName ?? '');
+  const [namePrefix, setNamePrefix] = useState<string | undefined>(neshama.namePrefix);
+  const [customNamePrefix, setCustomNamePrefix] = useState(neshama.customNamePrefix ?? '');
+  const [parentGender, setParentGender] = useState<ParentGender>(neshama.parentGender);
+  const [fatherHebrewName, setFatherHebrewName] = useState(neshama.fatherHebrewName);
+  const [seferTypes, setSeferTypes] = useState<SeferType[]>(neshama.seferTypes ?? []);
   const [seferTypeQuery, setSeferTypeQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    if (!neshamaId) return;
-    getNeshama(neshamaId).then((n) => {
-      if (!n) {
-        setNotFound(true);
-        return;
-      }
-      setNeshama(n);
-      setName(n.name);
-      setHebrewName(n.hebrewName ?? '');
-      setNamePrefix(n.namePrefix);
-      setCustomNamePrefix(n.customNamePrefix ?? '');
-      setParentGender(n.parentGender);
-      setFatherHebrewName(n.fatherHebrewName);
-      setSeferTypes(n.seferTypes ?? []);
-    });
-  }, [neshamaId]);
-
-  if (notFound) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 pt-6">
-        <Button variant="secondary" className="mb-4" onClick={() => navigate('/')}>
-          {t('actions.back')}
-        </Button>
-        <p className="text-text-muted">{t('neshama.notFound')}</p>
-      </div>
-    );
-  }
-
-  if (!neshama) return <LoadingSpinner fullScreen />;
-
-  if (profile?.uid !== neshama.createdByUid) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 pt-6">
-        <p className="text-text-muted">{t('actions.notAuthorized')}</p>
-      </div>
-    );
-  }
 
   function toggleSeferType(type: SeferType) {
     setSeferTypes((prev) => (prev.includes(type) ? prev.filter((t2) => t2 !== type) : [...prev, type]));
   }
 
   async function handleSave() {
-    if (!neshama || !name.trim() || !fatherHebrewName.trim()) return;
+    if (!name.trim() || !fatherHebrewName.trim()) return;
     setError(null);
     setSaving(true);
     try {
@@ -90,7 +49,7 @@ export function NeshamaEditPage() {
         fatherHebrewName: fatherHebrewName.trim(),
         seferTypes,
       });
-      navigate(`/?popup=neshama:${neshama.neshamaId}`);
+      onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -99,12 +58,11 @@ export function NeshamaEditPage() {
   }
 
   async function handleDelete() {
-    if (!neshama) return;
     if (!window.confirm(t('neshama.confirmDelete') ?? '')) return;
     setDeleting(true);
     try {
       await deleteNeshama(neshama.neshamaId);
-      navigate('/');
+      onDeleted();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setDeleting(false);
@@ -112,13 +70,7 @@ export function NeshamaEditPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/?popup=neshama:${neshama.neshamaId}`)}>
-        {t('actions.back')}
-      </Button>
-
-      <PageHeading page={t('neshama.edit')} />
-
+    <div>
       <div className="space-y-2">
         <TextField label={t('neshama.name')} value={name} onChange={setName} />
         <TextField label={t('neshama.hebrewName')} value={hebrewName} onChange={setHebrewName} />

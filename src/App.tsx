@@ -10,9 +10,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { LoginPage } from './pages/LoginPage';
 import { PushkaPage } from './pages/PushkaPage';
 import { DonationConfirmationPage } from './pages/DonationConfirmationPage';
-import { InstitutionEditPage } from './pages/InstitutionEditPage';
 import { InstitutionSpendPage } from './pages/InstitutionSpendPage';
-import { NeshamaEditPage } from './pages/NeshamaEditPage';
 import { NeshamaDonatePage } from './pages/NeshamaDonatePage';
 import { VendorPage } from './pages/VendorPage';
 import { AdminPage } from './pages/AdminPage';
@@ -53,26 +51,10 @@ export default function App() {
                 />
                 <Route path="/donate/confirmation" element={<DonationConfirmationPage />} />
                 <Route
-                  path="/institutions/:institutionId/edit"
-                  element={
-                    <RequireAuth>
-                      <InstitutionEditPage />
-                    </RequireAuth>
-                  }
-                />
-                <Route
                   path="/institutions/:institutionId/spend"
                   element={
                     <RequireAuth>
                       <InstitutionSpendPage />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/neshamos/:neshamaId/edit"
-                  element={
-                    <RequireAuth>
-                      <NeshamaEditPage />
                     </RequireAuth>
                   }
                 />
@@ -102,9 +84,10 @@ export default function App() {
                 />
                 {/* Catches stale links to routes that no longer exist (e.g. the old
                     /campaigns/:id, /institutions/:id, /neshamos/:id detail pages,
-                    now popups — see DetailStackContext; or /campaigns/new and
-                    /campaigns/:id/edit, now the + Campaign / Edit buttons' popup
-                    forms) instead of rendering blank. */}
+                    now popups — see DetailStackContext; or /campaigns/new,
+                    /campaigns/:id/edit, /institutions/:id/edit, and
+                    /neshamos/:id/edit, now the + / Edit buttons' popup forms)
+                    instead of rendering blank. */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
               <DetailStackOverlay />

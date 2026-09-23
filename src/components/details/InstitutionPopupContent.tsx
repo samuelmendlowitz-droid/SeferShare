@@ -10,9 +10,11 @@ import type { Campaign, Institution } from '../../types';
 import { institutionTypeText } from '../../lib/institutionFormat';
 import { GiftCardOption } from '../donation/GiftCardOption';
 import { DetailPopup } from './DetailPopup';
+import { InstitutionEditForm } from '../shared/InstitutionEditForm';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { Modal } from '../ui/Modal';
 
 interface InstitutionPopupContentProps {
   id: string;
@@ -35,6 +37,7 @@ export function InstitutionPopupContent({ id: institutionId, isTop, zIndex, onCl
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [campaigns, setCampaigns] = useState<Campaign[] | undefined>(undefined);
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +56,11 @@ export function InstitutionPopupContent({ id: institutionId, isTop, zIndex, onCl
       cancelled = true;
     };
   }, [institutionId]);
+
+  async function refetchInstitution() {
+    const inst = await getInstitution(institutionId);
+    if (inst) setInstitution(inst);
+  }
 
   if (notFound) {
     return (
@@ -116,11 +124,25 @@ export function InstitutionPopupContent({ id: institutionId, isTop, zIndex, onCl
           <Button variant="secondary" className="w-full" onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}>
             {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
           </Button>
-          <Button variant="secondary" className="w-full" onClick={() => navigate(`/institutions/${institution.institutionId}/edit`)}>
+          <Button variant="secondary" className="w-full" onClick={() => setEditOpen(true)}>
             {t('institution.edit')}
           </Button>
         </div>
       )}
+
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title={t('institution.edit')}>
+        <InstitutionEditForm
+          institution={institution}
+          onSaved={() => {
+            setEditOpen(false);
+            void refetchInstitution();
+          }}
+          onDeleted={() => {
+            setEditOpen(false);
+            onClose();
+          }}
+        />
+      </Modal>
     </DetailPopup>
   );
 }
