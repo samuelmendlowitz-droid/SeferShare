@@ -15,9 +15,11 @@ import { useLanguage } from '../../context/LanguageContext';
 import { ProgressBar } from '../campaign/ProgressBar';
 import { GiftCardOption } from '../donation/GiftCardOption';
 import { DetailPopup } from './DetailPopup';
+import { CampaignEditForm } from '../shared/CampaignEditForm';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { Modal } from '../ui/Modal';
 import { SeferThumbnail } from '../ui/SeferThumbnail';
 import { MinusIcon, PlusIcon } from '../ui/icons';
 
@@ -41,6 +43,7 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
   const [neshamas, setNeshamas] = useState<Neshama[]>([]);
   const [sefarimById, setSefarimById] = useState<Map<string, Sefer>>(new Map());
   const [stepQuantities, setStepQuantities] = useState<Record<string, number>>({});
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +67,21 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
       cancelled = true;
     };
   }, [campaignId]);
+
+  /** Re-fetches the campaign (and its institution/neshamas, in case the edit
+   *  changed either) after the edit popup saves changes. */
+  async function refetchCampaign() {
+    const c = await getCampaign(campaignId);
+    if (!c) return;
+    setCampaign(c);
+    setInstitution(await getInstitution(c.institutionId));
+    if (c.neshamaIds?.length) {
+      const fetched = await Promise.all(c.neshamaIds.map((nid) => getNeshama(nid)));
+      setNeshamas(fetched.filter((n): n is Neshama => Boolean(n)));
+    } else {
+      setNeshamas([]);
+    }
+  }
 
   if (notFound) {
     return (
@@ -275,13 +293,28 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
               </Button>
             )}
             {profile?.uid === campaign.createdByUid && (
-              <Button variant="secondary" className="w-full" onClick={() => navigate(`/campaigns/${campaign.campaignId}/edit`)}>
+              <Button variant="secondary" className="w-full" onClick={() => setEditOpen(true)}>
                 {t('campaign.edit')}
               </Button>
             )}
           </div>
         )}
       </div>
+
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title={t('campaign.edit')}>
+        <CampaignEditForm
+          campaign={campaign}
+          sefarimById={sefarimById}
+          onSaved={() => {
+            setEditOpen(false);
+            void refetchCampaign();
+          }}
+          onDeleted={() => {
+            setEditOpen(false);
+            onClose();
+          }}
+        />
+      </Modal>
     </DetailPopup>
   );
 }

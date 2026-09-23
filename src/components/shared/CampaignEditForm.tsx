@@ -1,22 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { deleteCampaign, getCampaign, updateCampaign } from '../services/campaigns';
-import { getInstitution } from '../services/institutions';
-import { listSefarim } from '../services/sefarim';
-import type { Address, Campaign, CampaignItem, Institution, Sefer } from '../types';
-import { SeferPicker, type PickedItem } from '../components/donation/SeferPicker';
-import { PageHeading } from '../components/layout/PageHeading';
-import { InstitutionPicker } from '../components/shared/InstitutionPicker';
-import { NeshamaPicker } from '../components/shared/NeshamaPicker';
-import { AddressForm } from '../components/shared/AddressForm';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { NumberField } from '../components/ui/NumberField';
-import { SeferThumbnail } from '../components/ui/SeferThumbnail';
-import { TextField, TextAreaField } from '../components/ui/TextField';
+import { deleteCampaign, updateCampaign } from '../../services/campaigns';
+import { getInstitution } from '../../services/institutions';
+import type { Address, Campaign, CampaignItem, Institution, Sefer } from '../../types';
+import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
+import { InstitutionPicker } from './InstitutionPicker';
+import { NeshamaPicker } from './NeshamaPicker';
+import { AddressForm } from './AddressForm';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { NumberField } from '../ui/NumberField';
+import { SeferThumbnail } from '../ui/SeferThumbnail';
+import { TextField, TextAreaField } from '../ui/TextField';
 
 function addressesEqual(a: Address, b: Address): boolean {
   return (
@@ -29,82 +24,40 @@ function addressesEqual(a: Address, b: Address): boolean {
   );
 }
 
-export function CampaignEditPage() {
+interface CampaignEditFormProps {
+  campaign: Campaign;
+  sefarimById: Map<string, Sefer>;
+  onSaved: () => void;
+  onDeleted: () => void;
+}
+
+/** Shared "edit a campaign" fields — same shape as CampaignCreateForm, plus the
+ *  existing-items list and delete action that only apply once a campaign exists. */
+export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: CampaignEditFormProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { profile } = useAuth();
-  const { campaignId } = useParams();
 
-  const [campaign, setCampaign] = useState<Campaign | null>(null);
-  const [notFound, setNotFound] = useState(false);
-  const [sefarimById, setSefarimById] = useState<Map<string, Sefer>>(new Map());
-
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [institutionId, setInstitutionId] = useState<string>();
+  const [title, setTitle] = useState(campaign.title ?? '');
+  const [description, setDescription] = useState(campaign.description ?? '');
+  const [institutionId, setInstitutionId] = useState<string | undefined>(campaign.institutionId ?? undefined);
   const [institution, setInstitution] = useState<Institution>();
-  const [neshamaIds, setNeshamaIds] = useState<string[]>([]);
-  const [existingItems, setExistingItems] = useState<CampaignItem[]>([]);
+  const [neshamaIds, setNeshamaIds] = useState<string[]>(campaign.neshamaIds ?? []);
+  const [existingItems, setExistingItems] = useState<CampaignItem[]>(campaign.items);
   const [newItems, setNewItems] = useState<PickedItem[]>([]);
   const [addressDiffers, setAddressDiffers] = useState(false);
-  const [customAddress, setCustomAddress] = useState<Address>({
-    line1: '',
-    city: '',
-    state: '',
-    postalCode: '',
-    country: '',
-  });
+  const [customAddress, setCustomAddress] = useState<Address>(campaign.shippingAddress);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (!campaignId) return;
-    (async () => {
-      const [c, sefarim] = await Promise.all([getCampaign(campaignId), listSefarim()]);
-      setSefarimById(new Map(sefarim.map((s) => [s.seferId, s])));
-      if (!c) {
-        setNotFound(true);
-        return;
-      }
-      setCampaign(c);
-      setTitle(c.title ?? '');
-      setDescription(c.description ?? '');
-      setInstitutionId(c.institutionId ?? undefined);
-      setNeshamaIds(c.neshamaIds ?? []);
-      setExistingItems(c.items);
-      setCustomAddress(c.shippingAddress);
-
-      if (c.institutionId) {
-        const inst = await getInstitution(c.institutionId);
-        if (inst) {
-          setInstitution(inst);
-          setAddressDiffers(!addressesEqual(c.shippingAddress, inst.address));
-        }
-      }
-    })();
-  }, [campaignId]);
-
-  if (notFound) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 pt-6">
-        <Button variant="secondary" className="mb-4" onClick={() => navigate(-1)}>
-          {t('actions.back')}
-        </Button>
-        <p className="text-text-muted">{t('campaign.notFound')}</p>
-      </div>
-    );
-  }
-
-  if (!campaign) return <LoadingSpinner fullScreen />;
-
-  if (profile?.uid !== campaign.createdByUid) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 pt-6">
-        <p className="text-text-muted">{t('actions.notAuthorized')}</p>
-      </div>
-    );
-  }
+    if (!campaign.institutionId) return;
+    getInstitution(campaign.institutionId).then((inst) => {
+      if (!inst) return;
+      setInstitution(inst);
+      setAddressDiffers(!addressesEqual(campaign.shippingAddress, inst.address));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaign.institutionId]);
 
   function handleInstitutionChange(id: string | undefined, inst?: Institution) {
     setInstitutionId(id);
@@ -124,7 +77,6 @@ export function CampaignEditPage() {
   const showAddressForm = addressDiffers || !institution;
 
   async function handleSave() {
-    if (!campaign) return;
     setError(null);
     if (!title.trim()) {
       setError(t('campaign.titleRequired'));
@@ -169,7 +121,7 @@ export function CampaignEditPage() {
         shippingAddress,
         language: campaign.language,
       });
-      navigate(`/?popup=campaign:${campaign.campaignId}`);
+      onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -178,12 +130,11 @@ export function CampaignEditPage() {
   }
 
   async function handleDelete() {
-    if (!campaign) return;
     if (!window.confirm(t('campaign.confirmDelete') ?? '')) return;
     setDeleting(true);
     try {
       await deleteCampaign(campaign.campaignId);
-      navigate('/profile');
+      onDeleted();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setDeleting(false);
@@ -191,13 +142,7 @@ export function CampaignEditPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/?popup=campaign:${campaign.campaignId}`)}>
-        {t('actions.back')}
-      </Button>
-
-      <PageHeading page={t('campaign.edit')} />
-
+    <div>
       <TextField
         required
         label={t('campaign.titlePlaceholder')}
@@ -269,11 +214,7 @@ export function CampaignEditPage() {
 
       {institution && (
         <label className="my-4 flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={addressDiffers}
-            onChange={(e) => setAddressDiffers(e.target.checked)}
-          />
+          <input type="checkbox" checked={addressDiffers} onChange={(e) => setAddressDiffers(e.target.checked)} />
           {t('campaign.shippingAddressDiffers')}
         </label>
       )}
