@@ -6,6 +6,7 @@ import { FilterSortSheet, type FilterGroup, type SortOption } from '../component
 import { MyCampaignsTab } from '../components/profile/MyCampaignsTab';
 import { DonationsTab } from '../components/profile/DonationsTab';
 import { NotificationsTab } from '../components/profile/NotificationsTab';
+import { StickerDesignsTab } from '../components/profile/StickerDesignsTab';
 import { SettingsTab } from '../components/profile/SettingsTab';
 import { CampaignCreateForm } from '../components/shared/CampaignCreateForm';
 import { Modal } from '../components/ui/Modal';
@@ -163,6 +164,7 @@ export function ProfilePage() {
         )}
         {tab === 'donations' && <DonationsTab loading={donationsFeed.loading} donations={donationsFeed.donations} />}
         {tab === 'notifications' && <NotificationsTab />}
+        {tab === 'stickers' && <StickerDesignsTab />}
         {tab === 'settings' && <SettingsTab />}
 
         {searchQuery && tab === 'campaigns' && (

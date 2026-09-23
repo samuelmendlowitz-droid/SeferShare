@@ -10,7 +10,7 @@ import { TopSearchBar } from './TopSearchBar';
 import { HomeIcon, PlusIcon, ProfileIcon, PushkaIcon, StoreIcon } from '../ui/icons';
 
 export type HomeFilter = 'all' | 'where' | 'who' | 'what';
-export type ProfileTab = 'campaigns' | 'donations' | 'notifications' | 'settings';
+export type ProfileTab = 'campaigns' | 'donations' | 'notifications' | 'stickers' | 'settings';
 export type VendorTab = 'catalog' | 'orders' | 'sales';
 
 interface HomeLayoutProps {
@@ -72,6 +72,7 @@ export function AppLayout(props: AppLayoutProps) {
       { key: 'campaigns', label: t('nav.myCampaigns') },
       { key: 'donations', label: t('nav.donations') },
       { key: 'notifications', label: t('nav.notifications') },
+      { key: 'stickers', label: t('nav.stickers') },
       { key: 'settings', label: t('nav.settings') },
     ],
     [t],
