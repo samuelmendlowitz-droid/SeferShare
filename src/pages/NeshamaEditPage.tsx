@@ -7,6 +7,7 @@ import { SEFER_TYPES, type Neshama, type ParentGender, type SeferType } from '..
 import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../lib/neshamaPrefixes';
 import { PageHeading } from '../components/layout/PageHeading';
 import { Button } from '../components/ui/Button';
+import { BubbleGrid } from '../components/ui/BubbleGrid';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { FIELD_LABEL_CLASS, TextField } from '../components/ui/TextField';
@@ -27,6 +28,7 @@ export function NeshamaEditPage() {
   const [parentGender, setParentGender] = useState<ParentGender>('son');
   const [fatherHebrewName, setFatherHebrewName] = useState('');
   const [seferTypes, setSeferTypes] = useState<SeferType[]>([]);
+  const [seferTypeQuery, setSeferTypeQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -122,22 +124,12 @@ export function NeshamaEditPage() {
         <TextField label={t('neshama.hebrewName')} value={hebrewName} onChange={setHebrewName} />
         <div>
           <p className={FIELD_LABEL_CLASS}>{t('neshama.namePrefixLabel')}</p>
-          <div className="flex flex-wrap gap-2">
-            {NESHAMA_PREFIXES.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setNamePrefix((prev) => (prev === option.value ? undefined : option.value))}
-                className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
-                  namePrefix === option.value
-                    ? 'border-accent bg-accent text-white'
-                    : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
-                }`}
-              >
-                {option.en} · {option.he}
-              </button>
-            ))}
-          </div>
+          <BubbleGrid
+            rows={2}
+            options={NESHAMA_PREFIXES.map((option) => ({ value: option.value, label: `${option.en} · ${option.he}` }))}
+            isSelected={(v) => namePrefix === v}
+            onToggle={(v) => setNamePrefix((prev) => (prev === v ? undefined : v))}
+          />
           {namePrefix === OTHER_PREFIX_VALUE && (
             <div className="mt-2">
               <TextField label={t('neshama.customNamePrefixLabel')} value={customNamePrefix} onChange={setCustomNamePrefix} />
@@ -170,22 +162,20 @@ export function NeshamaEditPage() {
         <TextField label={t('neshama.fatherHebrewName')} value={fatherHebrewName} onChange={setFatherHebrewName} />
         <div>
           <p className={FIELD_LABEL_CLASS}>{t('neshama.seferTypesLabel')}</p>
-          <div className="flex flex-wrap gap-2">
-            {SEFER_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => toggleSeferType(type)}
-                className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
-                  seferTypes.includes(type)
-                    ? 'border-accent bg-accent text-white'
-                    : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
-                }`}
-              >
-                {t(`sefer.${type}`)}
-              </button>
-            ))}
-          </div>
+          <BubbleGrid
+            options={SEFER_TYPES.filter((type) => t(`sefer.${type}`).toLowerCase().includes(seferTypeQuery.trim().toLowerCase())).map(
+              (type) => ({ value: type, label: t(`sefer.${type}`) }),
+            )}
+            isSelected={(v) => seferTypes.includes(v as SeferType)}
+            onToggle={(v) => toggleSeferType(v as SeferType)}
+            emptyMessage={t('actions.noResults') ?? ''}
+            search={{
+              query: seferTypeQuery,
+              onQueryChange: setSeferTypeQuery,
+              placeholder: t('filterSort.searchSeferTypes') ?? '',
+              label: t('filterSort.searchSeferTypes') ?? '',
+            }}
+          />
         </div>
       </div>
 

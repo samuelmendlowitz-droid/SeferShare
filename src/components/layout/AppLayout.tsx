@@ -99,8 +99,13 @@ export function AppLayout(props: AppLayoutProps) {
   const otherPages = pages.filter((p) => p.key !== props.variant);
 
   const actionButton =
-    props.variant === 'profile' ? (
-      <CornerButton label={t('campaign.create')} icon={<PlusIcon />} onClick={() => navigate('/campaigns/new')} />
+    props.variant === 'profile' && props.tab === 'campaigns' ? (
+      <CornerButton
+        label={t('nav.newCampaign')}
+        caption={t('nav.newCampaign')}
+        icon={<PlusIcon width={16} height={16} />}
+        onClick={() => navigate('/campaigns/new')}
+      />
     ) : props.variant === 'home' && props.createAction ? (
       <CornerButton
         label={props.createAction.caption}

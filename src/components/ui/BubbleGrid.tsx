@@ -23,6 +23,10 @@ interface BubbleGridProps {
   search?: BubbleGridSearch;
   emptyMessage?: string;
   disabledValues?: Set<string>;
+  /** Pins the row count (1-3) instead of deriving it from the option count —
+   *  for a picker whose row count is a deliberate design choice rather than
+   *  a function of how many options it happens to have right now. */
+  rows?: 1 | 2 | 3;
 }
 
 /** Every bubble — the search pill and every option pill alike — shares this
@@ -59,7 +63,15 @@ type Slot = { kind: 'search' } | { kind: 'option'; option: BubbleOption };
  * filter in place; it stays pinned there (sticky) as the rest keeps scrolling
  * underneath it while you type.
  */
-export function BubbleGrid({ options, isSelected, onToggle, search, emptyMessage, disabledValues }: BubbleGridProps) {
+export function BubbleGrid({
+  options,
+  isSelected,
+  onToggle,
+  search,
+  emptyMessage,
+  disabledValues,
+  rows: rowsOverride,
+}: BubbleGridProps) {
   const { t } = useTranslation();
   const [searchExpanded, setSearchExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -73,7 +85,7 @@ export function BubbleGrid({ options, isSelected, onToggle, search, emptyMessage
     ...(search ? [{ kind: 'search' as const }] : []),
     ...options.map((option) => ({ kind: 'option' as const, option })),
   ];
-  const rows = rowCountFor(slots.length);
+  const rows = rowsOverride ?? rowCountFor(slots.length);
   // Fills column-first (slot i -> row i % rows), same reading order a CSS
   // grid with grid-auto-flow:column would give, but each row lays out
   // independently so it never inherits another row's column width.

@@ -7,6 +7,7 @@ import type { DonationAd, Institution, ParentGender } from '../types';
 import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../lib/neshamaPrefixes';
 import { SeferPicker, type PickedItem } from '../components/donation/SeferPicker';
 import { Button } from '../components/ui/Button';
+import { BubbleGrid } from '../components/ui/BubbleGrid';
 import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { FIELD_LABEL_CLASS, TextField, TextAreaField } from '../components/ui/TextField';
@@ -133,22 +134,12 @@ export function InstitutionSpendPage() {
           <TextField label={t('neshama.hebrewName')} value={dedicationHebrewName} onChange={setDedicationHebrewName} />
           <div>
             <p className={FIELD_LABEL_CLASS}>{t('neshama.namePrefixLabel')}</p>
-            <div className="flex flex-wrap gap-2">
-              {NESHAMA_PREFIXES.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setDedicationNamePrefix((prev) => (prev === option.value ? undefined : option.value))}
-                  className={`rounded-pill border px-3 py-1.5 text-sm font-medium transition-colors duration-200 ${
-                    dedicationNamePrefix === option.value
-                      ? 'border-accent bg-accent text-white'
-                      : 'border-border bg-surface text-text-muted hover:border-accent hover:text-accent'
-                  }`}
-                >
-                  {option.en} · {option.he}
-                </button>
-              ))}
-            </div>
+            <BubbleGrid
+              rows={2}
+              options={NESHAMA_PREFIXES.map((option) => ({ value: option.value, label: `${option.en} · ${option.he}` }))}
+              isSelected={(v) => dedicationNamePrefix === v}
+              onToggle={(v) => setDedicationNamePrefix((prev) => (prev === v ? undefined : v))}
+            />
             {dedicationNamePrefix === OTHER_PREFIX_VALUE && (
               <div className="mt-2">
                 <TextField

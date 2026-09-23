@@ -89,7 +89,13 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
 
   return (
     <div className="rounded-btn border border-border p-2">
-      <div className="mb-2 flex items-center justify-end gap-2">
+      <div className="mb-2 flex items-center gap-2">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t('institution.searchPlaceholder') ?? ''}
+          className="min-w-0 flex-1 rounded-btn border border-border px-3 py-2 text-sm"
+        />
         <button
           type="button"
           onClick={() => setSheetOpen(true)}
@@ -122,12 +128,6 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
           onChange(value === id ? undefined : id, value === id ? undefined : inst);
         }}
         emptyMessage={t('actions.noResults') ?? ''}
-        search={{
-          query,
-          onQueryChange: setQuery,
-          placeholder: t('institution.searchPlaceholder') ?? '',
-          label: t('institution.searchPlaceholder') ?? '',
-        }}
       />
 
       <FilterSortSheet
