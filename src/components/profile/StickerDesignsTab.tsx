@@ -32,15 +32,22 @@ export function StickerDesignsTab() {
   };
 
   return (
-    <StickerDesignEditor
-      value={design}
-      onChange={setDesign}
-      content={previewContent}
-      savedDesigns={stickerDesignsData.designs}
-      onCreate={stickerDesignsData.create}
-      onUpdateContent={stickerDesignsData.updateContent}
-      onRename={stickerDesignsData.rename}
-      onDelete={stickerDesignsData.remove}
-    />
+    // A bounded-height panel (not just a normal-flow block) so StickerDesignEditor's
+    // own frozen-preview / scrollable-options split has a real height to fill —
+    // sized to roughly what's left of the viewport below the page heading and above
+    // the fixed bottom nav (see AppLayout: ~70px of top chrome, ~144px reserved
+    // (pb-36) at the bottom).
+    <div className="h-[calc(100dvh-220px)] overflow-hidden rounded-card border border-border bg-surface shadow-card">
+      <StickerDesignEditor
+        value={design}
+        onChange={setDesign}
+        content={previewContent}
+        savedDesigns={stickerDesignsData.designs}
+        onCreate={stickerDesignsData.create}
+        onUpdateContent={stickerDesignsData.updateContent}
+        onRename={stickerDesignsData.rename}
+        onDelete={stickerDesignsData.remove}
+      />
+    </div>
   );
 }

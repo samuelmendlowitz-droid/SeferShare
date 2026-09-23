@@ -7,6 +7,10 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
+  /** Skips the default padded/scrolling body wrapper, handing the full body
+   *  area to `children` unstyled — for content (like StickerDesignEditor)
+   *  that manages its own internal frozen-section/scroll-section split. */
+  fillBody?: boolean;
 }
 
 /**
@@ -15,7 +19,7 @@ interface ModalProps {
  * scrollable body. It's a stylistic full page rather than a dismissable
  * overlay — there's no backdrop, and nothing behind it is visible.
  */
-export function Modal({ open, onClose, title, children }: ModalProps) {
+export function Modal({ open, onClose, title, children, fillBody }: ModalProps) {
   const { t } = useTranslation();
 
   // Freeze the page underneath, same as DetailStackOverlay does for the detail
@@ -48,7 +52,11 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
           <CloseIcon width={16} height={16} />
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 py-4">{children}</div>
+      {fillBody ? (
+        <div className="flex-1 overflow-hidden">{children}</div>
+      ) : (
+        <div className="flex-1 overflow-y-auto px-4 py-4">{children}</div>
+      )}
     </div>
   );
 }

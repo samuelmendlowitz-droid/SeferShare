@@ -466,7 +466,7 @@ export function PushkaPage() {
         </>
       )}
 
-      <Modal open={stickerEditorOpen} onClose={() => setStickerEditorOpen(false)} title={t('sticker.editorTitle')}>
+      <Modal open={stickerEditorOpen} onClose={() => setStickerEditorOpen(false)} title={t('sticker.editorTitle')} fillBody>
         <StickerDesignEditor
           value={stickerDesign}
           onChange={setStickerDesign}

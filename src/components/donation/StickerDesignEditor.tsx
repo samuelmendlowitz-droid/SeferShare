@@ -196,8 +196,12 @@ export function StickerDesignEditor({
   }
 
   return (
-    <div>
-      <div className="sticky top-[60px] z-[5] -mx-4 bg-surface px-4 pb-3">
+    // A real frozen-top / scrollable-bottom split via flex, not `position:
+    // sticky` — sticky here used to jitter and leave a stray gap once this
+    // editor started being embedded in places with different scroll ancestors
+    // (the cart's Modal vs. the Profile "Stickers" tab's own page scroll).
+    <div className="flex h-full flex-col">
+      <div className="shrink-0 border-b border-border px-4 pb-3 pt-4">
         <StickerPreview design={value} content={content} className="mx-auto max-w-[200px] shadow-card" />
         {pendingChoice ? (
           <div className="mt-2 rounded-btn border border-accent/30 bg-accent/5 p-2 text-center">
@@ -218,7 +222,7 @@ export function StickerDesignEditor({
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
         <div>
           <p className={FIELD_LABEL_CLASS}>{t('sticker.savedDesignsLabel')}</p>
           {savedDesigns.length > 0 && (
