@@ -5,20 +5,18 @@ interface TopSearchBarProps {
   query: string;
   onQueryChange: (query: string) => void;
   onClose: () => void;
+  /** Same spot as the floating sub-nav row it replaces while searching —
+   *  passed in by AppLayout (which computes it from the header's actual
+   *  height) rather than duplicated here, so the two can never drift apart. */
+  top: string;
 }
 
 /** Pinned to the top (not the bottom nav's spot) so the keyboard never covers it. */
-export function TopSearchBar({ query, onQueryChange, onClose }: TopSearchBarProps) {
+export function TopSearchBar({ query, onQueryChange, onClose, top }: TopSearchBarProps) {
   const { t } = useTranslation();
 
   return (
-    <div
-      className="fixed inset-x-0 z-40 mx-auto flex max-w-2xl items-center gap-2 px-4"
-      // Same spot as the floating sub-nav row it replaces while searching —
-      // see AppLayout's HEADER_ROW_HEIGHT_PX/TOP_GAP_PX (56 + 12 = 68px), kept
-      // in sync here since the fixed header sits above both.
-      style={{ top: 'calc(env(safe-area-inset-top) + 68px)' }}
-    >
+    <div className="fixed inset-x-0 z-40 mx-auto flex max-w-2xl items-center gap-2 px-4" style={{ top }}>
       <div className="flex h-11 flex-1 items-center gap-2 rounded-pill border border-border bg-surface px-3 shadow-card">
         <SearchIcon width={18} height={18} className="shrink-0 text-text-muted" />
         <input

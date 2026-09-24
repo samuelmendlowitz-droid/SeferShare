@@ -14,16 +14,14 @@ interface ModalProps {
 }
 
 /**
- * Full-screen add/edit form — same visual shell as DetailPopup (the info-card
- * popups): a thin margin, frozen header bar with title + close, and a
- * scrollable body. It's a stylistic full page rather than a dismissable
- * overlay — there's no backdrop, and nothing behind it is visible.
+ * Full-screen add/edit form: a thin margin, frozen header bar with title +
+ * close, and a scrollable body. It's a stylistic full page rather than a
+ * dismissable overlay — there's no backdrop, and nothing behind it is visible.
  */
 export function Modal({ open, onClose, title, children, fillBody }: ModalProps) {
   const { t } = useTranslation();
 
-  // Freeze the page underneath, same as DetailStackOverlay does for the detail
-  // popups — only this form's own body should scroll while it's open.
+  // Only this form's own body should scroll while it's open.
   useEffect(() => {
     if (!open) return;
     const { documentElement, body } = document;

@@ -103,7 +103,7 @@ export function AppLayout(props: AppLayoutProps) {
       </main>
 
       {searchOpen ? (
-        <TopSearchBar query={query} onQueryChange={handleQueryChange} onClose={closeSearch} />
+        <TopSearchBar query={query} onQueryChange={handleQueryChange} onClose={closeSearch} top={subnavTop} />
       ) : (
         showSubnav && (
           <div className="fixed inset-x-0 z-40 mx-auto max-w-2xl px-4" style={{ top: subnavTop }}>

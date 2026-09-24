@@ -21,16 +21,27 @@ interface FloatingToggleBarProps {
 
 export function FloatingToggleBar({ options, activeKey, onChange, onOpenSearch, filterSort }: FloatingToggleBarProps) {
   const { t } = useTranslation();
+  // With no tab options (e.g. the Campaigns page), this bar doesn't do double
+  // duty as navigation — it's just the search entry point — so the whole bar
+  // (aside from the filter button) should open search, not only the small
+  // search icon.
+  const wholeBarOpensSearch = options.length === 0;
 
   return (
     <div
-      className="flex w-full items-center gap-1 rounded-pill border border-[rgba(214,228,240,0.6)]
-        bg-[rgba(255,255,255,0.72)] px-1.5 py-1.5 shadow-navbar backdrop-blur-md"
+      className={`flex w-full items-center gap-1 rounded-pill border border-[rgba(214,228,240,0.6)]
+        bg-[rgba(255,255,255,0.72)] px-1.5 py-1.5 shadow-navbar backdrop-blur-md ${
+          wholeBarOpensSearch ? 'cursor-pointer' : ''
+        }`}
+      onClick={wholeBarOpensSearch ? onOpenSearch : undefined}
     >
       <button
         type="button"
         aria-label={t('nav.search')}
-        onClick={onOpenSearch}
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenSearch();
+        }}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-pill text-accent
           transition-colors duration-200 hover:bg-white/60"
       >
@@ -60,7 +71,10 @@ export function FloatingToggleBar({ options, activeKey, onChange, onOpenSearch, 
         <button
           type="button"
           aria-label={t('actions.filterSort')}
-          onClick={filterSort.onClick}
+          onClick={(e) => {
+            e.stopPropagation();
+            filterSort.onClick();
+          }}
           className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-pill
             transition-colors duration-200 hover:bg-white/60 ${
               filterSort.active ? 'text-accent' : 'text-text-muted'

@@ -22,7 +22,7 @@ import type {
 import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
 import { CartDedicationPicker } from '../components/donation/CartDedicationPicker';
-import { DetailPopup } from '../components/details/DetailPopup';
+import { DetailPageLayout } from '../components/layout/DetailPageLayout';
 import { VirtualDedicationCard, type StickerInfo } from '../components/donation/VirtualDedicationCard';
 import { StickerDesignEditor } from '../components/donation/StickerDesignEditor';
 import type { StickerContent } from '../components/donation/StickerPreview';
@@ -314,7 +314,8 @@ export function PushkaPage() {
 
   if (step === 'confirmation') {
     return (
-      <DetailPopup title={t('pushka.title')} onClose={() => navigate('/')} isTop zIndex={50}>
+      <DetailPageLayout fallbackPath="/">
+        <h1 className="mb-4 text-xl font-bold">{t('pushka.title')}</h1>
         <VirtualDedicationCard
           donorName={profile?.displayName ?? ''}
           items={paidItems.map((item) => toPickedItem(item))}
@@ -326,12 +327,13 @@ export function PushkaPage() {
         <Button className="mt-4 w-full" onClick={() => navigate('/')}>
           {t('actions.done')}
         </Button>
-      </DetailPopup>
+      </DetailPageLayout>
     );
   }
 
   return (
-    <DetailPopup title={t('pushka.title')} onClose={() => navigate(-1)} isTop zIndex={50}>
+    <DetailPageLayout fallbackPath="/">
+      <h1 className="mb-4 text-xl font-bold">{t('pushka.title')}</h1>
       {pushka.items.length === 0 && pushka.giftCards.length === 0 ? (
         <div className="text-center">
           <p className="mb-4 text-text-muted">{t('pushka.empty')}</p>
@@ -476,7 +478,7 @@ export function PushkaPage() {
           onDelete={stickerDesignsData.remove}
         />
       </Modal>
-    </DetailPopup>
+    </DetailPageLayout>
   );
 }
 

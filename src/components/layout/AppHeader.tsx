@@ -43,7 +43,7 @@ export function AppHeader() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-surface/90 backdrop-blur-md">
       <div className="mx-auto max-w-2xl px-4" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="flex items-center justify-end" style={{ height: HEADER_TOP_ROW_HEIGHT_PX }}>
+        <div className="flex items-center justify-center" style={{ height: HEADER_TOP_ROW_HEIGHT_PX }}>
           <button type="button" onClick={() => navigate('/')} className="text-base font-bold text-text">
             {t('app.name')}
           </button>
