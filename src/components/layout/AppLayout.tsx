@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { usePushka } from '../../context/PushkaContext';
 import { CornerButton } from './CornerButton';
 import { FloatingToggleBar, type FilterSortButtonProps, type ToggleOption } from './FloatingToggleBar';
-import { PageHeading } from './PageHeading';
 import { TopSearchBar } from './TopSearchBar';
 import { CampaignIcon, HomeIcon, PlusIcon, ProfileIcon, PushkaIcon, BookIcon } from '../ui/icons';
 
@@ -15,8 +14,8 @@ interface BaseLayoutProps {
   onSearch: (query: string) => void;
   filterSort?: FilterSortButtonProps;
   createAction?: { caption: string; onClick: () => void };
-  /** Shows the cart/pushka corner button — every browsing/shopping surface
-   *  (Home, Campaigns, Seforim), not the account-management ones. */
+  /** Shows the cart/pushka button in the header — every browsing/shopping
+   *  surface (Home, Campaigns, Seforim), not the account-management ones. */
   showPushka?: boolean;
   children: ReactNode;
 }
@@ -44,17 +43,26 @@ interface ProfileLayoutProps extends BaseLayoutProps {
 type AppLayoutProps = HomeLayoutProps | CampaignsLayoutProps | SeforimLayoutProps | ProfileLayoutProps;
 
 const NAV_ITEMS: { variant: AppLayoutProps['variant']; path: string; icon: ReactNode; labelKey: string }[] = [
-  { variant: 'home', path: '/', icon: <HomeIcon />, labelKey: 'nav.home' },
-  { variant: 'campaigns', path: '/campaigns', icon: <CampaignIcon />, labelKey: 'nav.campaigns' },
-  { variant: 'seforim', path: '/seforim', icon: <BookIcon />, labelKey: 'nav.seforim' },
-  { variant: 'profile', path: '/profile', icon: <ProfileIcon />, labelKey: 'nav.profile' },
+  { variant: 'home', path: '/', icon: <HomeIcon width={18} height={18} />, labelKey: 'nav.home' },
+  { variant: 'campaigns', path: '/campaigns', icon: <CampaignIcon width={18} height={18} />, labelKey: 'nav.campaigns' },
+  { variant: 'seforim', path: '/seforim', icon: <BookIcon width={18} height={18} />, labelKey: 'nav.seforim' },
+  { variant: 'profile', path: '/profile', icon: <ProfileIcon width={18} height={18} />, labelKey: 'nav.profile' },
 ];
 
-/** Shared chrome for every top-level page: a frozen page heading, the fixed
- *  bottom cluster (search/sub-tabs/filter row above a 4-item main destination
- *  row — Home / Campaigns / Seforim / Profile, always all four, current one
- *  highlighted), and the bottom fade that keeps scrolled content from butting
- *  up against those fixed buttons. */
+// Shared with TopSearchBar, which needs to sit in the exact same spot as the
+// floating sub-nav row it replaces while searching (see the `top` comment there).
+const HEADER_ROW_HEIGHT_PX = 56;
+const TOP_GAP_PX = 12;
+const SUBNAV_HEIGHT_PX = 48;
+
+const HEADER_BUTTON_CLASS =
+  'flex h-9 w-9 shrink-0 items-center justify-center rounded-btn transition-colors duration-200';
+
+/** Shared chrome for every top-level page: a fixed header (logo, the 4-item
+ *  main destination nav, the cart button) and — only on pages with something
+ *  to search/filter/switch between — a floating sub-nav row just below it
+ *  (search, sub-tabs, filter). One design language, one bar each, instead of
+ *  two similar-looking stacked bars. */
 export function AppLayout(props: AppLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,24 +93,6 @@ export function AppLayout(props: AppLayoutProps) {
         ]
       : [];
 
-  const actionButton = props.createAction ? (
-    <CornerButton
-      label={props.createAction.caption}
-      caption={props.createAction.caption}
-      icon={<PlusIcon width={16} height={16} />}
-      onClick={props.createAction.onClick}
-    />
-  ) : null;
-
-  const pushkaButton = props.showPushka ? (
-    <CornerButton
-      label={t('pushka.title')}
-      icon={<PushkaIcon />}
-      badge={pushka.totalCount}
-      onClick={() => navigate('/pushka')}
-    />
-  ) : null;
-
   function handleQueryChange(next: string) {
     setQuery(next);
     props.onSearch(next);
@@ -115,91 +105,111 @@ export function AppLayout(props: AppLayoutProps) {
   }
 
   // Home has nothing to search or filter — a static intro/guide + featured
-  // campaign — so it skips this row entirely rather than showing an empty bar.
-  const showToggleRow = props.variant !== 'home';
+  // campaign — so it skips the floating sub-nav row entirely.
+  const showSubnav = props.variant !== 'home';
+  const subnavTop = `calc(env(safe-area-inset-top) + ${HEADER_ROW_HEIGHT_PX + TOP_GAP_PX}px)`;
+  const mainPaddingTop = showSubnav
+    ? `calc(env(safe-area-inset-top) + ${HEADER_ROW_HEIGHT_PX + TOP_GAP_PX + SUBNAV_HEIGHT_PX + TOP_GAP_PX}px)`
+    : `calc(env(safe-area-inset-top) + ${HEADER_ROW_HEIGHT_PX + TOP_GAP_PX}px)`;
 
   return (
-    <div className="min-h-dvh pb-40">
-      {/* Extra top clearance while searching so content doesn't render under the
-          fixed top search bar. */}
-      <main className={`mx-auto max-w-2xl px-4 ${searchOpen ? 'pt-20' : 'pt-6'}`}>
-        <PageHeading page={t(`nav.${props.variant}`)} className="mb-4 text-xl font-bold" />
+    <div className="min-h-dvh pb-24">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-surface/90 backdrop-blur-md">
+        <div
+          className="mx-auto flex h-14 max-w-2xl items-center justify-between gap-2 px-4"
+          style={{ paddingTop: 'env(safe-area-inset-top)' }}
+        >
+          <button type="button" onClick={() => navigate('/')} className="shrink-0 text-base font-bold text-text">
+            {t('app.name')}
+          </button>
+
+          <nav className="flex items-center gap-1 rounded-pill bg-bg p-1">
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.variant}
+                type="button"
+                onClick={() => item.path !== location.pathname && navigate(item.path)}
+                aria-label={t(item.labelKey)}
+                aria-current={props.variant === item.variant ? 'page' : undefined}
+                className={`flex h-8 w-8 items-center justify-center rounded-pill transition-colors duration-200 ${
+                  props.variant === item.variant ? 'bg-accent text-white' : 'text-text-muted hover:text-accent'
+                }`}
+              >
+                {item.icon}
+              </button>
+            ))}
+          </nav>
+
+          {props.showPushka ? (
+            <button
+              type="button"
+              onClick={() => navigate('/pushka')}
+              aria-label={t('pushka.title')}
+              className={`${HEADER_BUTTON_CLASS} relative text-accent hover:bg-bg`}
+            >
+              <PushkaIcon width={20} height={20} />
+              {Boolean(pushka.totalCount) && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
+                  {pushka.totalCount}
+                </span>
+              )}
+            </button>
+          ) : (
+            <div className="w-9" />
+          )}
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-2xl px-4 pb-4" style={{ paddingTop: mainPaddingTop }}>
         {props.children}
       </main>
 
       {searchOpen ? (
         <TopSearchBar query={query} onQueryChange={handleQueryChange} onClose={closeSearch} />
       ) : (
-        <>
-          {/* Fades scrolled-past content out before it reaches the fixed buttons,
-              instead of it being cut off hard underneath them — spans roughly the
-              same height as the bottom cluster's own reserved space (pb-40 above),
-              from fully opaque at the screen edge up to transparent above it. */}
-          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-40 bg-gradient-to-t from-bg via-bg/70 to-transparent" />
-
-          {/* Fixed bottom cluster: same outer margin (px-4, plus the safe-area inset
-              on notched/home-indicator devices) as `main`, and the same gap (gap-3)
-              between its rows. Hidden entirely while searching so the keyboard/search
-              bar have the full screen. */}
-          <div
-            className="fixed inset-x-0 z-40 mx-auto flex max-w-2xl flex-col gap-3 px-4"
-            style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
-          >
-            {showToggleRow && (
-              <div className="flex items-center justify-between gap-2">
-                {props.variant === 'seforim' ? (
-                  <FloatingToggleBar
-                    options={seforimOptions}
-                    activeKey={props.tab}
-                    onChange={(key) => props.onTabChange(key as SeforimTab)}
-                    onOpenSearch={() => setSearchOpen(true)}
-                    filterSort={props.filterSort}
-                  />
-                ) : props.variant === 'profile' ? (
-                  <FloatingToggleBar
-                    options={profileOptions}
-                    activeKey={props.tab}
-                    onChange={(key) => props.onTabChange(key as ProfileTab)}
-                    onOpenSearch={() => setSearchOpen(true)}
-                    filterSort={props.filterSort}
-                  />
-                ) : (
-                  <FloatingToggleBar
-                    options={[]}
-                    activeKey=""
-                    onChange={() => {}}
-                    onOpenSearch={() => setSearchOpen(true)}
-                    filterSort={props.filterSort}
-                  />
-                )}
-              </div>
+        showSubnav && (
+          <div className="fixed inset-x-0 z-40 mx-auto max-w-2xl px-4" style={{ top: subnavTop }}>
+            {props.variant === 'seforim' ? (
+              <FloatingToggleBar
+                options={seforimOptions}
+                activeKey={props.tab}
+                onChange={(key) => props.onTabChange(key as SeforimTab)}
+                onOpenSearch={() => setSearchOpen(true)}
+                filterSort={props.filterSort}
+              />
+            ) : props.variant === 'profile' ? (
+              <FloatingToggleBar
+                options={profileOptions}
+                activeKey={props.tab}
+                onChange={(key) => props.onTabChange(key as ProfileTab)}
+                onOpenSearch={() => setSearchOpen(true)}
+                filterSort={props.filterSort}
+              />
+            ) : (
+              <FloatingToggleBar
+                options={[]}
+                activeKey=""
+                onChange={() => {}}
+                onOpenSearch={() => setSearchOpen(true)}
+                filterSort={props.filterSort}
+              />
             )}
-
-            {(actionButton || pushkaButton) && (
-              <div className="flex items-center justify-end gap-2">
-                {actionButton}
-                {pushkaButton}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between gap-1 rounded-pill border border-[rgba(214,228,240,0.6)] bg-[rgba(255,255,255,0.72)] px-1.5 py-1.5 shadow-navbar backdrop-blur-md">
-              {NAV_ITEMS.map((item) => (
-                <button
-                  key={item.variant}
-                  type="button"
-                  onClick={() => item.path !== location.pathname && navigate(item.path)}
-                  aria-label={t(item.labelKey)}
-                  aria-current={props.variant === item.variant ? 'page' : undefined}
-                  className={`flex h-11 flex-1 items-center justify-center rounded-pill transition-colors duration-200 ${
-                    props.variant === item.variant ? 'bg-accent text-white' : 'text-text-muted hover:bg-white/60 hover:text-accent'
-                  }`}
-                >
-                  {item.icon}
-                </button>
-              ))}
-            </div>
           </div>
-        </>
+        )
+      )}
+
+      {props.createAction && (
+        <div
+          className="fixed z-40 end-4"
+          style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
+        >
+          <CornerButton
+            label={props.createAction.caption}
+            caption={props.createAction.caption}
+            icon={<PlusIcon width={16} height={16} />}
+            onClick={props.createAction.onClick}
+          />
+        </div>
       )}
     </div>
   );

@@ -14,7 +14,10 @@ export function TopSearchBar({ query, onQueryChange, onClose }: TopSearchBarProp
   return (
     <div
       className="fixed inset-x-0 z-40 mx-auto flex max-w-2xl items-center gap-2 px-4"
-      style={{ top: 'max(1rem, calc(env(safe-area-inset-top) + 0.5rem))' }}
+      // Same spot as the floating sub-nav row it replaces while searching —
+      // see AppLayout's HEADER_ROW_HEIGHT_PX/TOP_GAP_PX (56 + 12 = 68px), kept
+      // in sync here since the fixed header sits above both.
+      style={{ top: 'calc(env(safe-area-inset-top) + 68px)' }}
     >
       <div className="flex h-11 flex-1 items-center gap-2 rounded-pill border border-border bg-surface px-3 shadow-card">
         <SearchIcon width={18} height={18} className="shrink-0 text-text-muted" />
