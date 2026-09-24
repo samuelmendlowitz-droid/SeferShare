@@ -51,7 +51,9 @@ const NAV_ITEMS: { variant: AppLayoutProps['variant']; path: string; icon: React
 
 // Shared with TopSearchBar, which needs to sit in the exact same spot as the
 // floating sub-nav row it replaces while searching (see the `top` comment there).
-const HEADER_ROW_HEIGHT_PX = 56;
+const HEADER_TOP_ROW_HEIGHT_PX = 44;
+const HEADER_NAV_ROW_HEIGHT_PX = 56;
+const HEADER_ROW_HEIGHT_PX = HEADER_TOP_ROW_HEIGHT_PX + HEADER_NAV_ROW_HEIGHT_PX;
 const TOP_GAP_PX = 12;
 const SUBNAV_HEIGHT_PX = 48;
 
@@ -116,47 +118,54 @@ export function AppLayout(props: AppLayoutProps) {
     <div className="min-h-dvh pb-24">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-surface/90 backdrop-blur-md">
         <div
-          className="mx-auto flex h-14 max-w-2xl items-center justify-between gap-2 px-4"
+          className="mx-auto max-w-2xl px-4"
           style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
-          <button type="button" onClick={() => navigate('/')} className="shrink-0 text-base font-bold text-text">
-            {t('app.name')}
-          </button>
+          <div className="flex items-center justify-between gap-2" style={{ height: HEADER_TOP_ROW_HEIGHT_PX }}>
+            {props.showPushka ? (
+              <button
+                type="button"
+                onClick={() => navigate('/pushka')}
+                aria-label={t('pushka.title')}
+                className={`${HEADER_BUTTON_CLASS} relative text-accent hover:bg-bg`}
+              >
+                <PushkaIcon width={20} height={20} />
+                {Boolean(pushka.totalCount) && (
+                  <span className="absolute -end-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
+                    {pushka.totalCount}
+                  </span>
+                )}
+              </button>
+            ) : (
+              <div className="w-9" />
+            )}
 
-          <nav className="flex items-center gap-1 rounded-pill bg-bg p-1">
+            <button type="button" onClick={() => navigate('/')} className="shrink-0 text-base font-bold text-text">
+              {t('app.name')}
+            </button>
+          </div>
+
+          <nav
+            className="flex items-stretch border-t border-border"
+            style={{ height: HEADER_NAV_ROW_HEIGHT_PX }}
+          >
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.variant}
                 type="button"
                 onClick={() => item.path !== location.pathname && navigate(item.path)}
-                aria-label={t(item.labelKey)}
                 aria-current={props.variant === item.variant ? 'page' : undefined}
-                className={`flex h-8 w-8 items-center justify-center rounded-pill transition-colors duration-200 ${
-                  props.variant === item.variant ? 'bg-accent text-white' : 'text-text-muted hover:text-accent'
+                className={`flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors duration-200 ${
+                  props.variant === item.variant ? 'text-accent' : 'text-text-muted hover:text-accent'
                 }`}
               >
                 {item.icon}
+                <span className={`text-[11px] leading-none ${props.variant === item.variant ? 'font-semibold' : 'font-medium'}`}>
+                  {t(item.labelKey)}
+                </span>
               </button>
             ))}
           </nav>
-
-          {props.showPushka ? (
-            <button
-              type="button"
-              onClick={() => navigate('/pushka')}
-              aria-label={t('pushka.title')}
-              className={`${HEADER_BUTTON_CLASS} relative text-accent hover:bg-bg`}
-            >
-              <PushkaIcon width={20} height={20} />
-              {Boolean(pushka.totalCount) && (
-                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
-                  {pushka.totalCount}
-                </span>
-              )}
-            </button>
-          ) : (
-            <div className="w-9" />
-          )}
         </div>
       </header>
 
