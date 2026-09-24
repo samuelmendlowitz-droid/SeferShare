@@ -20,6 +20,9 @@ export interface SeforimShopItem {
   /** Cheapest in-stock vendor listing, or the first listing when none are in stock. */
   listing?: PublicVendorListing;
   inStock: boolean;
+  /** Total remaining quantity any active campaign still needs of this sefer —
+   *  the same number the default "most-requested" sort uses (see the Demand tab). */
+  need: number;
 }
 
 interface DemandEntry {
@@ -91,7 +94,12 @@ export function useSeforimShopFeed(searchQuery: string, options: SeforimShopOpti
 
     const withListing = list.map((sefer) => {
       const listing = bestListing(sefer);
-      return { sefer, listing, inStock: Boolean(listing && listing.stockQty > 0) };
+      return {
+        sefer,
+        listing,
+        inStock: Boolean(listing && listing.stockQty > 0),
+        need: demandBySefer.get(sefer.seferId)?.need ?? 0,
+      };
     });
 
     return [...withListing].sort((a, b) => {
@@ -104,9 +112,7 @@ export function useSeforimShopFeed(searchQuery: string, options: SeforimShopOpti
       }
       if (sortKey === 'name-az') return a.sefer.englishName.localeCompare(b.sefer.englishName);
       // most-requested (default)
-      const aNeed = demandBySefer.get(a.sefer.seferId)?.need ?? 0;
-      const bNeed = demandBySefer.get(b.sefer.seferId)?.need ?? 0;
-      return bNeed - aNeed || a.sefer.englishName.localeCompare(b.sefer.englishName);
+      return b.need - a.need || a.sefer.englishName.localeCompare(b.sefer.englishName);
     });
   }, [sefarim, demandBySefer, searchQuery, seferTypes, institutionIds, sortKey, translateSeferType]);
 

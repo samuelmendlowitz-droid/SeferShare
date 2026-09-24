@@ -19,6 +19,19 @@ export interface VendorApplication {
   submittedAt: number;
 }
 
+/** Person-level application to become a verified institution owner — a
+ *  prerequisite for creating any Institution (each institution then also
+ *  needs its own separate verification; see Institution.verified). */
+export interface InstitutionOwnerApplication {
+  institutionName: string;
+  contactName: string;
+  address: Address;
+  phone: string;
+  email: string;
+  notes?: string;
+  submittedAt: number;
+}
+
 export interface User {
   uid: string;
   displayName: string;
@@ -28,6 +41,9 @@ export interface User {
   isVendor: boolean;
   vendorApproved: boolean;
   vendorApplication?: VendorApplication;
+  isInstitutionOwner: boolean;
+  institutionOwnerApproved: boolean;
+  institutionOwnerApplication?: InstitutionOwnerApplication;
   isAdmin?: boolean;
   blocked?: boolean;
   stripeCustomerId?: string;

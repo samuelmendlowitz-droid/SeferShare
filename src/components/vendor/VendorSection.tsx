@@ -52,8 +52,8 @@ export function VendorSection() {
 
   return (
     <Card>
-      <h2 className="mb-2 text-sm font-semibold text-text-muted">{t('vendor.orders')}</h2>
-      <Button onClick={() => navigate('/vendor')}>{t('vendor.orders')}</Button>
+      <h2 className="mb-2 text-sm font-semibold text-text-muted">{t('vendor.myGallery')}</h2>
+      <Button onClick={() => navigate('/seforim')}>{t('vendor.myGallery')}</Button>
     </Card>
   );
 }

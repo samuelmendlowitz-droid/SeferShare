@@ -39,6 +39,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         customType: resolvedCustomType,
         address,
         createdByUid: profile.uid,
+        verified: false,
       });
       const created: Institution = {
         institutionId: id,
@@ -48,6 +49,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         customType: resolvedCustomType,
         address,
         createdByUid: profile.uid,
+        verified: false,
         createdAt: Date.now(),
       };
       onCreated(created);

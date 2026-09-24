@@ -1,24 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { getInstitution, spendInstitutionBalance } from '../services/institutions';
-import type { DonationAd, Institution, ParentGender } from '../types';
-import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../lib/neshamaPrefixes';
-import { SeferPicker, type PickedItem } from '../components/donation/SeferPicker';
-import { Button } from '../components/ui/Button';
-import { BubbleGrid } from '../components/ui/BubbleGrid';
-import { Card } from '../components/ui/Card';
-import { LoadingSpinner } from '../components/ui/LoadingSpinner';
-import { FIELD_LABEL_CLASS, TextField, TextAreaField } from '../components/ui/TextField';
+import { spendInstitutionBalance } from '../../services/institutions';
+import type { DonationAd, Institution, ParentGender } from '../../types';
+import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../../lib/neshamaPrefixes';
+import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
+import { Button } from '../ui/Button';
+import { BubbleGrid } from '../ui/BubbleGrid';
+import { Card } from '../ui/Card';
+import { FIELD_LABEL_CLASS, TextField, TextAreaField } from '../ui/TextField';
 
-export function InstitutionSpendPage() {
+interface InstitutionSpendFormProps {
+  institution: Institution;
+  /** Called after a successful spend with the new balance, so the caller can
+   *  refresh its own copy of the institution. */
+  onSpent: (newBalance: number) => void;
+}
+
+/** Lets a verified institution's owner spend its gift card balance on seforim
+ *  for itself — reached from Seforim > Gallery's institution switcher (Modal),
+ *  not a dedicated route. No Stripe payment involved; runs entirely against
+ *  the balance server-side (spendInstitutionBalance). */
+export function InstitutionSpendForm({ institution, onSpent }: InstitutionSpendFormProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { profile } = useAuth();
-  const { institutionId } = useParams();
-  const [institution, setInstitution] = useState<Institution | null>(null);
-  const [notFound, setNotFound] = useState(false);
   const [picked, setPicked] = useState<PickedItem[]>([]);
   const [dedicationName, setDedicationName] = useState('');
   const [dedicationHebrewName, setDedicationHebrewName] = useState('');
@@ -33,46 +36,17 @@ export function InstitutionSpendPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!institutionId) return;
-    getInstitution(institutionId).then((inst) => {
-      if (!inst) setNotFound(true);
-      else setInstitution(inst);
-    });
-  }, [institutionId]);
-
-  if (notFound) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 pt-6">
-        <Button variant="secondary" className="mb-4" onClick={() => navigate('/')}>
-          {t('actions.back')}
-        </Button>
-        <p className="text-text-muted">{t('institution.notFound')}</p>
-      </div>
-    );
-  }
-
-  if (!institution) return <LoadingSpinner fullScreen />;
-
-  if (profile?.uid !== institution.createdByUid && !profile?.isAdmin) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 pt-6">
-        <p className="text-text-muted">{t('actions.notAuthorized')}</p>
-      </div>
-    );
-  }
-
   const balance = institution.giftCardBalance ?? 0;
   const subtotal = picked.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const overBudget = subtotal > balance;
 
   async function handleSpend() {
-    if (!institutionId || picked.length === 0 || overBudget) return;
+    if (picked.length === 0 || overBudget) return;
     setSaving(true);
     setError(null);
     try {
       const result = await spendInstitutionBalance({
-        institutionId,
+        institutionId: institution.institutionId,
         items: picked.map((i) => ({ seferId: i.seferId, vendorId: i.vendorId, quantity: i.quantity, priceEach: i.price })),
         donorMessage: donorMessage || undefined,
         donorDedication: dedicationName.trim()
@@ -89,7 +63,7 @@ export function InstitutionSpendPage() {
         ad: includeAd && ad.businessName.trim() ? ad : undefined,
       });
       setSuccess(result.totalSpent);
-      setInstitution((prev) => (prev ? { ...prev, giftCardBalance: balance - result.totalSpent } : prev));
+      onSpent(balance - result.totalSpent);
       setPicked([]);
       setDedicationName('');
       setDedicationHebrewName('');
@@ -108,11 +82,7 @@ export function InstitutionSpendPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pb-32 pt-6">
-      <Button variant="secondary" className="mb-4" onClick={() => navigate(`/?popup=institution:${institution.institutionId}`)}>
-        {t('actions.back')}
-      </Button>
-
+    <div>
       <Card className="mb-4 text-center">
         <h1 className="mb-1 text-lg font-bold">{institution.name}</h1>
         <p className="text-sm text-text-muted">{t('institution.giftCardBalance', { amount: balance.toFixed(2) })}</p>

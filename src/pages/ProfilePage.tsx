@@ -5,6 +5,7 @@ import { AppLayout, type ProfileTab } from '../components/layout/AppLayout';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../components/layout/FilterSortSheet';
 import { MyCampaignsTab } from '../components/profile/MyCampaignsTab';
 import { DonationsTab } from '../components/profile/DonationsTab';
+import { MyInstitutionTab } from '../components/profile/MyInstitutionTab';
 import { NotificationsTab } from '../components/profile/NotificationsTab';
 import { StickerDesignsTab } from '../components/profile/StickerDesignsTab';
 import { SettingsTab } from '../components/profile/SettingsTab';
@@ -163,6 +164,7 @@ export function ProfilePage() {
           />
         )}
         {tab === 'donations' && <DonationsTab loading={donationsFeed.loading} donations={donationsFeed.donations} />}
+        {tab === 'institution' && <MyInstitutionTab />}
         {tab === 'notifications' && <NotificationsTab />}
         {tab === 'stickers' && <StickerDesignsTab />}
         {tab === 'settings' && <SettingsTab />}

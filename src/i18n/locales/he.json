@@ -7,15 +7,16 @@
     "profile": "פרופיל",
     "search": "חיפוש",
     "searchPlaceholder": "חיפוש ספרים, בתי כנסת או שמות…",
-    "allCampaigns": "קמפיינים",
-    "where": "מקומות",
-    "who": "נשמות",
-    "what": "ספרים",
+    "campaigns": "קמפיינים",
+    "seforim": "ספרים",
+    "gallery": "גלריה",
+    "demand": "ביקוש",
+    "availableToClaim": "זמין לתביעה",
+    "myGallery": "הגלריה שלי",
     "newCampaign": "קמפיין",
-    "newMokom": "מקום",
-    "newNeshama": "נשמה",
     "myCampaigns": "הקמפיינים שלי",
     "donations": "תרומות",
+    "myInstitution": "המוסד שלי",
     "notifications": "התראות",
     "stickers": "מדבקות",
     "settings": "הגדרות",
@@ -27,9 +28,19 @@
     "dollarProgress": "${{fulfilled}} מתוך ${{total}} נאספו",
     "empty": "אין עדיין קמפיינים. היו הראשונים להתחיל אחד!",
     "fulfilled": "הושלם",
-    "mekomosEmpty": "אין עדיין מוסדות עם קמפיינים פעילים.",
-    "neshamosEmpty": "אין עדיין נשמות שהוקדשו.",
-    "seforimEmpty": "אין עדיין ספרים זמינים."
+    "seforimEmpty": "אין עדיין ספרים זמינים.",
+    "welcomeTitle": "ברוכים הבאים ל-Sefer Share",
+    "welcomeBody": "תרמו ספרים למוסדות הזקוקים להם, הקדישו לעילוי נשמה או לכבוד יקיריכם, וסייעו לקמפיינים להגיע ליעדם.",
+    "featuredCampaign": "קמפיין מומלץ",
+    "seeAllCampaigns": "צפייה בכל הקמפיינים",
+    "guide": {
+      "browseTitle": "עיינו בקמפיינים",
+      "browseBody": "גלו מה המוסדות והקמפיינים שלהם עדיין זקוקים לו.",
+      "donateTitle": "תרמו ספרים",
+      "donateBody": "כסו חלק או את כל צרכי הקמפיין, או קנו ישירות מגלריית הספרים.",
+      "dedicateTitle": "עצבו מדבקת הקדשה",
+      "dedicateBody": "כל ספר שתתרמו נושא מדבקת הקדשה שתעצבו בעצמכם."
+    }
   },
   "address": {
     "line1": "כתובת שורה 1",
@@ -119,7 +130,21 @@
     "insufficientBalance": "זה יותר מיתרת כרטיס המתנה הזמינה שלכם.",
     "delete": "מחיקת המוסד",
     "confirmDelete": "למחוק את המוסד הזה? לא ניתן לבטל פעולה זו.",
-    "deleteHint": "מחיקת מוסד מסירה אותו לצמיתות, כולל כל יתרת כרטיס מתנה שיש לו."
+    "deleteHint": "מחיקת מוסד מסירה אותו לצמיתות, כולל כל יתרת כרטיס מתנה שיש לו.",
+    "verified": "מאומת",
+    "unverified": "טרם אומת",
+    "noneYet": "עדיין לא הוספתם מוסד.",
+    "viewCampaigns": "צפייה בקמפיינים",
+    "becomeOwner": "הפכו לבעלי מוסד מאומתים",
+    "becomeOwnerHint": "מוסדות חייבים לעבור אימות ידני לפני שיוכלו לקבל תרומות, לתבוע ספרים או להריץ קמפיינים. הגישו בקשה כדי להתחיל.",
+    "ownerInstitutionName": "שם המוסד",
+    "ownerContactName": "שם איש קשר",
+    "ownerNotesOptional": "הערות (אופציונלי)",
+    "ownerSubmitApplication": "שליחת הבקשה",
+    "ownerApplicationSubmitted": "תודה — קיבלנו את בקשתכם וניצור קשר בקרוב.",
+    "ownerApplicationPending": "בקשתכם להיות בעלי מוסד ממתינה לבדיקה.",
+    "spendSwitcherLabel": "ניצול יתרת כרטיס מתנה",
+    "spendFor": "ניצול עבור {{name}}"
   },
   "sefer": {
     "singular": "ספר",
@@ -168,6 +193,12 @@
       "other": "אחר"
     }
   },
+  "seforim": {
+    "needed": "{{count}} נדרשים",
+    "noneNeeded": "לא נדרש כרגע",
+    "claimComingSoonTitle": "בקרוב",
+    "claimComingSoonBody": "ספרים שנתרמו ללא מוסד ספציפי יופיעו כאן, כדי שמוסדות מאומתים יוכלו לתבוע אותם."
+  },
   "donation": {
     "message": "הודעה לעורך הקמפיין (אופציונלי)",
     "checkout": "לתשלום",
@@ -195,18 +226,7 @@
     "amountLabel": "סכום"
   },
   "vendor": {
-    "catalog": "קטלוג",
-    "orders": "הזמנות",
-    "sales": "מכירות",
-    "markShipped": "סימון כנשלח",
-    "markFulfilled": "סימון כהושלם",
-    "resetToPending": "איפוס לממתין",
-    "confirmResetOrder": "לאפס את ההזמנה הזו בחזרה לממתין? השתמשו באפשרות זו רק אם היא סומנה כהושלמה בטעות.",
-    "downloadCsv": "הורדת CSV",
-    "selectAll": "בחירת הכול",
-    "ordersSelected": "{{count}} נבחרו",
-    "totalRevenue": "סך ההכנסות",
-    "itemsSold": "פריטים שנמכרו",
+    "myGallery": "הגלריה שלי",
     "addSefer": "הוספת ספר",
     "retailPrice": "מחיר קמעונאי",
     "wholesalePrice": "מחיר סיטונאי (לא מוצג לתורמים)",
@@ -237,6 +257,7 @@
     "title": "ניהול",
     "tabs": {
       "vendors": "ספקים",
+      "institutions": "מוסדות",
       "sefarim": "ספרים",
       "neshamos": "נשמות",
       "campaigns": "קמפיינים",
@@ -245,6 +266,10 @@
       "users": "משתמשים"
     },
     "vendorApplications": "בקשות ספקים",
+    "institutionOwnerApplications": "בקשות בעלי מוסדות",
+    "institutions": "מוסדות",
+    "verify": "אימות",
+    "unverify": "ביטול אימות",
     "approve": "אישור",
     "reject": "דחייה",
     "mergeSeforim": "מיזוג ספרים כפולים",

@@ -7,15 +7,16 @@
     "profile": "Profile",
     "search": "Search",
     "searchPlaceholder": "Search seforim, shuls, or names…",
-    "allCampaigns": "Campaigns",
-    "where": "Mekomos",
-    "who": "Neshamas",
-    "what": "Seforim",
+    "campaigns": "Campaigns",
+    "seforim": "Seforim",
+    "gallery": "Gallery",
+    "demand": "Demand",
+    "availableToClaim": "Available to Claim",
+    "myGallery": "My Gallery",
     "newCampaign": "Campaign",
-    "newMokom": "Mokom",
-    "newNeshama": "Neshama",
     "myCampaigns": "My Campaigns",
     "donations": "Donations",
+    "myInstitution": "My Institution",
     "notifications": "Notifications",
     "stickers": "Stickers",
     "settings": "Settings",
@@ -27,9 +28,19 @@
     "dollarProgress": "${{fulfilled}} of ${{total}} raised",
     "empty": "No campaigns yet. Be the first to start one!",
     "fulfilled": "Fulfilled",
-    "mekomosEmpty": "No institutions are running campaigns yet.",
-    "neshamosEmpty": "No neshamas have been dedicated yet.",
-    "seforimEmpty": "No seforim available yet."
+    "seforimEmpty": "No seforim available yet.",
+    "welcomeTitle": "Welcome to Sefer Share",
+    "welcomeBody": "Donate seforim to institutions in need, dedicate them in memory or honor of a loved one, and help campaigns reach their goal.",
+    "featuredCampaign": "Featured Campaign",
+    "seeAllCampaigns": "See all campaigns",
+    "guide": {
+      "browseTitle": "Browse campaigns",
+      "browseBody": "See what institutions and their campaigns still need.",
+      "donateTitle": "Donate seforim",
+      "donateBody": "Cover part or all of a campaign's need, or shop the Seforim gallery directly.",
+      "dedicateTitle": "Dedicate a sticker",
+      "dedicateBody": "Every sefer you donate carries a dedication sticker you design."
+    }
   },
   "address": {
     "line1": "Address line 1",
@@ -119,7 +130,21 @@
     "insufficientBalance": "This is more than your available gift card balance.",
     "delete": "Delete institution",
     "confirmDelete": "Delete this institution? This can't be undone.",
-    "deleteHint": "Deleting an institution removes it permanently, including any gift card balance it holds."
+    "deleteHint": "Deleting an institution removes it permanently, including any gift card balance it holds.",
+    "verified": "Verified",
+    "unverified": "Not yet verified",
+    "noneYet": "You haven't added an institution yet.",
+    "viewCampaigns": "View campaigns",
+    "becomeOwner": "Become a verified institution owner",
+    "becomeOwnerHint": "Institutions must be manually verified before they can receive donations, claim seforim, or run campaigns. Apply below to get started.",
+    "ownerInstitutionName": "Institution name",
+    "ownerContactName": "Contact name",
+    "ownerNotesOptional": "Notes (optional)",
+    "ownerSubmitApplication": "Submit application",
+    "ownerApplicationSubmitted": "Thanks — we've received your application and will be in touch soon.",
+    "ownerApplicationPending": "Your institution owner application is pending review.",
+    "spendSwitcherLabel": "Spend a gift card balance",
+    "spendFor": "Spend for {{name}}"
   },
   "sefer": {
     "singular": "Sefer",
@@ -168,6 +193,12 @@
       "other": "Other"
     }
   },
+  "seforim": {
+    "needed": "{{count}} needed",
+    "noneNeeded": "None currently needed",
+    "claimComingSoonTitle": "Coming soon",
+    "claimComingSoonBody": "Seforim donated without a specific institution will appear here for verified institutions to claim."
+  },
   "donation": {
     "message": "Message to campaigner (optional)",
     "checkout": "Checkout",
@@ -195,18 +226,7 @@
     "amountLabel": "Amount"
   },
   "vendor": {
-    "catalog": "Catalog",
-    "orders": "Orders",
-    "sales": "Sales",
-    "markShipped": "Mark shipped",
-    "markFulfilled": "Mark fulfilled",
-    "resetToPending": "Reset to pending",
-    "confirmResetOrder": "Reset this order back to pending? Use this only if it was marked fulfilled by mistake.",
-    "downloadCsv": "Download CSV",
-    "selectAll": "Select all",
-    "ordersSelected": "{{count}} selected",
-    "totalRevenue": "Total revenue",
-    "itemsSold": "Items sold",
+    "myGallery": "My Gallery",
     "addSefer": "Add sefer",
     "retailPrice": "Retail price",
     "wholesalePrice": "Wholesale price (never shown to donors)",
@@ -237,6 +257,7 @@
     "title": "Admin",
     "tabs": {
       "vendors": "Vendors",
+      "institutions": "Institutions",
       "sefarim": "Seforim",
       "neshamos": "Neshamos",
       "campaigns": "Campaigns",
@@ -245,6 +266,10 @@
       "users": "Users"
     },
     "vendorApplications": "Vendor Applications",
+    "institutionOwnerApplications": "Institution Owner Applications",
+    "institutions": "Institutions",
+    "verify": "Verify",
+    "unverify": "Unverify",
     "approve": "Approve",
     "reject": "Reject",
     "mergeSeforim": "Merge Duplicate Seforim",

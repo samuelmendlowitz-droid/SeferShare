@@ -1,7 +1,7 @@
 import { collection, doc, getDoc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
-import type { Language, User, VendorApplication } from '../types';
+import type { InstitutionOwnerApplication, Language, User, VendorApplication } from '../types';
 
 export async function updatePreferredLanguage(uid: string, language: Language) {
   await updateDoc(doc(db, 'users', uid), { preferredLanguage: language });
@@ -38,6 +38,40 @@ interface ApproveVendorInput {
 
 export async function approveVendor(input: ApproveVendorInput): Promise<void> {
   const call = httpsCallable<ApproveVendorInput, { success: boolean }>(functions, 'approveVendor');
+  await call(input);
+}
+
+/**
+ * Submits the institution-owner questionnaire; requires manual admin approval —
+ * a prerequisite for creating any institution (each institution then also needs
+ * its own separate verification; see verifyInstitution). Mirrors applyToBeVendor.
+ */
+export async function applyToBeInstitutionOwner(uid: string, application: InstitutionOwnerApplication) {
+  await updateDoc(doc(db, 'users', uid), {
+    isInstitutionOwner: true,
+    institutionOwnerApproved: false,
+    institutionOwnerApplication: application,
+  });
+}
+
+export async function listPendingInstitutionOwnerApplications(): Promise<User[]> {
+  const snap = await getDocs(
+    query(
+      collection(db, 'users'),
+      where('isInstitutionOwner', '==', true),
+      where('institutionOwnerApproved', '==', false),
+    ),
+  );
+  return snap.docs.map((d) => d.data() as User);
+}
+
+interface ApproveInstitutionOwnerInput {
+  uid: string;
+  approve: boolean;
+}
+
+export async function approveInstitutionOwner(input: ApproveInstitutionOwnerInput): Promise<void> {
+  const call = httpsCallable<ApproveInstitutionOwnerInput, { success: boolean }>(functions, 'approveInstitutionOwner');
   await call(input);
 }
 

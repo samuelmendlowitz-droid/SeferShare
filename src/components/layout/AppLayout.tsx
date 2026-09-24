@@ -1,127 +1,107 @@
-import { useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, type ReactNode } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../context/AuthContext';
 import { usePushka } from '../../context/PushkaContext';
 import { CornerButton } from './CornerButton';
 import { FloatingToggleBar, type FilterSortButtonProps, type ToggleOption } from './FloatingToggleBar';
 import { PageHeading } from './PageHeading';
 import { TopSearchBar } from './TopSearchBar';
-import { HomeIcon, PlusIcon, ProfileIcon, PushkaIcon, StoreIcon } from '../ui/icons';
+import { CampaignIcon, HomeIcon, PlusIcon, ProfileIcon, PushkaIcon, BookIcon } from '../ui/icons';
 
-export type HomeFilter = 'all' | 'where' | 'who' | 'what';
-export type ProfileTab = 'campaigns' | 'donations' | 'notifications' | 'stickers' | 'settings';
-export type VendorTab = 'catalog' | 'orders' | 'sales';
+export type ProfileTab = 'campaigns' | 'donations' | 'institution' | 'notifications' | 'stickers' | 'settings';
+export type SeforimTab = 'gallery' | 'demand' | 'claim' | 'myGallery';
 
-interface HomeLayoutProps {
-  variant: 'home';
-  filter: HomeFilter;
-  onFilterChange: (filter: HomeFilter) => void;
+interface BaseLayoutProps {
   onSearch: (query: string) => void;
   filterSort?: FilterSortButtonProps;
-  /** The plus button's action for the current tab — its target (a new campaign,
-   *  mokom, or neshama) changes with `filter`; omitted on tabs with nothing to create. */
   createAction?: { caption: string; onClick: () => void };
+  /** Shows the cart/pushka corner button — every browsing/shopping surface
+   *  (Home, Campaigns, Seforim), not the account-management ones. */
+  showPushka?: boolean;
   children: ReactNode;
 }
 
-interface ProfileLayoutProps {
+interface HomeLayoutProps extends BaseLayoutProps {
+  variant: 'home';
+}
+
+interface CampaignsLayoutProps extends BaseLayoutProps {
+  variant: 'campaigns';
+}
+
+interface SeforimLayoutProps extends BaseLayoutProps {
+  variant: 'seforim';
+  tab: SeforimTab;
+  onTabChange: (tab: SeforimTab) => void;
+}
+
+interface ProfileLayoutProps extends BaseLayoutProps {
   variant: 'profile';
   tab: ProfileTab;
   onTabChange: (tab: ProfileTab) => void;
-  onSearch: (query: string) => void;
-  filterSort?: FilterSortButtonProps;
-  /** Shown as a "+ Campaign" pill only while viewing the My Campaigns tab
-   *  (same button as Home's own create action) — omitted on every other tab. */
-  createAction?: { caption: string; onClick: () => void };
-  children: ReactNode;
 }
 
-interface VendorLayoutProps {
-  variant: 'vendor';
-  tab: VendorTab;
-  onTabChange: (tab: VendorTab) => void;
-  onSearch: (query: string) => void;
-  filterSort?: FilterSortButtonProps;
-  children: ReactNode;
-}
+type AppLayoutProps = HomeLayoutProps | CampaignsLayoutProps | SeforimLayoutProps | ProfileLayoutProps;
 
-type AppLayoutProps = HomeLayoutProps | ProfileLayoutProps | VendorLayoutProps;
+const NAV_ITEMS: { variant: AppLayoutProps['variant']; path: string; icon: ReactNode; labelKey: string }[] = [
+  { variant: 'home', path: '/', icon: <HomeIcon />, labelKey: 'nav.home' },
+  { variant: 'campaigns', path: '/campaigns', icon: <CampaignIcon />, labelKey: 'nav.campaigns' },
+  { variant: 'seforim', path: '/seforim', icon: <BookIcon />, labelKey: 'nav.seforim' },
+  { variant: 'profile', path: '/profile', icon: <ProfileIcon />, labelKey: 'nav.profile' },
+];
 
+/** Shared chrome for every top-level page: a frozen page heading, the fixed
+ *  bottom cluster (search/sub-tabs/filter row above a 4-item main destination
+ *  row — Home / Campaigns / Seforim / Profile, always all four, current one
+ *  highlighted), and the bottom fade that keeps scrolled content from butting
+ *  up against those fixed buttons. */
 export function AppLayout(props: AppLayoutProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
-  const { profile } = useAuth();
   const pushka = usePushka();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const isVendor = Boolean(profile?.isVendor && profile.vendorApproved);
 
-  const homeOptions: ToggleOption[] = useMemo(
-    () => [
-      { key: 'all', label: t('nav.allCampaigns') },
-      { key: 'what', label: t('nav.what') },
-      { key: 'where', label: t('nav.where') },
-      { key: 'who', label: t('nav.who') },
-    ],
-    [t],
-  );
+  const seforimOptions: ToggleOption[] =
+    props.variant === 'seforim'
+      ? [
+          { key: 'gallery', label: t('nav.gallery') },
+          { key: 'demand', label: t('nav.demand') },
+          { key: 'claim', label: t('nav.availableToClaim') },
+          { key: 'myGallery', label: t('nav.myGallery') },
+        ]
+      : [];
 
-  const profileOptions: ToggleOption[] = useMemo(
-    () => [
-      { key: 'campaigns', label: t('nav.myCampaigns') },
-      { key: 'donations', label: t('nav.donations') },
-      { key: 'notifications', label: t('nav.notifications') },
-      { key: 'stickers', label: t('nav.stickers') },
-      { key: 'settings', label: t('nav.settings') },
-    ],
-    [t],
-  );
+  const profileOptions: ToggleOption[] =
+    props.variant === 'profile'
+      ? [
+          { key: 'campaigns', label: t('nav.myCampaigns') },
+          { key: 'donations', label: t('nav.donations') },
+          { key: 'institution', label: t('nav.myInstitution') },
+          { key: 'notifications', label: t('nav.notifications') },
+          { key: 'stickers', label: t('nav.stickers') },
+          { key: 'settings', label: t('nav.settings') },
+        ]
+      : [];
 
-  const vendorOptions: ToggleOption[] = useMemo(
-    () => [
-      { key: 'catalog', label: t('vendor.catalog') },
-      { key: 'orders', label: t('vendor.orders') },
-      { key: 'sales', label: t('vendor.sales') },
-    ],
-    [t],
-  );
+  const actionButton = props.createAction ? (
+    <CornerButton
+      label={props.createAction.caption}
+      caption={props.createAction.caption}
+      icon={<PlusIcon width={16} height={16} />}
+      onClick={props.createAction.onClick}
+    />
+  ) : null;
 
-  // Every reachable page (vendor only for approved vendor accounts), so the bottom-left
-  // cluster can always show "the other two" regardless of which page is active.
-  const pages = useMemo(() => {
-    const base: { key: 'home' | 'profile' | 'vendor'; label: string; icon: ReactNode; path: string }[] = [
-      { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
-      { key: 'profile', label: t('nav.profile'), icon: <ProfileIcon />, path: '/profile' },
-    ];
-    if (isVendor) {
-      base.push({ key: 'vendor', label: t('nav.vendor'), icon: <StoreIcon />, path: '/vendor' });
-    }
-    return base;
-  }, [t, isVendor]);
-
-  const otherPages = pages.filter((p) => p.key !== props.variant);
-
-  const actionButton =
-    (props.variant === 'home' || (props.variant === 'profile' && props.tab === 'campaigns')) && props.createAction ? (
-      <CornerButton
-        label={props.createAction.caption}
-        caption={props.createAction.caption}
-        icon={<PlusIcon width={16} height={16} />}
-        onClick={props.createAction.onClick}
-      />
-    ) : null;
-
-  // The pushka (donation cart) is only relevant to browsing/giving, which lives on Home.
-  const pushkaButton =
-    props.variant === 'home' ? (
-      <CornerButton
-        label={t('pushka.title')}
-        icon={<PushkaIcon />}
-        badge={pushka.totalCount}
-        onClick={() => navigate('/pushka')}
-      />
-    ) : null;
+  const pushkaButton = props.showPushka ? (
+    <CornerButton
+      label={t('pushka.title')}
+      icon={<PushkaIcon />}
+      badge={pushka.totalCount}
+      onClick={() => navigate('/pushka')}
+    />
+  ) : null;
 
   function handleQueryChange(next: string) {
     setQuery(next);
@@ -134,8 +114,12 @@ export function AppLayout(props: AppLayoutProps) {
     props.onSearch('');
   }
 
+  // Home has nothing to search or filter — a static intro/guide + featured
+  // campaign — so it skips this row entirely rather than showing an empty bar.
+  const showToggleRow = props.variant !== 'home';
+
   return (
-    <div className="min-h-dvh pb-36">
+    <div className="min-h-dvh pb-40">
       {/* Extra top clearance while searching so content doesn't render under the
           fixed top search bar. */}
       <main className={`mx-auto max-w-2xl px-4 ${searchOpen ? 'pt-20' : 'pt-6'}`}>
@@ -148,57 +132,72 @@ export function AppLayout(props: AppLayoutProps) {
       ) : (
         <>
           {/* Fades scrolled-past content out before it reaches the fixed buttons,
-              instead of it being cut off hard underneath them — spans the same
-              height as the bottom cluster's own reserved space (pb-36 above),
-              from fully opaque at the screen edge up to transparent at the top
-              of the home/cart button row. */}
-          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-36 bg-gradient-to-t from-bg via-bg/70 to-transparent" />
+              instead of it being cut off hard underneath them — spans roughly the
+              same height as the bottom cluster's own reserved space (pb-40 above),
+              from fully opaque at the screen edge up to transparent above it. */}
+          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-40 bg-gradient-to-t from-bg via-bg/70 to-transparent" />
 
-          {/* Fixed bottom cluster: same outer margin (px-4 / bottom-4, plus the safe-area
-              inset on notched/home-indicator devices) as `main`, and the same gap (gap-4)
-              between the button row and the nav bar below it. Hidden entirely while
-              searching so the keyboard/search bar have the full screen. */}
+          {/* Fixed bottom cluster: same outer margin (px-4, plus the safe-area inset
+              on notched/home-indicator devices) as `main`, and the same gap (gap-3)
+              between its rows. Hidden entirely while searching so the keyboard/search
+              bar have the full screen. */}
           <div
-            className="fixed inset-x-0 z-40 mx-auto flex max-w-2xl flex-col gap-4 px-4"
+            className="fixed inset-x-0 z-40 mx-auto flex max-w-2xl flex-col gap-3 px-4"
             style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}
           >
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2">
-              {otherPages.map((p) => (
-                <CornerButton key={p.key} label={p.label} icon={p.icon} onClick={() => navigate(p.path)} />
+            {showToggleRow && (
+              <div className="flex items-center justify-between gap-2">
+                {props.variant === 'seforim' ? (
+                  <FloatingToggleBar
+                    options={seforimOptions}
+                    activeKey={props.tab}
+                    onChange={(key) => props.onTabChange(key as SeforimTab)}
+                    onOpenSearch={() => setSearchOpen(true)}
+                    filterSort={props.filterSort}
+                  />
+                ) : props.variant === 'profile' ? (
+                  <FloatingToggleBar
+                    options={profileOptions}
+                    activeKey={props.tab}
+                    onChange={(key) => props.onTabChange(key as ProfileTab)}
+                    onOpenSearch={() => setSearchOpen(true)}
+                    filterSort={props.filterSort}
+                  />
+                ) : (
+                  <FloatingToggleBar
+                    options={[]}
+                    activeKey=""
+                    onChange={() => {}}
+                    onOpenSearch={() => setSearchOpen(true)}
+                    filterSort={props.filterSort}
+                  />
+                )}
+              </div>
+            )}
+
+            {(actionButton || pushkaButton) && (
+              <div className="flex items-center justify-end gap-2">
+                {actionButton}
+                {pushkaButton}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between gap-1 rounded-pill border border-[rgba(214,228,240,0.6)] bg-[rgba(255,255,255,0.72)] px-1.5 py-1.5 shadow-navbar backdrop-blur-md">
+              {NAV_ITEMS.map((item) => (
+                <button
+                  key={item.variant}
+                  type="button"
+                  onClick={() => item.path !== location.pathname && navigate(item.path)}
+                  aria-label={t(item.labelKey)}
+                  aria-current={props.variant === item.variant ? 'page' : undefined}
+                  className={`flex h-11 flex-1 items-center justify-center rounded-pill transition-colors duration-200 ${
+                    props.variant === item.variant ? 'bg-accent text-white' : 'text-text-muted hover:bg-white/60 hover:text-accent'
+                  }`}
+                >
+                  {item.icon}
+                </button>
               ))}
             </div>
-            <div className="flex gap-2">
-              {actionButton}
-              {pushkaButton}
-            </div>
-          </div>
-
-          {props.variant === 'home' ? (
-            <FloatingToggleBar
-              options={homeOptions}
-              activeKey={props.filter}
-              onChange={(key) => props.onFilterChange(key as HomeFilter)}
-              onOpenSearch={() => setSearchOpen(true)}
-              filterSort={props.filterSort}
-            />
-          ) : props.variant === 'vendor' ? (
-            <FloatingToggleBar
-              options={vendorOptions}
-              activeKey={props.tab}
-              onChange={(key) => props.onTabChange(key as VendorTab)}
-              onOpenSearch={() => setSearchOpen(true)}
-              filterSort={props.filterSort}
-            />
-          ) : (
-            <FloatingToggleBar
-              options={profileOptions}
-              activeKey={props.tab}
-              onChange={(key) => props.onTabChange(key as ProfileTab)}
-              onOpenSearch={() => setSearchOpen(true)}
-              filterSort={props.filterSort}
-            />
-          )}
           </div>
         </>
       )}

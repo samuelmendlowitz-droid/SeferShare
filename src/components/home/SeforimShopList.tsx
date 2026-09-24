@@ -13,6 +13,10 @@ import { PlusIcon } from '../ui/icons';
 
 interface SeforimShopListProps {
   items: SeforimShopItem[];
+  /** Shows each item's outstanding campaign demand instead of price emphasis —
+   *  used by the Demand tab, which is this same list/data just re-framed around
+   *  "what's needed" rather than "what's for sale". */
+  showDemand?: boolean;
 }
 
 /** Shopping-platform-style grid: a card per sefer (photo, name, type/subtype,
@@ -23,7 +27,7 @@ interface SeforimShopListProps {
  *  added without picking a specific campaign in SeferAddToCartModal goes in
  *  untagged, same as any other "pick for me" item, for the server-side
  *  algorithm to assign both an institution and a campaign at checkout. */
-export function SeforimShopList({ items }: SeforimShopListProps) {
+export function SeforimShopList({ items, showDemand }: SeforimShopListProps) {
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
   const pushka = usePushka();
@@ -90,6 +94,11 @@ export function SeforimShopList({ items }: SeforimShopListProps) {
                 {seferTypeText(item.sefer.type, item.sefer.customType, t(`sefer.${item.sefer.type}`))}
                 {subLabel ? ` · ${subLabel}` : ''}
               </p>
+              {showDemand && (
+                <p className="text-xs font-semibold text-accent">
+                  {item.need > 0 ? t('seforim.needed', { count: item.need }) : t('seforim.noneNeeded')}
+                </p>
+              )}
               {item.listing ? (
                 <p className="text-sm font-medium">${item.listing.price.toFixed(2)}</p>
               ) : (

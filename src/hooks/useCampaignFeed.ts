@@ -19,6 +19,9 @@ export interface CampaignFeedBase {
 
 export interface CampaignFeedOptions {
   institutionTypes?: InstitutionType[];
+  /** Narrows to campaigns for one or more specific institutions — used by the
+   *  "Campaigns for My Institution" link from Profile's My Institution tab. */
+  institutionIds?: string[];
   seferTypes?: SeferType[];
   sortKey?: HomeSortKey;
 }
@@ -113,7 +116,7 @@ export function useCampaignFeedData(searchQuery: string): CampaignFeedBase {
 
 /** The "All Campaigns" tab: the shared base list, filtered/sorted by its own controls. */
 export function useCampaignFeed(searchQuery: string, options: CampaignFeedOptions = {}): CampaignFeedBase {
-  const { institutionTypes = [], seferTypes = [], sortKey = 'recommended' } = options;
+  const { institutionTypes = [], institutionIds = [], seferTypes = [], sortKey = 'recommended' } = options;
   const base = useCampaignFeedData(searchQuery);
 
   const campaigns = useMemo(() => {
@@ -124,6 +127,9 @@ export function useCampaignFeed(searchQuery: string, options: CampaignFeedOption
         const institution = c.institutionId ? base.institutionsById.get(c.institutionId) : undefined;
         return institution && institutionTypes.includes(institution.type);
       });
+    }
+    if (institutionIds.length > 0) {
+      result = result.filter((c) => c.institutionId && institutionIds.includes(c.institutionId));
     }
     if (seferTypes.length > 0) {
       result = result.filter((c) =>
@@ -157,7 +163,16 @@ export function useCampaignFeed(searchQuery: string, options: CampaignFeedOption
     });
 
     return result;
-  }, [base.campaigns, base.institutionsById, base.neshamosById, base.sefarimById, institutionTypes, seferTypes, sortKey]);
+  }, [
+    base.campaigns,
+    base.institutionsById,
+    base.neshamosById,
+    base.sefarimById,
+    institutionTypes,
+    institutionIds,
+    seferTypes,
+    sortKey,
+  ]);
 
   return { ...base, campaigns };
 }

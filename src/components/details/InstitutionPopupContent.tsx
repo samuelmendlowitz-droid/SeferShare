@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePushka } from '../../context/PushkaContext';
 import { useDetailStack } from '../../context/DetailStackContext';
@@ -30,7 +29,6 @@ function addressLine(institution: Institution): string {
 
 export function InstitutionPopupContent({ id: institutionId, isTop, zIndex, onClose }: InstitutionPopupContentProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { profile } = useAuth();
   const pushka = usePushka();
   const { open } = useDetailStack();
@@ -96,6 +94,9 @@ export function InstitutionPopupContent({ id: institutionId, isTop, zIndex, onCl
         <h1 className="text-2xl font-bold">{institution.name}</h1>
         <p className="mt-1 text-sm text-text-muted">{institutionTypeText(institution.type, institution.customType, t(`institution.${institution.type}`))}</p>
         <p className="mt-1 text-sm text-text">{addressLine(institution)}</p>
+        <p className={`mt-1 text-xs font-medium ${institution.verified ? 'text-success' : 'text-text-muted'}`}>
+          {institution.verified ? t('institution.verified') : t('institution.unverified')}
+        </p>
       </div>
 
       {campaigns.length > 0 && (
@@ -121,9 +122,11 @@ export function InstitutionPopupContent({ id: institutionId, isTop, zIndex, onCl
 
       {isOwn && (
         <div className="mt-4 space-y-2 border-t border-border pt-4">
-          <Button variant="secondary" className="w-full" onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}>
+          {/* Spending the gift card balance happens from Seforim > Gallery's
+              institution switcher now, not from here — this just surfaces it. */}
+          <p className="text-xs text-text-muted">
             {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
-          </Button>
+          </p>
           <Button variant="secondary" className="w-full" onClick={() => setEditOpen(true)}>
             {t('institution.edit')}
           </Button>

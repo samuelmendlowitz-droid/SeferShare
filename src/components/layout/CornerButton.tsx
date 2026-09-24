@@ -10,19 +10,26 @@ interface CornerButtonProps {
    *  changes with context (e.g. the Home page's create button), so it's
    *  clear what tapping it will do without a separate label underneath. */
   caption?: string;
+  /** False renders a lighter, outlined style instead of the solid accent fill —
+   *  for the main destination row, where every page shows all 4 tabs and only
+   *  the current one should read as "selected." Defaults to true (the original
+   *  always-solid look), so every other call site is unaffected. */
+  active?: boolean;
 }
 
 /** Positioning is owned by the parent layout row — this is just the button itself,
  *  either a round icon button or (with `caption`) a same-height pill with a label. */
-export function CornerButton({ icon, onClick, label, badge, caption }: CornerButtonProps) {
+export function CornerButton({ icon, onClick, label, badge, caption, active = true }: CornerButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={label}
       className={`relative flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-full
-        bg-accent text-white shadow-corner transition-transform duration-200
-        hover:scale-105 active:scale-95 ${caption ? 'px-4' : 'w-12'}`}
+        shadow-corner transition-transform duration-200
+        hover:scale-105 active:scale-95 ${caption ? 'px-4' : 'w-12'} ${
+          active ? 'bg-accent text-white' : 'border border-border bg-surface text-text-muted'
+        }`}
     >
       {icon}
       {caption && <span className="whitespace-nowrap text-sm font-medium">{caption}</span>}

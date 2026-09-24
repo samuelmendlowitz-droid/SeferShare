@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
 import type { Address, DonationAd, DonationDedication, DonationItem, Institution, InstitutionType } from '../types';
@@ -8,6 +8,14 @@ const institutionsRef = collection(db, 'institutions');
 export async function listInstitutions(): Promise<Institution[]> {
   const snap = await getDocs(query(institutionsRef, orderBy('name')));
   return snap.docs.map((d) => ({ ...(d.data() as Institution), institutionId: d.id }));
+}
+
+/** The institutions a specific user owns — used by Profile's "My Institution" tab. */
+export async function listInstitutionsByOwner(uid: string): Promise<Institution[]> {
+  const snap = await getDocs(query(institutionsRef, where('createdByUid', '==', uid)));
+  return snap.docs
+    .map((d) => ({ ...(d.data() as Institution), institutionId: d.id }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getInstitution(institutionId: string): Promise<Institution | null> {
@@ -45,6 +53,18 @@ export async function updateInstitution(institutionId: string, input: UpdateInst
 
 export async function deleteInstitution(institutionId: string): Promise<void> {
   await deleteDoc(doc(db, 'institutions', institutionId));
+}
+
+interface VerifyInstitutionInput {
+  institutionId: string;
+  verify: boolean;
+}
+
+/** Admin-only: verifies (or unverifies) one specific institution — a separate
+ *  step from its owner's person-level institution-owner approval. */
+export async function verifyInstitution(input: VerifyInstitutionInput): Promise<void> {
+  const call = httpsCallable<VerifyInstitutionInput, { success: boolean }>(functions, 'verifyInstitution');
+  await call(input);
 }
 
 export interface SpendInstitutionBalanceInput {

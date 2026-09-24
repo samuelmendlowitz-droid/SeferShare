@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import {
+  approveInstitutionOwner,
   approveVendor,
   deleteUserAccount,
   listAllUsers,
+  listPendingInstitutionOwnerApplications,
   listPendingVendorApplications,
   setUserBlocked,
 } from '../services/users';
+import { listInstitutions, verifyInstitution } from '../services/institutions';
 import { deleteVendorListing, listSefarim } from '../services/sefarim';
 import { seferTypeText, subtypeLabel } from '../lib/seferTaxonomy';
 import { listNeshamos } from '../services/neshamos';
@@ -20,14 +23,14 @@ import {
   mergeSefarim,
   updateOrderStatus,
 } from '../services/admin';
-import type { Campaign, Donation, Neshama, Order, OrderStatus, Sefer, User } from '../types';
+import type { Campaign, Donation, Institution, Neshama, Order, OrderStatus, Sefer, User } from '../types';
 import { PageHeading } from '../components/layout/PageHeading';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { SeferForm } from '../components/vendor/SeferForm';
 
-type Section = 'vendors' | 'sefarim' | 'neshamos' | 'campaigns' | 'donations' | 'orders' | 'users';
+type Section = 'vendors' | 'institutions' | 'sefarim' | 'neshamos' | 'campaigns' | 'donations' | 'orders' | 'users';
 
 const ORDER_STATUSES: OrderStatus[] = ['pending', 'shipped', 'delivered'];
 
@@ -37,6 +40,8 @@ export function AdminPage() {
   const [section, setSection] = useState<Section>('vendors');
 
   const [pendingVendors, setPendingVendors] = useState<User[]>([]);
+  const [pendingInstitutionOwners, setPendingInstitutionOwners] = useState<User[]>([]);
+  const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [sefarim, setSefarim] = useState<Sefer[]>([]);
   const [neshamos, setNeshamos] = useState<Neshama[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -48,8 +53,10 @@ export function AdminPage() {
   const [showAddSefer, setShowAddSefer] = useState(false);
 
   async function reload() {
-    const [vendors, sef, nesh, camp, don, ord, allUsers] = await Promise.all([
+    const [vendors, institutionOwners, insts, sef, nesh, camp, don, ord, allUsers] = await Promise.all([
       listPendingVendorApplications(),
+      listPendingInstitutionOwnerApplications(),
+      listInstitutions(),
       listSefarim(),
       listNeshamos(),
       listAllCampaignsAdmin(),
@@ -58,6 +65,8 @@ export function AdminPage() {
       listAllUsers(),
     ]);
     setPendingVendors(vendors);
+    setPendingInstitutionOwners(institutionOwners);
+    setInstitutions(insts);
     setSefarim(sef);
     setNeshamos(nesh);
     setCampaigns(camp);
@@ -75,7 +84,7 @@ export function AdminPage() {
     return <div className="mx-auto max-w-2xl px-4 pt-6 text-text-muted">{t('actions.notAuthorized')}</div>;
   }
 
-  const sections: Section[] = ['vendors', 'sefarim', 'neshamos', 'campaigns', 'donations', 'orders', 'users'];
+  const sections: Section[] = ['vendors', 'institutions', 'sefarim', 'neshamos', 'campaigns', 'donations', 'orders', 'users'];
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
@@ -118,6 +127,62 @@ export function AdminPage() {
                   {t('admin.reject')}
                 </Button>
               </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {section === 'institutions' && (
+        <div className="space-y-3">
+          <h2 className="text-base font-semibold">{t('admin.institutionOwnerApplications')}</h2>
+          {pendingInstitutionOwners.length === 0 && <p className="text-text-muted">—</p>}
+          {pendingInstitutionOwners.map((u) => (
+            <Card key={u.uid} className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold">{u.displayName}</p>
+                <p className="text-xs text-text-muted">{u.email}</p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={async () => {
+                    await approveInstitutionOwner({ uid: u.uid, approve: true });
+                    reload();
+                  }}
+                >
+                  {t('admin.approve')}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={async () => {
+                    await approveInstitutionOwner({ uid: u.uid, approve: false });
+                    reload();
+                  }}
+                >
+                  {t('admin.reject')}
+                </Button>
+              </div>
+            </Card>
+          ))}
+
+          <h2 className="pt-2 text-base font-semibold">{t('admin.institutions')}</h2>
+          {institutions.length === 0 && <p className="text-text-muted">—</p>}
+          {institutions.map((inst) => (
+            <Card key={inst.institutionId} className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold">{inst.name}</p>
+                <p className="text-xs text-text-muted">
+                  {inst.verified ? t('institution.verified') : t('institution.unverified')}
+                </p>
+              </div>
+              <Button
+                variant={inst.verified ? 'secondary' : 'primary'}
+                onClick={async () => {
+                  await verifyInstitution({ institutionId: inst.institutionId, verify: !inst.verified });
+                  reload();
+                }}
+              >
+                {inst.verified ? t('admin.unverify') : t('admin.verify')}
+              </Button>
             </Card>
           ))}
         </div>

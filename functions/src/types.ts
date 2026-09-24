@@ -166,6 +166,7 @@ export interface Institution {
   customType?: string;
   address: Address;
   createdByUid: string;
+  verified: boolean;
   giftCardBalance?: number;
   createdAt: FirebaseFirestore.Timestamp;
 }
@@ -226,6 +227,16 @@ export interface VendorApplication {
   submittedAt: number;
 }
 
+export interface InstitutionOwnerApplication {
+  institutionName: string;
+  contactName: string;
+  address: Address;
+  phone: string;
+  email: string;
+  notes?: string;
+  submittedAt: number;
+}
+
 export interface User {
   uid: string;
   displayName: string;
@@ -233,6 +244,9 @@ export interface User {
   isVendor: boolean;
   vendorApproved: boolean;
   vendorApplication?: VendorApplication;
+  isInstitutionOwner: boolean;
+  institutionOwnerApproved: boolean;
+  institutionOwnerApplication?: InstitutionOwnerApplication;
   isAdmin?: boolean;
   blocked?: boolean;
   stripeCustomerId?: string;
@@ -244,4 +258,8 @@ export type NotificationKind =
   | 'payment_confirmed'
   | 'vendor_application_received'
   | 'vendor_application_approved'
-  | 'vendor_application_declined';
+  | 'vendor_application_declined'
+  | 'institution_owner_application_received'
+  | 'institution_owner_application_approved'
+  | 'institution_owner_application_declined'
+  | 'institution_verified';

@@ -51,6 +51,8 @@ async function ensureUserProfile(firebaseUser: FirebaseUser): Promise<User> {
     preferredLanguage: 'en',
     isVendor: false,
     vendorApproved: false,
+    isInstitutionOwner: false,
+    institutionOwnerApproved: false,
     savedPaymentMethods: [],
     createdAt: Date.now(),
   };
@@ -137,6 +139,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           preferredLanguage: 'en',
           isVendor: false,
           vendorApproved: false,
+          isInstitutionOwner: false,
+          institutionOwnerApproved: false,
           savedPaymentMethods: [],
           createdAt: serverTimestamp(),
         });

@@ -133,6 +133,15 @@ export function PushkaIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function CampaignIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M3 11v2a2 2 0 0 0 2 2h1l2 5h2l-1.5-5H10l9 4V6l-9 4H5a2 2 0 0 0-2 1Z" />
+      <path d="M18 9v8" />
+    </Icon>
+  );
+}
+
 export function StoreIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

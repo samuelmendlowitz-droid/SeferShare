@@ -284,13 +284,11 @@ export function CampaignPopupContent({ id: campaignId, isTop, zIndex, onClose }:
         {(profile?.uid === campaign.createdByUid || (institution && profile?.uid === institution.createdByUid)) && (
           <div className="mt-4 space-y-2 border-t border-border pt-4">
             {institution && profile?.uid === institution.createdByUid && (
-              <Button
-                variant="secondary"
-                className="w-full"
-                onClick={() => navigate(`/institutions/${institution.institutionId}/spend`)}
-              >
+              // Spending the balance happens from Seforim > Gallery's institution
+              // switcher now, not from here — this just surfaces it.
+              <p className="text-xs text-text-muted">
                 {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
-              </Button>
+              </p>
             )}
             {profile?.uid === campaign.createdByUid && (
               <Button variant="secondary" className="w-full" onClick={() => setEditOpen(true)}>

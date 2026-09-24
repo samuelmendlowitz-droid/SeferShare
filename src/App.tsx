@@ -6,13 +6,13 @@ import { DetailStackProvider } from './context/DetailStackContext';
 import { RequireAuth } from './components/RequireAuth';
 import { DetailStackOverlay } from './components/details/DetailStackOverlay';
 import { HomePage } from './pages/HomePage';
+import { CampaignsPage } from './pages/CampaignsPage';
+import { SeforimPage } from './pages/SeforimPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { LoginPage } from './pages/LoginPage';
 import { PushkaPage } from './pages/PushkaPage';
 import { DonationConfirmationPage } from './pages/DonationConfirmationPage';
-import { InstitutionSpendPage } from './pages/InstitutionSpendPage';
 import { NeshamaDonatePage } from './pages/NeshamaDonatePage';
-import { VendorPage } from './pages/VendorPage';
 import { AdminPage } from './pages/AdminPage';
 
 // TODO: replace "Sefer Share" with final platform name
@@ -34,6 +34,22 @@ export default function App() {
                   }
                 />
                 <Route
+                  path="/campaigns"
+                  element={
+                    <RequireAuth>
+                      <CampaignsPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/seforim"
+                  element={
+                    <RequireAuth>
+                      <SeforimPage />
+                    </RequireAuth>
+                  }
+                />
+                <Route
                   path="/profile"
                   element={
                     <RequireAuth>
@@ -51,26 +67,10 @@ export default function App() {
                 />
                 <Route path="/donate/confirmation" element={<DonationConfirmationPage />} />
                 <Route
-                  path="/institutions/:institutionId/spend"
-                  element={
-                    <RequireAuth>
-                      <InstitutionSpendPage />
-                    </RequireAuth>
-                  }
-                />
-                <Route
                   path="/neshamos/:neshamaId/donate"
                   element={
                     <RequireAuth>
                       <NeshamaDonatePage />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/vendor"
-                  element={
-                    <RequireAuth>
-                      <VendorPage />
                     </RequireAuth>
                   }
                 />
@@ -82,12 +82,14 @@ export default function App() {
                     </RequireAuth>
                   }
                 />
-                {/* Catches stale links to routes that no longer exist (e.g. the old
-                    /campaigns/:id, /institutions/:id, /neshamos/:id detail pages,
-                    now popups — see DetailStackContext; or /campaigns/new,
+                {/* Catches stale links to routes that no longer exist: the old
+                    /campaigns/:id, /institutions/:id, /neshamos/:id detail pages
+                    (now popups — see DetailStackContext); /campaigns/new,
                     /campaigns/:id/edit, /institutions/:id/edit, and
-                    /neshamos/:id/edit, now the + / Edit buttons' popup forms)
-                    instead of rendering blank. */}
+                    /neshamos/:id/edit (now the + / Edit buttons' popup forms);
+                    /vendor (folded into Seforim > My Gallery); and
+                    /institutions/:id/spend (now Seforim > Gallery's institution
+                    switcher) — instead of rendering blank. */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
               <DetailStackOverlay />

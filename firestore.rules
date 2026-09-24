@@ -18,15 +18,22 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(uid)).data.vendorApproved == true;
     }
 
+    function isApprovedInstitutionOwner(uid) {
+      return signedIn() &&
+        get(/databases/$(database)/documents/users/$(uid)).data.isInstitutionOwner == true &&
+        get(/databases/$(database)/documents/users/$(uid)).data.institutionOwnerApproved == true;
+    }
+
     // --- Users -----------------------------------------------------------
     // wholesalePrice never lives here, but keep the profile itself locked down:
     // owners can edit their own info; only Cloud Functions (Admin SDK, which
-    // bypasses these rules) or an admin may flip vendorApproved/isAdmin.
+    // bypasses these rules) or an admin may flip vendorApproved/institutionOwnerApproved/isAdmin.
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
       allow create: if signedIn() && request.auth.uid == uid;
       allow update: if signedIn() && request.auth.uid == uid &&
         request.resource.data.vendorApproved == resource.data.vendorApproved &&
+        request.resource.data.get('institutionOwnerApproved', false) == resource.data.get('institutionOwnerApproved', false) &&
         request.resource.data.get('isAdmin', false) == resource.data.get('isAdmin', false) &&
         request.resource.data.get('blocked', false) == resource.data.get('blocked', false);
       allow update: if isAdmin();
@@ -50,13 +57,21 @@ service cloud.firestore {
     // --- Institutions ------------------------------------------------------
     match /institutions/{institutionId} {
       allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.createdByUid == request.auth.uid;
-      // giftCardBalance is only ever changed server-side (Cloud Functions bypass
-      // these rules) — a gift card donation adds to it, spending it subtracts.
+      // Only an approved institution owner may create one, and every new
+      // institution starts unverified — verification is a separate, admin-only
+      // step per institution (see functions/src/verifyInstitution.ts).
+      allow create: if signedIn() &&
+        request.resource.data.createdByUid == request.auth.uid &&
+        isApprovedInstitutionOwner(request.auth.uid) &&
+        request.resource.data.verified == false;
+      // giftCardBalance and verified are only ever changed server-side (Cloud
+      // Functions bypass these rules) — a gift card donation adds to the
+      // balance, spending it subtracts, and only an admin verifies.
       allow update: if isAdmin() || (
         signedIn() &&
         resource.data.createdByUid == request.auth.uid &&
-        request.resource.data.get('giftCardBalance', 0) == resource.data.get('giftCardBalance', 0)
+        request.resource.data.get('giftCardBalance', 0) == resource.data.get('giftCardBalance', 0) &&
+        request.resource.data.verified == resource.data.verified
       );
       allow delete: if isAdmin() || (signedIn() && resource.data.createdByUid == request.auth.uid);
     }
@@ -108,23 +123,11 @@ service cloud.firestore {
       allow update, delete: if isAdmin() || (signedIn() && resource.data.createdByUid == request.auth.uid);
     }
 
-    // --- Orders — vendor sees their own and may walk it through the
-    // pending -> shipped -> delivered ("fulfilled") cycle themselves, including
-    // resetting an accidentally-fulfilled order back to pending (the client
-    // confirms with the vendor before sending that transition) -----------------
+    // --- Orders — admin-only end to end now: admin receives the order, forwards
+    // it to the vendor outside the app, and tracks fulfillment itself. Vendors no
+    // longer read or manage their own orders in-app. -------------------------
     match /orders/{orderId} {
-      allow read: if signedIn() && (resource.data.vendorId == request.auth.uid || isAdmin());
-      allow create: if isAdmin();
-      allow update: if isAdmin() || (
-        signedIn() &&
-        resource.data.vendorId == request.auth.uid &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) &&
-        (
-          (resource.data.status == 'pending' && request.resource.data.status == 'shipped') ||
-          (resource.data.status == 'shipped' && request.resource.data.status == 'delivered') ||
-          (resource.data.status == 'delivered' && request.resource.data.status == 'pending')
-        )
-      );
+      allow read, write: if isAdmin();
     }
 
     // --- Notifications — created by Cloud Functions, recipient can mark read --
