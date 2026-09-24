@@ -1,11 +1,10 @@
 import { useState, type ReactNode } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { usePushka } from '../../context/PushkaContext';
-import { CornerButton } from './CornerButton';
+import { AppHeader, HEADER_TOTAL_HEIGHT_PX } from './AppHeader';
 import { FloatingToggleBar, type FilterSortButtonProps, type ToggleOption } from './FloatingToggleBar';
 import { TopSearchBar } from './TopSearchBar';
-import { CampaignIcon, HomeIcon, PlusIcon, ProfileIcon, PushkaIcon, BookIcon } from '../ui/icons';
+import { CornerButton } from './CornerButton';
+import { PlusIcon } from '../ui/icons';
 
 export type ProfileTab = 'campaigns' | 'donations' | 'institution' | 'notifications' | 'stickers' | 'settings';
 export type SeforimTab = 'gallery' | 'demand' | 'claim' | 'myGallery';
@@ -14,9 +13,6 @@ interface BaseLayoutProps {
   onSearch: (query: string) => void;
   filterSort?: FilterSortButtonProps;
   createAction?: { caption: string; onClick: () => void };
-  /** Shows the cart/pushka button in the header — every browsing/shopping
-   *  surface (Home, Campaigns, Seforim), not the account-management ones. */
-  showPushka?: boolean;
   children: ReactNode;
 }
 
@@ -42,34 +38,18 @@ interface ProfileLayoutProps extends BaseLayoutProps {
 
 type AppLayoutProps = HomeLayoutProps | CampaignsLayoutProps | SeforimLayoutProps | ProfileLayoutProps;
 
-const NAV_ITEMS: { variant: AppLayoutProps['variant']; path: string; icon: ReactNode; labelKey: string }[] = [
-  { variant: 'home', path: '/', icon: <HomeIcon width={18} height={18} />, labelKey: 'nav.home' },
-  { variant: 'campaigns', path: '/campaigns', icon: <CampaignIcon width={18} height={18} />, labelKey: 'nav.campaigns' },
-  { variant: 'seforim', path: '/seforim', icon: <BookIcon width={18} height={18} />, labelKey: 'nav.seforim' },
-  { variant: 'profile', path: '/profile', icon: <ProfileIcon width={18} height={18} />, labelKey: 'nav.profile' },
-];
-
 // Shared with TopSearchBar, which needs to sit in the exact same spot as the
 // floating sub-nav row it replaces while searching (see the `top` comment there).
-const HEADER_TOP_ROW_HEIGHT_PX = 44;
-const HEADER_NAV_ROW_HEIGHT_PX = 56;
-const HEADER_ROW_HEIGHT_PX = HEADER_TOP_ROW_HEIGHT_PX + HEADER_NAV_ROW_HEIGHT_PX;
 const TOP_GAP_PX = 12;
 const SUBNAV_HEIGHT_PX = 48;
 
-const HEADER_BUTTON_CLASS =
-  'flex h-9 w-9 shrink-0 items-center justify-center rounded-btn transition-colors duration-200';
-
-/** Shared chrome for every top-level page: a fixed header (logo, the 4-item
- *  main destination nav, the cart button) and — only on pages with something
- *  to search/filter/switch between — a floating sub-nav row just below it
- *  (search, sub-tabs, filter). One design language, one bar each, instead of
- *  two similar-looking stacked bars. */
+/** Shared chrome for the 4 top-level tabbed pages: the persistent AppHeader,
+ *  plus — only on pages with something to search/filter/switch between — a
+ *  floating sub-nav row just below it (search, sub-tabs, filter). Detail and
+ *  editor pages use DetailPageLayout instead (header + back button, no
+ *  floating sub-nav at all). */
 export function AppLayout(props: AppLayoutProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useTranslation();
-  const pushka = usePushka();
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
 
@@ -109,65 +89,14 @@ export function AppLayout(props: AppLayoutProps) {
   // Home has nothing to search or filter — a static intro/guide + featured
   // campaign — so it skips the floating sub-nav row entirely.
   const showSubnav = props.variant !== 'home';
-  const subnavTop = `calc(env(safe-area-inset-top) + ${HEADER_ROW_HEIGHT_PX + TOP_GAP_PX}px)`;
+  const subnavTop = `calc(env(safe-area-inset-top) + ${HEADER_TOTAL_HEIGHT_PX + TOP_GAP_PX}px)`;
   const mainPaddingTop = showSubnav
-    ? `calc(env(safe-area-inset-top) + ${HEADER_ROW_HEIGHT_PX + TOP_GAP_PX + SUBNAV_HEIGHT_PX + TOP_GAP_PX}px)`
-    : `calc(env(safe-area-inset-top) + ${HEADER_ROW_HEIGHT_PX + TOP_GAP_PX}px)`;
+    ? `calc(env(safe-area-inset-top) + ${HEADER_TOTAL_HEIGHT_PX + TOP_GAP_PX + SUBNAV_HEIGHT_PX + TOP_GAP_PX}px)`
+    : `calc(env(safe-area-inset-top) + ${HEADER_TOTAL_HEIGHT_PX + TOP_GAP_PX}px)`;
 
   return (
     <div className="min-h-dvh pb-24">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-surface/90 backdrop-blur-md">
-        <div
-          className="mx-auto max-w-2xl px-4"
-          style={{ paddingTop: 'env(safe-area-inset-top)' }}
-        >
-          <div className="flex items-center justify-between gap-2" style={{ height: HEADER_TOP_ROW_HEIGHT_PX }}>
-            {props.showPushka ? (
-              <button
-                type="button"
-                onClick={() => navigate('/pushka')}
-                aria-label={t('pushka.title')}
-                className={`${HEADER_BUTTON_CLASS} relative text-accent hover:bg-bg`}
-              >
-                <PushkaIcon width={20} height={20} />
-                {Boolean(pushka.totalCount) && (
-                  <span className="absolute -end-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-1 text-[10px] font-bold text-white">
-                    {pushka.totalCount}
-                  </span>
-                )}
-              </button>
-            ) : (
-              <div className="w-9" />
-            )}
-
-            <button type="button" onClick={() => navigate('/')} className="shrink-0 text-base font-bold text-text">
-              {t('app.name')}
-            </button>
-          </div>
-
-          <nav
-            className="flex items-stretch border-t border-border"
-            style={{ height: HEADER_NAV_ROW_HEIGHT_PX }}
-          >
-            {NAV_ITEMS.map((item) => (
-              <button
-                key={item.variant}
-                type="button"
-                onClick={() => item.path !== location.pathname && navigate(item.path)}
-                aria-current={props.variant === item.variant ? 'page' : undefined}
-                className={`flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors duration-200 ${
-                  props.variant === item.variant ? 'text-accent' : 'text-text-muted hover:text-accent'
-                }`}
-              >
-                {item.icon}
-                <span className={`text-[11px] leading-none ${props.variant === item.variant ? 'font-semibold' : 'font-medium'}`}>
-                  {t(item.labelKey)}
-                </span>
-              </button>
-            ))}
-          </nav>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="mx-auto max-w-2xl px-4 pb-4" style={{ paddingTop: mainPaddingTop }}>
         {props.children}

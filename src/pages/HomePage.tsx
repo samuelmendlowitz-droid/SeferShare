@@ -25,7 +25,7 @@ export function HomePage() {
   const featured = feed.campaigns[0];
 
   return (
-    <AppLayout variant="home" onSearch={() => {}} showPushka>
+    <AppLayout variant="home" onSearch={() => {}}>
       <Card className="mb-4">
         <h1 className="mb-1 text-lg font-bold">{t('home.welcomeTitle')}</h1>
         <p className="mb-4 text-sm text-text-muted">{t('home.welcomeBody')}</p>

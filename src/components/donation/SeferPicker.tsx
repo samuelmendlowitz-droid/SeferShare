@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { SEFER_TYPES, type Sefer, type SeferType } from '../../types';
 import { listSefarim } from '../../services/sefarim';
 import { useLanguage } from '../../context/LanguageContext';
-import { useDetailStack } from '../../context/DetailStackContext';
 import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../layout/FilterSortSheet';
 import { Card } from '../ui/Card';
@@ -36,7 +36,7 @@ interface SeferPickerProps {
 export function SeferPicker({ picked, onChange }: SeferPickerProps) {
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
-  const { open } = useDetailStack();
+  const navigate = useNavigate();
   const [allSefarim, setAllSefarim] = useState<Sefer[]>([]);
   const [query, setQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -155,7 +155,7 @@ export function SeferPicker({ picked, onChange }: SeferPickerProps) {
                   <button
                     type="button"
                     className="truncate text-start text-sm font-semibold text-accent hover:underline"
-                    onClick={() => open('sefer', sefer.seferId)}
+                    onClick={() => navigate(`/seforim/${sefer.seferId}`)}
                   >
                     {sefer.englishName} · {sefer.hebrewName}
                   </button>

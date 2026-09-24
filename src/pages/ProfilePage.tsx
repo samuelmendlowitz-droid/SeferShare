@@ -9,8 +9,6 @@ import { MyInstitutionTab } from '../components/profile/MyInstitutionTab';
 import { NotificationsTab } from '../components/profile/NotificationsTab';
 import { StickerDesignsTab } from '../components/profile/StickerDesignsTab';
 import { SettingsTab } from '../components/profile/SettingsTab';
-import { CampaignCreateForm } from '../components/shared/CampaignCreateForm';
-import { Modal } from '../components/ui/Modal';
 import { useAuth } from '../context/AuthContext';
 import { useMyCampaignsFeed, type MyCampaignsSortKey } from '../hooks/useMyCampaignsFeed';
 import { useMyDonationsFeed, type MyDonationsSortKey } from '../hooks/useMyDonationsFeed';
@@ -23,7 +21,6 @@ export function ProfilePage() {
   const [tab, setTab] = useState<ProfileTab>('campaigns');
   const [searchQuery, setSearchQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [createCampaignOpen, setCreateCampaignOpen] = useState(false);
 
   // My Campaigns filter/sort state
   const [campaignInstitutionIds, setCampaignInstitutionIds] = useState<string[]>([]);
@@ -152,7 +149,7 @@ export function ProfilePage() {
         onTabChange={setTab}
         onSearch={setSearchQuery}
         filterSort={filterSort}
-        createAction={tab === 'campaigns' ? { caption: t('nav.newCampaign'), onClick: () => setCreateCampaignOpen(true) } : undefined}
+        createAction={tab === 'campaigns' ? { caption: t('nav.newCampaign'), onClick: () => navigate('/campaigns/new') } : undefined}
       >
         {tab === 'campaigns' && (
           <MyCampaignsTab
@@ -205,15 +202,6 @@ export function ProfilePage() {
           onReset={resetDonationFilters}
         />
       )}
-
-      <Modal open={createCampaignOpen} onClose={() => setCreateCampaignOpen(false)} title={t('campaign.create')}>
-        <CampaignCreateForm
-          onCreated={(campaignId) => {
-            setCreateCampaignOpen(false);
-            navigate(`/?popup=campaign:${campaignId}`);
-          }}
-        />
-      </Modal>
     </>
   );
 }

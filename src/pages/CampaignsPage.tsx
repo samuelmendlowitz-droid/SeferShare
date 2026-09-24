@@ -96,7 +96,6 @@ export function CampaignsPage() {
         variant="campaigns"
         onSearch={setSearchQuery}
         filterSort={{ active: filtersActive, onClick: () => setSheetOpen(true) }}
-        showPushka
       >
         {feed.loading ? (
           <LoadingSpinner />

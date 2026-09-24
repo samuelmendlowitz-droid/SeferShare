@@ -1,31 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDetailStack } from '../../context/DetailStackContext';
-import { getSefer } from '../../services/sefarim';
-import { listCampaignsBySefer } from '../../services/campaigns';
-import { useLanguage } from '../../context/LanguageContext';
-import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
-import type { Campaign, Sefer } from '../../types';
-import { DetailPopup } from './DetailPopup';
-import { Card } from '../ui/Card';
-import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getSefer } from '../services/sefarim';
+import { listCampaignsBySefer } from '../services/campaigns';
+import { useLanguage } from '../context/LanguageContext';
+import { seferTypeText, subtypeLabel } from '../lib/seferTaxonomy';
+import type { Campaign, Sefer } from '../types';
+import { DetailPageLayout } from '../components/layout/DetailPageLayout';
+import { Card } from '../components/ui/Card';
+import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 
-interface SeferPopupContentProps {
-  id: string;
-  isTop: boolean;
-  zIndex: number;
-  onClose: () => void;
-}
-
-export function SeferPopupContent({ id: seferId, isTop, zIndex, onClose }: SeferPopupContentProps) {
+export function SeferDetailPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { seferId } = useParams();
   const { showBilingual } = useLanguage();
-  const { open } = useDetailStack();
   const [sefer, setSefer] = useState<Sefer | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [campaigns, setCampaigns] = useState<Campaign[] | undefined>(undefined);
 
   useEffect(() => {
+    if (!seferId) return;
     let cancelled = false;
     (async () => {
       const s = await getSefer(seferId);
@@ -45,17 +40,17 @@ export function SeferPopupContent({ id: seferId, isTop, zIndex, onClose }: Sefer
 
   if (notFound) {
     return (
-      <DetailPopup title={t('sefer.notFound')} onClose={onClose} isTop={isTop} zIndex={zIndex}>
+      <DetailPageLayout fallbackPath="/seforim">
         <p className="text-text-muted">{t('sefer.notFound')}</p>
-      </DetailPopup>
+      </DetailPageLayout>
     );
   }
 
   if (!sefer || campaigns === undefined) {
     return (
-      <DetailPopup title="…" onClose={onClose} isTop={isTop} zIndex={zIndex}>
+      <DetailPageLayout fallbackPath="/seforim">
         <LoadingSpinner />
-      </DetailPopup>
+      </DetailPageLayout>
     );
   }
 
@@ -64,17 +59,7 @@ export function SeferPopupContent({ id: seferId, isTop, zIndex, onClose }: Sefer
   const languagesText = (sefer.languages ?? []).map((lang) => t(`sefer.languages.${lang}`)).join(', ');
 
   return (
-    <DetailPopup
-      title={
-        <>
-          <span className="font-normal text-text-muted">{t('sefer.singular')} - </span>
-          {sefer.englishName}
-        </>
-      }
-      onClose={onClose}
-      isTop={isTop}
-      zIndex={zIndex}
-    >
+    <DetailPageLayout fallbackPath="/seforim">
       <div className="mb-4 border-b border-border pb-4">
         <p className="text-sm text-text-muted">
           {typeText}
@@ -104,7 +89,7 @@ export function SeferPopupContent({ id: seferId, isTop, zIndex, onClose }: Sefer
               <Card
                 key={campaign.campaignId}
                 className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
-                onClick={() => open('campaign', campaign.campaignId)}
+                onClick={() => navigate(`/campaigns/${campaign.campaignId}`)}
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-semibold">{campaign.title || t('campaign.untitled')}</p>
@@ -118,6 +103,6 @@ export function SeferPopupContent({ id: seferId, isTop, zIndex, onClose }: Sefer
           })}
         </div>
       )}
-    </DetailPopup>
+    </DetailPageLayout>
   );
 }

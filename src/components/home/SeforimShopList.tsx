@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { usePushka } from '../../context/PushkaContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { useDetailStack } from '../../context/DetailStackContext';
 import { seferTypeText, subtypeLabel } from '../../lib/seferTaxonomy';
 import type { SeforimShopItem } from '../../hooks/useSeforimShopFeed';
 import type { Campaign } from '../../types';
@@ -31,7 +31,7 @@ export function SeforimShopList({ items, showDemand }: SeforimShopListProps) {
   const { t } = useTranslation();
   const { showBilingual } = useLanguage();
   const pushka = usePushka();
-  const { open } = useDetailStack();
+  const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<SeforimShopItem | null>(null);
 
   function handleConfirmAdd(item: SeforimShopItem, quantity: number, campaign?: Campaign) {
@@ -86,7 +86,7 @@ export function SeforimShopList({ items, showDemand }: SeforimShopListProps) {
               <button
                 type="button"
                 className="mt-1 line-clamp-2 text-sm font-semibold text-accent hover:underline"
-                onClick={() => open('sefer', item.sefer.seferId)}
+                onClick={() => navigate(`/seforim/${item.sefer.seferId}`)}
               >
                 {item.sefer.englishName}
               </button>

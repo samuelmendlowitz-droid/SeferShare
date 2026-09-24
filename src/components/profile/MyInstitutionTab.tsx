@@ -5,12 +5,9 @@ import { useAuth } from '../../context/AuthContext';
 import { listInstitutionsByOwner } from '../../services/institutions';
 import type { Institution } from '../../types';
 import { InstitutionOwnerApplicationForm } from '../shared/InstitutionOwnerApplicationForm';
-import { InstitutionCreateForm } from '../shared/InstitutionCreateForm';
-import { InstitutionEditForm } from '../shared/InstitutionEditForm';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
-import { Modal } from '../ui/Modal';
 import { CheckCircleIcon, EditIcon } from '../ui/icons';
 
 /** Profile's "My Institution" tab: the institution-owner application flow
@@ -27,8 +24,6 @@ export function MyInstitutionTab() {
 
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [loading, setLoading] = useState(true);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [editing, setEditing] = useState<Institution | null>(null);
 
   const approved = Boolean(profile?.isInstitutionOwner && profile.institutionOwnerApproved);
 
@@ -100,7 +95,7 @@ export function MyInstitutionTab() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setEditing(inst)}
+                  onClick={() => navigate(`/institutions/${inst.institutionId}/edit`)}
                   aria-label={t('institution.edit') ?? ''}
                   className="shrink-0 text-text-muted hover:text-accent"
                 >
@@ -117,36 +112,11 @@ export function MyInstitutionTab() {
             </Card>
           ))}
 
-          <Button className="w-full" onClick={() => setCreateOpen(true)}>
+          <Button className="w-full" onClick={() => navigate('/institutions/new')}>
             {t('institution.addNew')}
           </Button>
         </div>
       )}
-
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title={t('institution.addNew')}>
-        <InstitutionCreateForm
-          onCreated={() => {
-            setCreateOpen(false);
-            void reload();
-          }}
-        />
-      </Modal>
-
-      <Modal open={editing !== null} onClose={() => setEditing(null)} title={t('institution.edit')}>
-        {editing && (
-          <InstitutionEditForm
-            institution={editing}
-            onSaved={() => {
-              setEditing(null);
-              void reload();
-            }}
-            onDeleted={() => {
-              setEditing(null);
-              void reload();
-            }}
-          />
-        )}
-      </Modal>
     </>
   );
 }

@@ -182,7 +182,7 @@ export function SeforimPage() {
 
   return (
     <>
-      <AppLayout variant="seforim" tab={tab} onTabChange={setTab} onSearch={setSearchQuery} filterSort={filterSort} showPushka>
+      <AppLayout variant="seforim" tab={tab} onTabChange={setTab} onSearch={setSearchQuery} filterSort={filterSort}>
         {tab === 'gallery' && (
           <>
             {myVerifiedInstitutions.length > 0 && (

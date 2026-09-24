@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { usePushka, type PushkaGiftCard, type PushkaItem } from '../context/PushkaContext';
-import { useDetailStack } from '../context/DetailStackContext';
 import { getCampaign } from '../services/campaigns';
 import { getInstitution } from '../services/institutions';
 import { getNeshama } from '../services/neshamos';
@@ -78,7 +77,6 @@ export function PushkaPage() {
   const location = useLocation();
   const { profile } = useAuth();
   const pushka = usePushka();
-  const { open } = useDetailStack();
 
   const suggestedDedication = (location.state as { suggestedDedication?: SuggestedDedication } | null)
     ?.suggestedDedication;
@@ -357,7 +355,7 @@ export function PushkaPage() {
               <div key={campaignId}>
                 <button
                   type="button"
-                  onClick={() => open('campaign', campaignId)}
+                  onClick={() => navigate(`/campaigns/${campaignId}`)}
                   className="mb-2 text-sm font-semibold text-accent hover:underline"
                 >
                   {items[0].campaignTitle || t('campaign.untitled')}
@@ -485,7 +483,7 @@ export function PushkaPage() {
 function GiftCardRow({ giftCard }: { giftCard: PushkaGiftCard }) {
   const { t } = useTranslation();
   const pushka = usePushka();
-  const { open } = useDetailStack();
+  const navigate = useNavigate();
 
   return (
     <Card className="flex items-center gap-3">
@@ -498,7 +496,11 @@ function GiftCardRow({ giftCard }: { giftCard: PushkaGiftCard }) {
             type="button"
             className="truncate text-start text-sm font-semibold text-accent hover:underline"
             onClick={() =>
-              giftCard.campaignId ? open('campaign', giftCard.campaignId) : open('institution', giftCard.institutionId)
+              navigate(
+                giftCard.campaignId
+                  ? `/campaigns/${giftCard.campaignId}`
+                  : `/institutions/${giftCard.institutionId}`,
+              )
             }
           >
             {giftCard.campaignTitle || giftCard.institutionName}
@@ -530,7 +532,7 @@ function GiftCardRow({ giftCard }: { giftCard: PushkaGiftCard }) {
 function PushkaRow({ item }: { item: PushkaItem }) {
   const { t } = useTranslation();
   const pushka = usePushka();
-  const { open } = useDetailStack();
+  const navigate = useNavigate();
   const key = pushka.keyFor(item);
 
   return (
@@ -540,7 +542,7 @@ function PushkaRow({ item }: { item: PushkaItem }) {
         <button
           type="button"
           className="truncate text-start text-sm font-semibold text-accent hover:underline"
-          onClick={() => open('sefer', item.seferId)}
+          onClick={() => navigate(`/seforim/${item.seferId}`)}
         >
           {item.englishName} · {item.hebrewName}
         </button>

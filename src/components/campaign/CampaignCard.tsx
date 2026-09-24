@@ -1,15 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import type { Campaign, Institution, Neshama, Sefer } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { useDetailStack } from '../../context/DetailStackContext';
 import { campaignDollarFulfilled, campaignDollarTotal } from '../../lib/campaignMath';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
-import { CampaignEditForm } from '../shared/CampaignEditForm';
 import { Card } from '../ui/Card';
 import { EditIcon } from '../ui/icons';
-import { Modal } from '../ui/Modal';
 import { ProgressBar } from './ProgressBar';
 
 interface CampaignCardProps {
@@ -23,8 +21,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
   const { t } = useTranslation();
   const { profile } = useAuth();
   const { showBilingual } = useLanguage();
-  const { open } = useDetailStack();
-  const [editOpen, setEditOpen] = useState(false);
+  const navigate = useNavigate();
   const dollarTotal = campaignDollarTotal(campaign);
   const dollarFulfilled = campaignDollarFulfilled(campaign);
   const isOwn = profile?.uid === campaign.createdByUid;
@@ -39,11 +36,10 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
   }, [campaign.items, sefarimById, t]);
 
   return (
-    <>
-      <Card
-        className="mb-3 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
-        onClick={() => open('campaign', campaign.campaignId)}
-      >
+    <Card
+      className="mb-3 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+      onClick={() => navigate(`/campaigns/${campaign.campaignId}`)}
+    >
         <div className="flex items-start justify-between gap-2">
           {campaign.title && <p className="mb-1 text-base font-semibold">{campaign.title}</p>}
           {isOwn && (
@@ -51,7 +47,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setEditOpen(true);
+                navigate(`/campaigns/${campaign.campaignId}/edit`);
               }}
               aria-label={t('campaign.edit') ?? ''}
               title={t('campaign.edit') ?? ''}
@@ -70,7 +66,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
                 className="hover:underline"
                 onClick={(e) => {
                   e.stopPropagation();
-                  open('institution', institution.institutionId);
+                  navigate(`/institutions/${institution.institutionId}`);
                 }}
               >
                 {institution.name}
@@ -89,7 +85,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
                       className="hover:underline"
                       onClick={(e) => {
                         e.stopPropagation();
-                        open('neshama', n.neshamaId);
+                        navigate(`/neshamos/${n.neshamaId}`);
                       }}
                     >
                       {neshamaDedicationLine(n, showBilingual)}
@@ -123,18 +119,6 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
             {t('home.fulfilled')}
           </span>
         )}
-      </Card>
-
-      {isOwn && (
-        <Modal open={editOpen} onClose={() => setEditOpen(false)} title={t('campaign.edit')}>
-          <CampaignEditForm
-            campaign={campaign}
-            sefarimById={sefarimById}
-            onSaved={() => setEditOpen(false)}
-            onDeleted={() => setEditOpen(false)}
-          />
-        </Modal>
-      )}
-    </>
+    </Card>
   );
 }
