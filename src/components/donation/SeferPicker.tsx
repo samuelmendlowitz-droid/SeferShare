@@ -24,6 +24,9 @@ export interface PickedItem {
   campaignId?: string;
   /** Set when the donor picked a specific institution for this sefer at checkout. */
   requestedInstitutionId?: string;
+  /** Set when the donor chose "Let an institution claim it" instead of a
+   *  destination — becomes free-for-claim stock rather than algorithm-assigned. */
+  availableForClaim?: boolean;
 }
 
 type SortKey = 'recommended' | 'az' | 'za';

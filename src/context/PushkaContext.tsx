@@ -14,6 +14,10 @@ export interface PushkaItem {
   campaignId?: string;
   campaignTitle?: string;
   institutionId?: string;
+  /** Set when the donor explicitly chose "Let an institution claim it" — the
+   *  item becomes unassigned stock any verified institution can claim for
+   *  free, instead of the algorithm auto-assigning it at checkout. */
+  availableForClaim?: boolean;
 }
 
 export type NewPushkaItem = Omit<PushkaItem, 'quantity'>;
@@ -36,10 +40,16 @@ interface PushkaContextValue {
   giftCards: PushkaGiftCard[];
   totalCount: number;
   totalPrice: number;
-  keyFor: (item: Pick<PushkaItem, 'seferId' | 'vendorId' | 'campaignId'>) => string;
+  keyFor: (item: Pick<PushkaItem, 'seferId' | 'vendorId' | 'campaignId' | 'institutionId' | 'availableForClaim'>) => string;
   addItem: (item: NewPushkaItem, quantity: number) => void;
   updateQuantity: (key: string, quantity: number) => void;
   removeItem: (key: string) => void;
+  /** Re-tags an existing item entry with a new destination (from the "No mokom
+   *  selected" picker) — merges into a matching existing entry if one already
+   *  has that same destination, otherwise splits into its own entry so a
+   *  differently-destined quantity of the same sefer never silently combines
+   *  with another (see keyFor). */
+  setItemDestination: (key: string, destination: { institutionId?: string; availableForClaim?: boolean }) => void;
   addGiftCard: (giftCard: NewPushkaGiftCard) => void;
   updateGiftCardAmount: (id: string, amount: number) => void;
   removeGiftCard: (id: string) => void;
@@ -53,8 +63,12 @@ const PushkaContext = createContext<PushkaContextValue | undefined>(undefined);
 
 const STORAGE_KEY = 'sefershare_pushka';
 
-function keyFor(item: Pick<PushkaItem, 'seferId' | 'vendorId' | 'campaignId'>): string {
-  return `${item.seferId}_${item.vendorId}_${item.campaignId ?? 'none'}`;
+function keyFor(
+  item: Pick<PushkaItem, 'seferId' | 'vendorId' | 'campaignId' | 'institutionId' | 'availableForClaim'>,
+): string {
+  return `${item.seferId}_${item.vendorId}_${item.campaignId ?? 'none'}_${item.institutionId ?? 'none'}_${
+    item.availableForClaim ? 'claim' : 'none'
+  }`;
 }
 
 function giftCardId(): string {
@@ -120,6 +134,26 @@ export function PushkaProvider({ children }: { children: ReactNode }) {
       },
       removeItem(key) {
         setItems((prev) => prev.filter((p) => keyFor(p) !== key));
+      },
+      setItemDestination(key, destination) {
+        setItems((prev) => {
+          const idx = prev.findIndex((p) => keyFor(p) === key);
+          if (idx < 0) return prev;
+          const updated: PushkaItem = {
+            ...prev[idx],
+            institutionId: destination.institutionId,
+            availableForClaim: destination.availableForClaim,
+          };
+          const newKey = keyFor(updated);
+          if (newKey === key) return prev;
+
+          const rest = prev.filter((_, i) => i !== idx);
+          const mergeIdx = rest.findIndex((p) => keyFor(p) === newKey);
+          if (mergeIdx >= 0) {
+            return rest.map((p, i) => (i === mergeIdx ? { ...p, quantity: p.quantity + updated.quantity } : p));
+          }
+          return [...rest, updated];
+        });
       },
       addGiftCard(giftCard) {
         if (giftCard.amount <= 0) return;

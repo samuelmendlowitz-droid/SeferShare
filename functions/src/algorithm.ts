@@ -2,7 +2,7 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db } from './lib/firebaseAdmin';
 import type { Campaign, CampaignAssignment, DonationItem } from './types';
 
-interface MutableCampaign extends Campaign {
+export interface MutableCampaign extends Campaign {
   id: string;
 }
 
@@ -18,7 +18,7 @@ function remainingForMilestone(campaign: MutableCampaign): number {
  * items still need, capped by `cap` (the current 10% milestone allowance, or
  * Infinity when the donor targeted this campaign directly — spec §7).
  */
-function applyToCampaign(
+export function applyToCampaign(
   campaign: MutableCampaign,
   available: Map<string, number>,
   cap: number,
@@ -58,7 +58,7 @@ function applyToCampaign(
   return assigned;
 }
 
-function keyFor(seferId: string, vendorId: string) {
+export function keyFor(seferId: string, vendorId: string) {
   return `${seferId}::${vendorId}`;
 }
 

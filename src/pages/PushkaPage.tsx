@@ -22,6 +22,7 @@ import type {
 import type { PickedItem } from '../components/donation/SeferPicker';
 import { CheckoutStep } from '../components/donation/CheckoutStep';
 import { CartDedicationPicker } from '../components/donation/CartDedicationPicker';
+import { SeferDestinationSheet, type SeferDestination } from '../components/donation/SeferDestinationSheet';
 import { DetailPageLayout } from '../components/layout/DetailPageLayout';
 import { VirtualDedicationCard, type StickerInfo } from '../components/donation/VirtualDedicationCard';
 import { StickerDesignEditor } from '../components/donation/StickerDesignEditor';
@@ -47,6 +48,7 @@ function toPickedItem(item: PushkaItem): PickedItem {
     imageUrl: item.imageUrl,
     campaignId: item.campaignId,
     requestedInstitutionId: item.institutionId,
+    availableForClaim: item.availableForClaim,
   };
 }
 
@@ -58,6 +60,21 @@ function toDonationGiftCard(giftCard: PushkaGiftCard): DonationGiftCard {
     campaignTitle: giftCard.campaignTitle,
     amount: giftCard.amount,
   };
+}
+
+/** What a plain (non-campaign) item's destination row says: a specifically
+ *  chosen mokom, "let an institution claim it" (donated as free stock), or the
+ *  default "no mokom selected" — see SeferDestinationSheet for how it's set. */
+function destinationText(
+  item: PushkaItem,
+  institutionsById: Map<string, Institution>,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  if (item.institutionId) {
+    return t('pushka.goingTo', { name: institutionsById.get(item.institutionId)?.name ?? '…' });
+  }
+  if (item.availableForClaim) return t('pushka.letInstitutionClaim');
+  return t('pushka.noDestinationSelected');
 }
 
 interface SuggestedDedication {
@@ -224,11 +241,31 @@ export function PushkaPage() {
   }, [groups, campaignsById]);
 
   const [institutionsById, setInstitutionsById] = useState<Map<string, Institution>>(new Map());
+  const [destinationTarget, setDestinationTarget] = useState<PushkaItem | null>(null);
+
+  // Plain (non-campaign) items grouped by sefer+vendor so a sefer split across
+  // multiple destinations (e.g. some going to a chosen mokom, some not) shows
+  // as one card with a breakdown, instead of one row per destination.
+  const plainItemGroups = useMemo(() => {
+    const map = new Map<string, PushkaItem[]>();
+    for (const item of groups.plainItems) {
+      const key = `${item.seferId}_${item.vendorId}`;
+      const list = map.get(key) ?? [];
+      list.push(item);
+      map.set(key, list);
+    }
+    return [...map.values()];
+  }, [groups.plainItems]);
 
   useEffect(() => {
+    // Every campaign group's own institution (for its "Going to X" line) and
+    // every plain item's directly-chosen institution (same), on top of what
+    // the sticker/dedication logic below separately needs.
     const ids = [
       ...new Set(
         [
+          ...[...campaignsById.values()].map((c) => c.institutionId),
+          ...groups.plainItems.map((item) => item.institutionId),
           ...campaignStickerGroups.map((g) => campaignsById.get(g.campaignId)?.institutionId),
           generalInstitutionId,
         ].filter((id): id is string => Boolean(id)),
@@ -245,7 +282,7 @@ export function PushkaPage() {
       });
       setInstitutionsById(map);
     });
-  }, [campaignStickerGroups, campaignsById, generalInstitutionId]);
+  }, [campaignsById, groups.plainItems, campaignStickerGroups, generalInstitutionId]);
 
   async function handlePaid() {
     setPaidItems(pushka.items);
@@ -353,29 +390,42 @@ export function PushkaPage() {
               </div>
             )}
 
-            {[...groups.byCampaign.entries()].map(([campaignId, items]) => (
-              <div key={campaignId}>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/campaigns/${campaignId}`)}
-                  className="mb-2 text-sm font-semibold text-accent hover:underline"
-                >
-                  {items[0].campaignTitle || t('campaign.untitled')}
-                </button>
-                <div className="space-y-2">
-                  {items.map((item) => (
-                    <PushkaRow key={pushka.keyFor(item)} item={item} />
-                  ))}
+            {[...groups.byCampaign.entries()].map(([campaignId, items]) => {
+              const institutionId = campaignsById.get(campaignId)?.institutionId;
+              return (
+                <div key={campaignId}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/campaigns/${campaignId}`)}
+                    className="text-sm font-semibold text-accent hover:underline"
+                  >
+                    {items[0].campaignTitle || t('campaign.untitled')}
+                  </button>
+                  {institutionId && (
+                    <p className="mb-2 text-xs text-text-muted">
+                      {t('pushka.goingTo', { name: institutionsById.get(institutionId)?.name ?? '…' })}
+                    </p>
+                  )}
+                  <div className={institutionId ? 'space-y-2' : 'mt-2 space-y-2'}>
+                    {items.map((item) => (
+                      <PushkaRow key={pushka.keyFor(item)} item={item} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
-            {groups.plainItems.length > 0 && (
+            {plainItemGroups.length > 0 && (
               <div>
                 <p className="mb-2 text-sm font-semibold text-text-muted">{t('pushka.otherSeforim')}</p>
                 <div className="space-y-2">
-                  {groups.plainItems.map((item) => (
-                    <PushkaRow key={pushka.keyFor(item)} item={item} />
+                  {plainItemGroups.map((entries) => (
+                    <PlainSeferGroup
+                      key={`${entries[0].seferId}_${entries[0].vendorId}`}
+                      entries={entries}
+                      institutionsById={institutionsById}
+                      onChooseDestination={setDestinationTarget}
+                    />
                   ))}
                 </div>
               </div>
@@ -478,6 +528,15 @@ export function PushkaPage() {
           onDelete={stickerDesignsData.remove}
         />
       </Modal>
+
+      <SeferDestinationSheet
+        open={destinationTarget !== null}
+        seferId={destinationTarget?.seferId ?? ''}
+        onClose={() => setDestinationTarget(null)}
+        onSelect={(destination: SeferDestination) => {
+          if (destinationTarget) pushka.setItemDestination(pushka.keyFor(destinationTarget), destination);
+        }}
+      />
     </DetailPageLayout>
   );
 }
@@ -559,6 +618,70 @@ function PushkaRow({ item }: { item: PushkaItem }) {
       >
         <CloseIcon width={16} height={16} />
       </button>
+    </Card>
+  );
+}
+
+/** One card per sefer among the plain (non-campaign) items — a shared
+ *  thumbnail/name/price header, then one destination sub-row per underlying
+ *  cart entry, so the same sefer split across destinations (e.g. some let-an-
+ *  institution-claim, some no-mokom-selected) shows as one card with a
+ *  breakdown instead of a separate row per destination. */
+function PlainSeferGroup({
+  entries,
+  institutionsById,
+  onChooseDestination,
+}: {
+  entries: PushkaItem[];
+  institutionsById: Map<string, Institution>;
+  onChooseDestination: (item: PushkaItem) => void;
+}) {
+  const { t } = useTranslation();
+  const pushka = usePushka();
+  const navigate = useNavigate();
+  const first = entries[0];
+
+  return (
+    <Card>
+      <div className="flex items-center gap-3">
+        <SeferThumbnail imageUrl={first.imageUrl} alt={first.englishName} size={48} />
+        <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            className="truncate text-start text-sm font-semibold text-accent hover:underline"
+            onClick={() => navigate(`/seforim/${first.seferId}`)}
+          >
+            {first.englishName} · {first.hebrewName}
+          </button>
+          <p className="text-xs text-text-muted">${first.price.toFixed(2)} each</p>
+        </div>
+      </div>
+
+      <div className="mt-3 space-y-2 border-t border-border pt-3">
+        {entries.map((item) => {
+          const key = pushka.keyFor(item);
+          return (
+            <div key={key} className="flex items-center gap-2">
+              <QuantityStepper value={item.quantity} onChange={(quantity) => pushka.updateQuantity(key, quantity)} />
+              <button
+                type="button"
+                onClick={() => onChooseDestination(item)}
+                className="min-w-0 flex-1 truncate text-start text-xs font-medium text-accent hover:underline"
+              >
+                {destinationText(item, institutionsById, t)}
+              </button>
+              <button
+                type="button"
+                onClick={() => pushka.removeItem(key)}
+                aria-label={t('actions.delete') ?? ''}
+                className="shrink-0 text-text-muted"
+              >
+                <CloseIcon width={16} height={16} />
+              </button>
+            </div>
+          );
+        })}
+      </div>
     </Card>
   );
 }

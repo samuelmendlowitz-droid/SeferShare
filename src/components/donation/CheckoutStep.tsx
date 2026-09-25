@@ -89,6 +89,7 @@ export function CheckoutStep({
           priceEach: i.price,
           ...(i.campaignId ? { campaignId: i.campaignId } : {}),
           ...(i.requestedInstitutionId ? { requestedInstitutionId: i.requestedInstitutionId } : {}),
+          ...(i.availableForClaim ? { availableForClaim: true } : {}),
         })),
         giftCards,
         requestedInstitutionId: institutionId,

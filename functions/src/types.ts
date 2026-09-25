@@ -49,6 +49,10 @@ export interface DonationItem {
    *  (items added generically from the Seforim shopping tab, not tied to a campaign) —
    *  honored uncapped against that institution's active campaigns (see algorithm.ts). */
   requestedInstitutionId?: string;
+  /** Set when the donor explicitly chose not to direct this sefer anywhere —
+   *  becomes unassigned stock any verified institution can claim for free,
+   *  skipped by the assignment algorithm entirely (see confirmDonation.ts). */
+  availableForClaim?: boolean;
 }
 
 export interface CampaignAssignment {
@@ -215,6 +219,18 @@ export interface Sefer {
   customSubType?: string;
   languages?: string[];
   vendorListings: PublicVendorListing[];
+}
+
+export interface AvailableStockEntry {
+  seferId: string;
+  vendorId: string;
+  vendorName: string;
+  englishName: string;
+  hebrewName: string;
+  imageUrl?: string;
+  price: number;
+  quantity: number;
+  updatedAt: FirebaseFirestore.FieldValue | FirebaseFirestore.Timestamp;
 }
 
 export interface VendorApplication {

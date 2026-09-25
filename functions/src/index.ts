@@ -14,3 +14,5 @@ export { setUserBlocked, deleteUserAccount } from './manageUsers';
 // No Stripe secrets involved — an institution is spending its own already-collected
 // gift card balance, not taking a new card payment — so this one can stay enabled.
 export { spendInstitutionBalance } from './spendInstitutionBalance';
+// Also no Stripe secrets — claiming free stock never touches payment.
+export { claimAvailableStock } from './claimAvailableStock';

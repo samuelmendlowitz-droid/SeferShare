@@ -130,6 +130,14 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // --- Available stock — seforim donated with no destination, sitting free
+    // for any verified institution to claim; written and decremented only by
+    // Cloud Functions (confirmDonation.ts / claimAvailableStock.ts). --------
+    match /availableStock/{stockId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
     // --- Notifications — created by Cloud Functions, recipient can mark read --
     match /notifications/{notificationId} {
       allow read: if signedIn() && resource.data.recipientUid == request.auth.uid;

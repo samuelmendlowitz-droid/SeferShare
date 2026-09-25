@@ -196,8 +196,11 @@
   "seforim": {
     "needed": "{{count}} נדרשים",
     "noneNeeded": "לא נדרש כרגע",
-    "claimComingSoonTitle": "בקרוב",
-    "claimComingSoonBody": "ספרים שנתרמו ללא מוסד ספציפי יופיעו כאן, כדי שמוסדות מאומתים יוכלו לתבוע אותם."
+    "availableCount": "{{count}} זמינים",
+    "claimAction": "לתבוע",
+    "claimingAsLabel": "תובעים בתור",
+    "claimNeedsVerifiedInstitution": "רק מוסד מאומת יכול לתבוע ספרים — ניתן להגיש בקשה בפרופיל > המוסד שלי.",
+    "availableStockEmpty": "אין כרגע ספרים זמינים לתביעה."
   },
   "donation": {
     "message": "הודעה לעורך הקמפיין (אופציונלי)",
@@ -364,7 +367,11 @@
     "completeDonation": "השלמת תרומה ({{count}} · ${{amount}})",
     "otherSeforim": "ספרים נוספים",
     "increaseQuantity": "הגדלת כמות",
-    "decreaseQuantity": "הקטנת כמות"
+    "decreaseQuantity": "הקטנת כמות",
+    "noDestinationSelected": "לא נבחר מקום",
+    "letInstitutionClaim": "לאפשר למוסד לתבוע אותו",
+    "goingTo": "הולך אל {{name}}",
+    "chooseDestinationTitle": "בחירת יעד"
   },
   "sticker": {
     "customize": "עיצוב מדבקת ההקדשה",

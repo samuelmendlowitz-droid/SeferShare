@@ -12,7 +12,8 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { Campaign, CampaignItem } from '../types';
+import { getInstitution } from './institutions';
+import type { Campaign, CampaignItem, Institution } from '../types';
 
 const campaignsRef = collection(db, 'campaigns');
 
@@ -67,6 +68,23 @@ export async function listCampaignsByNeshama(neshamaId: string): Promise<Campaig
 export async function listCampaignsBySefer(seferId: string): Promise<Campaign[]> {
   const campaigns = await listActiveCampaigns();
   return campaigns.filter((c) => c.items.some((item) => item.seferId === seferId));
+}
+
+/** Distinct institutions with at least one active campaign still needing this
+ *  sefer (fulfilled items don't count) — used by the cart's "who needs this?"
+ *  destination picker (see SeferDestinationSheet). */
+export async function listInstitutionsNeedingSefer(seferId: string): Promise<Institution[]> {
+  const campaigns = await listCampaignsBySefer(seferId);
+  const institutionIds = new Set<string>();
+  for (const c of campaigns) {
+    const remaining = c.items
+      .filter((item) => item.seferId === seferId)
+      .reduce((sum, item) => sum + Math.max(0, item.quantity - item.quantityFulfilled), 0);
+    if (remaining > 0) institutionIds.add(c.institutionId);
+  }
+  if (institutionIds.size === 0) return [];
+  const institutions = await Promise.all([...institutionIds].map((id) => getInstitution(id)));
+  return institutions.filter((i): i is Institution => Boolean(i));
 }
 
 export interface CreateCampaignInput {

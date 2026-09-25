@@ -70,6 +70,10 @@ export interface DonationItem {
   /** Set when the donor picked a specific institution for this sefer at checkout
    *  (items added generically from the Seforim shopping tab, not tied to a campaign). */
   requestedInstitutionId?: string;
+  /** Set when the donor explicitly chose not to direct this sefer anywhere — it
+   *  becomes unassigned stock any verified institution can claim for free (see
+   *  claimAvailableStock.ts), instead of being auto-assigned by the algorithm. */
+  availableForClaim?: boolean;
 }
 
 export interface CampaignAssignment {

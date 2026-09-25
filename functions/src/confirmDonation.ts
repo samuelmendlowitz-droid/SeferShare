@@ -7,6 +7,7 @@ import { assignDonationToCampaigns } from './algorithm';
 import { assignStickerDedications } from './dedication';
 import { splitOrdersByVendor } from './orders';
 import { notify, notifyCampaigners } from './notify';
+import { creditAvailableStock } from './availableStock';
 import type { Donation, Order } from './types';
 
 export const confirmDonation = onRequest(
@@ -70,13 +71,22 @@ export const confirmDonation = onRequest(
       return;
     }
 
+    // Items the donor explicitly left with no destination sit as free stock for
+    // any verified institution to claim instead of being auto-assigned — see
+    // availableStock.ts. They never reach the algorithm or get a dedication
+    // sticker here; a claiming institution's own campaign resolves both later.
+    const claimItems = donation.items.filter((item) => item.availableForClaim);
+    const routedItems = donation.items.filter((item) => !item.availableForClaim);
+
+    await creditAvailableStock(claimItems);
+
     const { assignments: campaignAssignments, campaignsById } = await assignDonationToCampaigns({
-      items: donation.items,
+      items: routedItems,
       requestedInstitutionId: donation.requestedInstitutionId ?? undefined,
       requestedNeshamaId: donation.requestedNeshamaId ?? undefined,
     });
 
-    const stickers = await assignStickerDedications(donation.items, donation.donorDedication);
+    const stickers = await assignStickerDedications(routedItems, donation.donorDedication);
 
     await donationRef.update({
       status: 'paid',

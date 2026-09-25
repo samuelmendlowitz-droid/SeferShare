@@ -39,6 +39,27 @@ export interface Sefer {
   vendorListings: PublicVendorListing[];
 }
 
+/** A sefer donated without a destination — sits here for any verified
+ *  institution to claim for free (see claimAvailableStock.ts) instead of
+ *  being auto-assigned to a campaign by the algorithm. Denormalized display
+ *  fields (name, price, image) are snapshotted server-side at donation time
+ *  from the sefarim catalog, same as everywhere else client-facing pricing
+ *  is never trusted from the donor's own cart data. */
+export interface AvailableStockEntry {
+  /** `${seferId}_${vendorId}` — also the Firestore doc id, so repeated
+   *  donations of the same sefer/vendor accumulate onto one entry. */
+  id: string;
+  seferId: string;
+  vendorId: string;
+  vendorName: string;
+  englishName: string;
+  hebrewName: string;
+  imageUrl?: string;
+  price: number;
+  quantity: number;
+  updatedAt: number;
+}
+
 export type StockStatus = 'in' | 'low' | 'out';
 
 export function classifyStockStatus(stockQty: number): StockStatus {

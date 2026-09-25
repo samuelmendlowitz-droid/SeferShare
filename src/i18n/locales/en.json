@@ -196,8 +196,11 @@
   "seforim": {
     "needed": "{{count}} needed",
     "noneNeeded": "None currently needed",
-    "claimComingSoonTitle": "Coming soon",
-    "claimComingSoonBody": "Seforim donated without a specific institution will appear here for verified institutions to claim."
+    "availableCount": "{{count}} available",
+    "claimAction": "Claim",
+    "claimingAsLabel": "Claiming as",
+    "claimNeedsVerifiedInstitution": "Only a verified institution can claim seforim — apply from Profile > My Institution.",
+    "availableStockEmpty": "Nothing is available to claim right now."
   },
   "donation": {
     "message": "Message to campaigner (optional)",
@@ -364,7 +367,11 @@
     "completeDonation": "Complete Donation ({{count}} · ${{amount}})",
     "otherSeforim": "Other seforim",
     "increaseQuantity": "Increase quantity",
-    "decreaseQuantity": "Decrease quantity"
+    "decreaseQuantity": "Decrease quantity",
+    "noDestinationSelected": "No mokom selected",
+    "letInstitutionClaim": "Let an institution claim it",
+    "goingTo": "Going to {{name}}",
+    "chooseDestinationTitle": "Choose a destination"
   },
   "sticker": {
     "customize": "Customize sticker design",

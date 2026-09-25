@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { listInstitutions, listInstitutionsByOwner } from '../services/institutions';
+import { listAvailableStock, claimAvailableStock } from '../services/stock';
 import { AppLayout, type SeforimTab } from '../components/layout/AppLayout';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../components/layout/FilterSortSheet';
 import { SeforimShopList } from '../components/home/SeforimShopList';
+import { AvailableStockList } from '../components/home/AvailableStockList';
 import { CatalogTab, type CatalogGroupKey, type CatalogSortKey } from '../components/vendor/CatalogTab';
 import { InstitutionSpendForm } from '../components/shared/InstitutionSpendForm';
 import { BubbleGrid } from '../components/ui/BubbleGrid';
@@ -13,7 +15,14 @@ import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { Modal } from '../components/ui/Modal';
 import { BookIcon } from '../components/ui/icons';
 import { useSeforimShopFeed, type SeforimShopSortKey } from '../hooks/useSeforimShopFeed';
-import { INSTITUTION_TYPES, SEFER_TYPES, type Institution, type SeferType, type StockStatus } from '../types';
+import {
+  INSTITUTION_TYPES,
+  SEFER_TYPES,
+  type AvailableStockEntry,
+  type Institution,
+  type SeferType,
+  type StockStatus,
+} from '../types';
 
 const STOCK_STATUSES: StockStatus[] = ['in', 'low', 'out'];
 
@@ -71,6 +80,44 @@ export function SeforimPage() {
     if (!profile?.uid) return;
     listInstitutionsByOwner(profile.uid).then((owned) => setMyVerifiedInstitutions(owned.filter((i) => i.verified)));
   }, [profile?.uid]);
+
+  // Available to Claim: seforim donated with no destination, free for any
+  // verified institution to claim (see claimAvailableStock.ts).
+  const [stockItems, setStockItems] = useState<AvailableStockEntry[]>([]);
+  const [stockLoading, setStockLoading] = useState(true);
+  const [claimingInstitutionId, setClaimingInstitutionId] = useState<string | undefined>(undefined);
+  const [claimError, setClaimError] = useState<string | null>(null);
+
+  function reloadStock() {
+    setStockLoading(true);
+    return listAvailableStock()
+      .then(setStockItems)
+      .finally(() => setStockLoading(false));
+  }
+
+  useEffect(() => {
+    reloadStock();
+  }, []);
+
+  // A single owned institution claims for itself with no need to choose; more
+  // than one requires the switcher below to pick which one is claiming.
+  useEffect(() => {
+    if (myVerifiedInstitutions.length === 1) setClaimingInstitutionId(myVerifiedInstitutions[0].institutionId);
+  }, [myVerifiedInstitutions]);
+
+  async function handleClaim(entry: AvailableStockEntry, quantity: number) {
+    if (!claimingInstitutionId) return;
+    setClaimError(null);
+    try {
+      await claimAvailableStock({
+        institutionId: claimingInstitutionId,
+        claims: [{ seferId: entry.seferId, vendorId: entry.vendorId, quantity }],
+      });
+      await reloadStock();
+    } catch (err) {
+      setClaimError(err instanceof Error ? err.message : String(err));
+    }
+  }
 
   const galleryFilterGroups: FilterGroup[] = [
     {
@@ -223,13 +270,34 @@ export function SeforimPage() {
             </>
           ))}
 
-        {tab === 'claim' && (
-          <Card className="flex flex-col items-center gap-2 py-8 text-center">
-            <BookIcon className="text-accent" width={32} height={32} />
-            <h2 className="text-sm font-semibold">{t('seforim.claimComingSoonTitle')}</h2>
-            <p className="max-w-xs text-xs text-text-muted">{t('seforim.claimComingSoonBody')}</p>
-          </Card>
-        )}
+        {tab === 'claim' &&
+          (stockLoading ? (
+            <LoadingSpinner />
+          ) : stockItems.length === 0 ? (
+            <Card className="flex flex-col items-center gap-2 py-8 text-center">
+              <BookIcon className="text-accent" width={32} height={32} />
+              <p className="max-w-xs text-xs text-text-muted">{t('seforim.availableStockEmpty')}</p>
+            </Card>
+          ) : (
+            <>
+              {myVerifiedInstitutions.length > 1 && (
+                <div className="mb-3">
+                  <p className="mb-1 text-xs font-semibold text-text-muted">{t('seforim.claimingAsLabel')}</p>
+                  <BubbleGrid
+                    rows={1}
+                    options={myVerifiedInstitutions.map((inst) => ({ value: inst.institutionId, label: inst.name }))}
+                    isSelected={(v) => claimingInstitutionId === v}
+                    onToggle={setClaimingInstitutionId}
+                  />
+                </div>
+              )}
+              {myVerifiedInstitutions.length === 0 && (
+                <p className="mb-3 text-xs text-text-muted">{t('seforim.claimNeedsVerifiedInstitution')}</p>
+              )}
+              {claimError && <p className="mb-3 text-sm text-error">{claimError}</p>}
+              <AvailableStockList items={stockItems} onClaim={claimingInstitutionId ? handleClaim : undefined} />
+            </>
+          ))}
 
         {tab === 'myGallery' &&
           (isApprovedVendor ? (
