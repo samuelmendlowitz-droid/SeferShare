@@ -106,7 +106,7 @@ export function CampaignsPage() {
             <CampaignCard
               key={campaign.campaignId}
               campaign={campaign}
-              institution={feed.institutionsById.get(campaign.institutionId)}
+              institution={feed.institutionsById.get(campaign.institutionId ?? '')}
               neshamas={(campaign.neshamaIds ?? [])
                 .map((id) => feed.neshamosById.get(id))
                 .filter((n): n is NonNullable<typeof n> => Boolean(n))}

@@ -58,42 +58,43 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
           )}
         </div>
 
-        {(institution || neshamas.length > 0) && (
+        {/* Only the campaign's objective shows here — a 'neshama' campaign can still
+            have an institution attached (and vice versa), but the card is about
+            whichever one is the actual point. Campaigns created before this field
+            existed default to 'institution', matching their old behavior. */}
+        {(campaign.objective ?? 'institution') === 'institution' && institution && (
           <p className="text-sm text-text">
-            {institution && (
-              <button
-                type="button"
-                className="hover:underline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/institutions/${institution.institutionId}`);
-                }}
-              >
-                {institution.name}
-                {showBilingual && institution.hebrewName ? ` · ${institution.hebrewName}` : ''}
-              </button>
-            )}
-            {institution && neshamas.length > 0 && ' • '}
-            {neshamas.length > 0 && (
-              <span className={institution ? 'text-text-muted' : ''}>
-                {t('neshama.liluyNishmat')}{' '}
-                {neshamas.map((n, idx) => (
-                  <span key={n.neshamaId}>
-                    {idx > 0 && ', '}
-                    <button
-                      type="button"
-                      className="hover:underline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/neshamos/${n.neshamaId}`);
-                      }}
-                    >
-                      {neshamaDedicationLine(n, showBilingual)}
-                    </button>
-                  </span>
-                ))}
+            <button
+              type="button"
+              className="hover:underline"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/institutions/${institution.institutionId}`);
+              }}
+            >
+              {institution.name}
+              {showBilingual && institution.hebrewName ? ` · ${institution.hebrewName}` : ''}
+            </button>
+          </p>
+        )}
+        {(campaign.objective ?? 'institution') === 'neshama' && neshamas.length > 0 && (
+          <p className="text-sm text-text-muted">
+            {t('neshama.liluyNishmat')}{' '}
+            {neshamas.map((n, idx) => (
+              <span key={n.neshamaId}>
+                {idx > 0 && ', '}
+                <button
+                  type="button"
+                  className="hover:underline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/neshamos/${n.neshamaId}`);
+                  }}
+                >
+                  {neshamaDedicationLine(n, showBilingual)}
+                </button>
               </span>
-            )}
+            ))}
           </p>
         )}
 

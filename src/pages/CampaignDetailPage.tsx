@@ -45,7 +45,7 @@ export function CampaignDetailPage() {
         return;
       }
       setCampaign(c);
-      setInstitution(await getInstitution(c.institutionId));
+      setInstitution(c.institutionId ? await getInstitution(c.institutionId) : null);
       if (c.neshamaIds?.length) {
         const fetched = await Promise.all(c.neshamaIds.map((nid) => getNeshama(nid)));
         if (!cancelled) setNeshamas(fetched.filter((n): n is Neshama => Boolean(n)));
@@ -119,7 +119,12 @@ export function CampaignDetailPage() {
     <DetailPageLayout fallbackPath="/campaigns">
       <div className="mb-4 border-b border-border pb-4">
         <h1 className="text-2xl font-bold">{campaign.title || t('campaign.untitled')}</h1>
-        {institution && (
+        {/* Only the campaign's objective shows here — a 'neshama' campaign
+            can still have an institution attached (and vice versa), but the
+            info card is about whichever one is the actual point. Campaigns
+            created before this field existed default to 'institution', which
+            matches how every campaign used to behave. */}
+        {(campaign.objective ?? 'institution') === 'institution' && institution && (
           <p className="mt-1 text-sm">
             <button
               type="button"
@@ -128,24 +133,23 @@ export function CampaignDetailPage() {
             >
               {institution.name}
             </button>
-            {neshamas.length > 0 && ' • '}
-            {neshamas.length > 0 && (
-              <span className="text-text-muted">
-                {t('neshama.liluyNishmat')}{' '}
-                {neshamas.map((n, idx) => (
-                  <span key={n.neshamaId}>
-                    {idx > 0 && ', '}
-                    <button
-                      type="button"
-                      className="text-accent hover:underline"
-                      onClick={() => navigate(`/neshamos/${n.neshamaId}`)}
-                    >
-                      {neshamaDedicationLine(n, showBilingual)}
-                    </button>
-                  </span>
-                ))}
+          </p>
+        )}
+        {(campaign.objective ?? 'institution') === 'neshama' && neshamas.length > 0 && (
+          <p className="mt-1 text-sm text-text-muted">
+            {t('neshama.liluyNishmat')}{' '}
+            {neshamas.map((n, idx) => (
+              <span key={n.neshamaId}>
+                {idx > 0 && ', '}
+                <button
+                  type="button"
+                  className="text-accent hover:underline"
+                  onClick={() => navigate(`/neshamos/${n.neshamaId}`)}
+                >
+                  {neshamaDedicationLine(n, showBilingual)}
+                </button>
               </span>
-            )}
+            ))}
           </p>
         )}
         {campaign.description && <p className="mt-3 text-sm text-text">{campaign.description}</p>}
@@ -164,17 +168,19 @@ export function CampaignDetailPage() {
       </div>
 
       <h2 className="mb-2 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
-      <GiftCardOption
-        onAdd={(amount) =>
-          pushka.addGiftCard({
-            institutionId: campaign.institutionId,
-            institutionName: institution?.name,
-            campaignId: campaign.campaignId,
-            campaignTitle: campaign.title ?? undefined,
-            amount,
-          })
-        }
-      />
+      {campaign.institutionId && (
+        <GiftCardOption
+          onAdd={(amount) =>
+            pushka.addGiftCard({
+              institutionId: campaign.institutionId!,
+              institutionName: institution?.name,
+              campaignId: campaign.campaignId,
+              campaignTitle: campaign.title ?? undefined,
+              amount,
+            })
+          }
+        />
+      )}
       <div className="space-y-2">
         {campaign.items.map((item) => {
           const itemKey = `${item.seferId}_${item.vendorId}`;

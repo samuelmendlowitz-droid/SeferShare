@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { createCampaign } from '../../services/campaigns';
-import type { Address, Institution } from '../../types';
+import type { Address, CampaignObjective, Institution } from '../../types';
 import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
 import { InstitutionPicker } from './InstitutionPicker';
 import { NeshamaPicker } from './NeshamaPicker';
@@ -27,6 +27,7 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [objective, setObjective] = useState<CampaignObjective>('institution');
   const [institutionId, setInstitutionId] = useState<string>();
   const [institution, setInstitution] = useState<Institution>();
   const [neshamaIds, setNeshamaIds] = useState<string[]>([]);
@@ -50,8 +51,12 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
       setError(t('campaign.titleRequired'));
       return;
     }
-    if (!institutionId) {
+    if (objective === 'institution' && !institutionId) {
       setError(t('campaign.institutionRequired'));
+      return;
+    }
+    if (objective === 'neshama' && neshamaIds.length === 0) {
+      setError(t('campaign.neshamaRequired'));
       return;
     }
     if (items.length === 0) {
@@ -65,6 +70,7 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
         createdByUid: profile.uid,
         title: title.trim(),
         description: description || undefined,
+        objective,
         institutionId,
         neshamaIds,
         items: items.map((i) => ({
@@ -102,12 +108,45 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
         containerClassName="mb-4"
       />
 
-      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectWhere')}</h2>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.objectiveLabel')}</h2>
+      <p className="mb-2 text-xs text-text-muted">{t('campaign.objectiveHint')}</p>
+      <div className="mb-4 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setObjective('institution')}
+          className={`flex-1 rounded-btn border px-3 py-2 text-sm font-medium ${
+            objective === 'institution' ? 'border-accent bg-accent text-white' : 'border-border text-text-muted'
+          }`}
+        >
+          {t('campaign.objectiveInstitution')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setObjective('neshama')}
+          className={`flex-1 rounded-btn border px-3 py-2 text-sm font-medium ${
+            objective === 'neshama' ? 'border-accent bg-accent text-white' : 'border-border text-text-muted'
+          }`}
+        >
+          {t('campaign.objectiveNeshama')}
+        </button>
+      </div>
+
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">
+        {t('campaign.selectWhere')}
+        {objective === 'neshama' && (
+          <span className="ms-1 text-xs font-normal text-text-muted">{t('campaign.optionalSuffix')}</span>
+        )}
+      </h2>
       <div className="mb-4">
         <InstitutionPicker value={institutionId} onChange={handleInstitutionChange} />
       </div>
 
-      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectWho')}</h2>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">
+        {t('campaign.selectWho')}
+        {objective === 'institution' && (
+          <span className="ms-1 text-xs font-normal text-text-muted">{t('campaign.optionalSuffix')}</span>
+        )}
+      </h2>
       <div className="mb-4">
         <NeshamaPicker values={neshamaIds} onChange={setNeshamaIds} />
       </div>

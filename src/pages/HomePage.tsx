@@ -50,7 +50,7 @@ export function HomePage() {
       ) : featured ? (
         <CampaignCard
           campaign={featured}
-          institution={feed.institutionsById.get(featured.institutionId)}
+          institution={feed.institutionsById.get(featured.institutionId ?? '')}
           neshamas={(featured.neshamaIds ?? [])
             .map((id) => feed.neshamosById.get(id))
             .filter((n): n is NonNullable<typeof n> => Boolean(n))}

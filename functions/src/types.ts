@@ -17,11 +17,14 @@ export interface CampaignItem {
   retailPrice: number;
 }
 
+export type CampaignObjective = 'institution' | 'neshama';
+
 export interface Campaign {
   campaignId: string;
   createdByUid: string;
   title?: string | null;
-  institutionId: string;
+  objective: CampaignObjective;
+  institutionId?: string;
   neshamaIds?: string[];
   items: CampaignItem[];
   shippingAddress: Address;

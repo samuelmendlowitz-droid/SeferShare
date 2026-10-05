@@ -59,7 +59,7 @@ export function useSeforimShopFeed(searchQuery: string, options: SeforimShopOpti
             const remaining = Math.max(0, item.quantity - item.quantityFulfilled);
             const entry = demand.get(item.seferId) ?? { need: 0, institutionIds: new Set<string>() };
             entry.need += remaining;
-            entry.institutionIds.add(campaign.institutionId);
+            if (campaign.institutionId) entry.institutionIds.add(campaign.institutionId);
             demand.set(item.seferId, entry);
           }
         }

@@ -23,7 +23,7 @@ export function MyCampaignsTab({ loading, campaigns, institutionsById, neshamosB
         <CampaignCard
           key={c.campaignId}
           campaign={c}
-          institution={institutionsById.get(c.institutionId)}
+          institution={institutionsById.get(c.institutionId ?? '')}
           neshamas={(c.neshamaIds ?? [])
             .map((id) => neshamosById.get(id))
             .filter((n): n is Neshama => Boolean(n))}

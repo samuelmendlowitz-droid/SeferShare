@@ -235,13 +235,24 @@ export function PushkaPage() {
     }
     for (const campaignId of groups.byCampaign.keys()) {
       const campaign = campaignsById.get(campaignId);
-      if (campaign && !campaign.neshamaIds?.length) ids.add(campaign.institutionId);
+      if (campaign && !campaign.neshamaIds?.length && campaign.institutionId) ids.add(campaign.institutionId);
     }
     return ids.size === 1 ? [...ids][0] : undefined;
   }, [groups, campaignsById]);
 
   const [institutionsById, setInstitutionsById] = useState<Map<string, Institution>>(new Map());
   const [destinationTarget, setDestinationTarget] = useState<PushkaItem | null>(null);
+  // Campaign id whose "this Sefer will be available to claim" destination
+  // sheet is open — a neshama-objective campaign with no institution needs
+  // one destination choice for its whole cart group, not one per item.
+  const [campaignDestinationTarget, setCampaignDestinationTarget] = useState<string | null>(null);
+
+  function applyCampaignDestination(campaignId: string, destination: SeferDestination) {
+    const groupItems = groups.byCampaign.get(campaignId) ?? [];
+    for (const item of groupItems) {
+      pushka.setItemDestination(pushka.keyFor(item), destination);
+    }
+  }
 
   // Plain (non-campaign) items grouped by sefer+vendor so a sefer split across
   // multiple destinations (e.g. some going to a chosen mokom, some not) shows
@@ -258,13 +269,16 @@ export function PushkaPage() {
   }, [groups.plainItems]);
 
   useEffect(() => {
-    // Every campaign group's own institution (for its "Going to X" line) and
-    // every plain item's directly-chosen institution (same), on top of what
-    // the sticker/dedication logic below separately needs.
+    // Every campaign group's own institution (for its "Going to X" line), every
+    // campaign-tied item's own donor-chosen institution (set via the "available
+    // to claim" picker when the campaign itself has none), and every plain
+    // item's directly-chosen institution (same), on top of what the
+    // sticker/dedication logic below separately needs.
     const ids = [
       ...new Set(
         [
           ...[...campaignsById.values()].map((c) => c.institutionId),
+          ...[...groups.byCampaign.values()].flatMap((items) => items.map((item) => item.institutionId)),
           ...groups.plainItems.map((item) => item.institutionId),
           ...campaignStickerGroups.map((g) => campaignsById.get(g.campaignId)?.institutionId),
           generalInstitutionId,
@@ -282,7 +296,7 @@ export function PushkaPage() {
       });
       setInstitutionsById(map);
     });
-  }, [campaignsById, groups.plainItems, campaignStickerGroups, generalInstitutionId]);
+  }, [campaignsById, groups.byCampaign, groups.plainItems, campaignStickerGroups, generalInstitutionId]);
 
   async function handlePaid() {
     setPaidItems(pushka.items);
@@ -391,7 +405,13 @@ export function PushkaPage() {
             )}
 
             {[...groups.byCampaign.entries()].map(([campaignId, items]) => {
-              const institutionId = campaignsById.get(campaignId)?.institutionId;
+              const campaign = campaignsById.get(campaignId);
+              // The campaign's own institution if it has one, else whichever
+              // institution the donor already picked for this group (see
+              // applyCampaignDestination) — both mean "going to X".
+              const institutionId = campaign?.institutionId ?? items[0]?.institutionId;
+              const needsClaimChoice =
+                !institutionId && (campaign?.objective ?? 'institution') === 'neshama';
               return (
                 <div key={campaignId}>
                   <button
@@ -406,7 +426,16 @@ export function PushkaPage() {
                       {t('pushka.goingTo', { name: institutionsById.get(institutionId)?.name ?? '…' })}
                     </p>
                   )}
-                  <div className={institutionId ? 'space-y-2' : 'mt-2 space-y-2'}>
+                  {needsClaimChoice && (
+                    <button
+                      type="button"
+                      onClick={() => setCampaignDestinationTarget(campaignId)}
+                      className="mb-2 block text-xs font-medium text-accent hover:underline"
+                    >
+                      {t('pushka.availableToClaimText')}
+                    </button>
+                  )}
+                  <div className={institutionId || needsClaimChoice ? 'space-y-2' : 'mt-2 space-y-2'}>
                     {items.map((item) => (
                       <PushkaRow key={pushka.keyFor(item)} item={item} />
                     ))}
@@ -535,6 +564,23 @@ export function PushkaPage() {
         onClose={() => setDestinationTarget(null)}
         onSelect={(destination: SeferDestination) => {
           if (destinationTarget) pushka.setItemDestination(pushka.keyFor(destinationTarget), destination);
+        }}
+      />
+
+      {/* A neshama-objective campaign with no institution attached: the sefer
+          itself has nowhere to ship yet, so the donor picks one destination
+          for the whole campaign group — either the algorithm or a specific
+          institution, scoped to all institutions (not just ones already
+          short on this exact sefer). */}
+      <SeferDestinationSheet
+        open={campaignDestinationTarget !== null}
+        seferId={groups.byCampaign.get(campaignDestinationTarget ?? '')?.[0]?.seferId ?? ''}
+        onClose={() => setCampaignDestinationTarget(null)}
+        showClaimOption={false}
+        algorithmLabel={t('pushka.letAlgorithmDecide')}
+        institutionScope="all"
+        onSelect={(destination: SeferDestination) => {
+          if (campaignDestinationTarget) applyCampaignDestination(campaignDestinationTarget, destination);
         }}
       />
     </DetailPageLayout>

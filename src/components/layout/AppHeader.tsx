@@ -18,13 +18,22 @@ interface NavItem {
   exact?: boolean;
 }
 
+// Community's label is two words stacked onto two lines (see its '\n'
+// below) — a smaller icon keeps the taller label from crowding the row.
+const DEFAULT_ICON_SIZE = 18;
+const COMMUNITY_ICON_SIZE = 14;
+
 const NAV_ITEMS: NavItem[] = [
-  { path: '/', icon: <HomeIcon width={18} height={18} />, labelKey: 'nav.home', exact: true },
-  { path: '/campaigns', icon: <CampaignIcon width={18} height={18} />, labelKey: 'nav.campaigns' },
-  { path: '/seforim', icon: <BookIcon width={18} height={18} />, labelKey: 'nav.seforim' },
-  { path: '/community', icon: <StarOfDavidIcon width={18} height={18} />, labelKey: 'nav.community' },
-  { path: '/profile', icon: <ProfileIcon width={18} height={18} />, labelKey: 'nav.profile' },
-  { path: '/pushka', icon: <PushkaIcon width={18} height={18} />, labelKey: 'pushka.title', exact: true },
+  { path: '/', icon: <HomeIcon width={DEFAULT_ICON_SIZE} height={DEFAULT_ICON_SIZE} />, labelKey: 'nav.home', exact: true },
+  { path: '/campaigns', icon: <CampaignIcon width={DEFAULT_ICON_SIZE} height={DEFAULT_ICON_SIZE} />, labelKey: 'nav.campaigns' },
+  { path: '/seforim', icon: <BookIcon width={DEFAULT_ICON_SIZE} height={DEFAULT_ICON_SIZE} />, labelKey: 'nav.seforim' },
+  {
+    path: '/community',
+    icon: <StarOfDavidIcon width={COMMUNITY_ICON_SIZE} height={COMMUNITY_ICON_SIZE} />,
+    labelKey: 'nav.community',
+  },
+  { path: '/profile', icon: <ProfileIcon width={DEFAULT_ICON_SIZE} height={DEFAULT_ICON_SIZE} />, labelKey: 'nav.profile' },
+  { path: '/pushka', icon: <PushkaIcon width={DEFAULT_ICON_SIZE} height={DEFAULT_ICON_SIZE} />, labelKey: 'pushka.title', exact: true },
 ];
 
 /** The app's persistent top chrome, shown on every page: the app name on its
@@ -72,8 +81,12 @@ export function AppHeader() {
                     </span>
                   )}
                 </span>
-                <span className={`text-[11px] leading-none ${active ? 'font-semibold' : 'font-medium'}`}>
-                  {t(item.labelKey)}
+                <span className={`flex flex-col items-center text-[11px] leading-tight ${active ? 'font-semibold' : 'font-medium'}`}>
+                  {t(item.labelKey)
+                    .split('\n')
+                    .map((line) => (
+                      <span key={line}>{line}</span>
+                    ))}
                 </span>
               </button>
             );

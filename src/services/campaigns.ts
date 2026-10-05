@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { getInstitution } from './institutions';
-import type { Campaign, CampaignItem, Institution } from '../types';
+import type { Campaign, CampaignItem, CampaignObjective, Institution } from '../types';
 
 const campaignsRef = collection(db, 'campaigns');
 
@@ -80,7 +80,7 @@ export async function listInstitutionsNeedingSefer(seferId: string): Promise<Ins
     const remaining = c.items
       .filter((item) => item.seferId === seferId)
       .reduce((sum, item) => sum + Math.max(0, item.quantity - item.quantityFulfilled), 0);
-    if (remaining > 0) institutionIds.add(c.institutionId);
+    if (remaining > 0 && c.institutionId) institutionIds.add(c.institutionId);
   }
   if (institutionIds.size === 0) return [];
   const institutions = await Promise.all([...institutionIds].map((id) => getInstitution(id)));
@@ -91,7 +91,8 @@ export interface CreateCampaignInput {
   createdByUid: string;
   title?: string;
   description?: string;
-  institutionId: string;
+  objective: CampaignObjective;
+  institutionId?: string;
   neshamaIds?: string[];
   items: Omit<CampaignItem, 'quantityFulfilled'>[];
   shippingAddress: Campaign['shippingAddress'];
@@ -99,8 +100,11 @@ export interface CreateCampaignInput {
 }
 
 export async function createCampaign(input: CreateCampaignInput): Promise<string> {
-  if (!input.institutionId) {
-    throw new Error('A campaign must have an institution');
+  if (input.objective === 'institution' && !input.institutionId) {
+    throw new Error('An institution campaign must have an institution');
+  }
+  if (input.objective === 'neshama' && !input.neshamaIds?.length) {
+    throw new Error('A neshama campaign must have at least one neshama');
   }
   if (input.items.length === 0) {
     throw new Error('A campaign must have at least one item');
@@ -113,7 +117,8 @@ export async function createCampaign(input: CreateCampaignInput): Promise<string
     createdByUid: input.createdByUid,
     title: input.title ?? null,
     description: input.description ?? null,
-    institutionId: input.institutionId,
+    objective: input.objective,
+    institutionId: input.institutionId ?? null,
     neshamaIds: input.neshamaIds ?? [],
     items,
     shippingAddress: input.shippingAddress,
@@ -137,7 +142,8 @@ export async function deleteCampaign(campaignId: string): Promise<void> {
 export interface UpdateCampaignInput {
   title?: string;
   description?: string;
-  institutionId: string;
+  objective: CampaignObjective;
+  institutionId?: string;
   neshamaIds?: string[];
   items: CampaignItem[];
   shippingAddress: Campaign['shippingAddress'];
@@ -150,8 +156,11 @@ export interface UpdateCampaignInput {
  * Firestore rule for campaigns rejects an owner update that changes them.
  */
 export async function updateCampaign(campaignId: string, input: UpdateCampaignInput): Promise<void> {
-  if (!input.institutionId) {
-    throw new Error('A campaign must have an institution');
+  if (input.objective === 'institution' && !input.institutionId) {
+    throw new Error('An institution campaign must have an institution');
+  }
+  if (input.objective === 'neshama' && !input.neshamaIds?.length) {
+    throw new Error('A neshama campaign must have at least one neshama');
   }
   if (input.items.length === 0) {
     throw new Error('A campaign must have at least one item');
@@ -163,7 +172,8 @@ export async function updateCampaign(campaignId: string, input: UpdateCampaignIn
   await updateDoc(doc(db, 'campaigns', campaignId), {
     title: input.title ?? null,
     description: input.description ?? null,
-    institutionId: input.institutionId,
+    objective: input.objective,
+    institutionId: input.institutionId ?? null,
     neshamaIds: input.neshamaIds ?? [],
     items: input.items,
     shippingAddress: input.shippingAddress,

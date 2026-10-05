@@ -84,7 +84,7 @@ export function useCampaignFeedData(searchQuery: string): CampaignFeedBase {
     if (isSearching) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter((c) => {
-        const institution = institutionsById.get(c.institutionId);
+        const institution = c.institutionId ? institutionsById.get(c.institutionId) : undefined;
         const neshamas = (c.neshamaIds ?? []).map((id) => neshamosById.get(id)).filter((n): n is Neshama => Boolean(n));
         const matchesInstitution =
           institution &&
@@ -142,8 +142,8 @@ export function useCampaignFeed(searchQuery: string, options: CampaignFeedOption
 
     result = [...result].sort((a, b) => {
       if (sortKey === 'institution-az') {
-        const an = base.institutionsById.get(a.institutionId)?.name ?? '';
-        const bn = base.institutionsById.get(b.institutionId)?.name ?? '';
+        const an = base.institutionsById.get(a.institutionId ?? '')?.name ?? '';
+        const bn = base.institutionsById.get(b.institutionId ?? '')?.name ?? '';
         return an.localeCompare(bn);
       }
       if (sortKey === 'neshama-az') {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { listInstitutionsNeedingSefer } from '../../services/campaigns';
+import { listInstitutions } from '../../services/institutions';
 import type { Institution } from '../../types';
 import { BubbleGrid } from '../ui/BubbleGrid';
 import { CloseIcon } from '../ui/icons';
@@ -18,6 +19,16 @@ interface SeferDestinationSheetProps {
   seferId: string;
   onClose: () => void;
   onSelect: (destination: SeferDestination) => void;
+  /** Hide the general "Let an institution claim it" bubble — used when the item
+   *  is already tied to a specific campaign, so that option wouldn't make sense. */
+  showClaimOption?: boolean;
+  /** Overrides the "Choose for me" bubble's label for contexts that phrase the
+   *  same choice differently (e.g. "Let the algorithm decide"). */
+  algorithmLabel?: string;
+  /** 'needingSefer' (default) scopes the institution list to ones with an active
+   *  campaign still requesting this sefer. 'all' lists every institution, for
+   *  contexts where "who should receive this?" isn't tied to sefer demand. */
+  institutionScope?: 'needingSefer' | 'all';
 }
 
 /** Bottom sheet for choosing where an untagged cart item should go — opened by
@@ -25,7 +36,15 @@ interface SeferDestinationSheetProps {
  *  for free (donated with no destination, see availableStock.ts), leave it for
  *  the algorithm to assign at checkout, or pick a specific institution that
  *  currently needs this sefer. */
-export function SeferDestinationSheet({ open, seferId, onClose, onSelect }: SeferDestinationSheetProps) {
+export function SeferDestinationSheet({
+  open,
+  seferId,
+  onClose,
+  onSelect,
+  showClaimOption = true,
+  algorithmLabel,
+  institutionScope = 'needingSefer',
+}: SeferDestinationSheetProps) {
   const { t } = useTranslation();
   const [institutions, setInstitutions] = useState<Institution[]>([]);
 
@@ -33,13 +52,14 @@ export function SeferDestinationSheet({ open, seferId, onClose, onSelect }: Sefe
     if (!open) return;
     let cancelled = false;
     setInstitutions([]);
-    listInstitutionsNeedingSefer(seferId).then((found) => {
+    const fetch = institutionScope === 'all' ? listInstitutions() : listInstitutionsNeedingSefer(seferId);
+    fetch.then((found) => {
       if (!cancelled) setInstitutions(found);
     });
     return () => {
       cancelled = true;
     };
-  }, [open, seferId]);
+  }, [open, seferId, institutionScope]);
 
   if (!open) return null;
 
@@ -69,8 +89,8 @@ export function SeferDestinationSheet({ open, seferId, onClose, onSelect }: Sefe
         <BubbleGrid
           rows={3}
           options={[
-            { value: LET_INSTITUTION_CLAIM, label: t('pushka.letInstitutionClaim') },
-            { value: CHOOSE_FOR_ME, label: t('pushka.pickForMe') },
+            ...(showClaimOption ? [{ value: LET_INSTITUTION_CLAIM, label: t('pushka.letInstitutionClaim') }] : []),
+            { value: CHOOSE_FOR_ME, label: algorithmLabel ?? t('pushka.pickForMe') },
             ...institutions.map((inst) => ({ value: inst.institutionId, label: inst.name })),
           ]}
           isSelected={() => false}
