@@ -22,8 +22,14 @@ export interface CreateNeshamaInput {
   hebrewName?: string;
   parentGender: ParentGender;
   fatherHebrewName: string;
+  imageUrl?: string;
+  bio?: string;
+  dateOfBirth?: string;
+  dateOfDeath?: string;
   seferTypes?: SeferType[];
   seferIds?: string[];
+  isRabbi?: boolean;
+  seferimWritten?: string[];
 }
 
 export async function createNeshama(input: CreateNeshamaInput): Promise<string> {
@@ -35,8 +41,14 @@ export async function createNeshama(input: CreateNeshamaInput): Promise<string> 
     hebrewName: input.hebrewName ?? null,
     parentGender: input.parentGender,
     fatherHebrewName: input.fatherHebrewName,
+    imageUrl: input.imageUrl ?? null,
+    bio: input.bio ?? null,
+    dateOfBirth: input.dateOfBirth ?? null,
+    dateOfDeath: input.dateOfDeath ?? null,
     seferTypes: input.seferTypes ?? [],
     seferIds: input.seferIds ?? [],
+    isRabbi: input.isRabbi ?? false,
+    seferimWritten: input.isRabbi ? (input.seferimWritten ?? []) : [],
     lastDedicatedAt: null,
     createdAt: serverTimestamp(),
   });
@@ -50,8 +62,14 @@ export interface UpdateNeshamaInput {
   hebrewName?: string;
   parentGender: ParentGender;
   fatherHebrewName: string;
+  imageUrl?: string;
+  bio?: string;
+  dateOfBirth?: string;
+  dateOfDeath?: string;
   seferTypes?: SeferType[];
   seferIds?: string[];
+  isRabbi?: boolean;
+  seferimWritten?: string[];
 }
 
 /** Full edit of a neshama's own details by its creator — never touches
@@ -65,8 +83,14 @@ export async function updateNeshama(neshamaId: string, input: UpdateNeshamaInput
     hebrewName: input.hebrewName ?? null,
     parentGender: input.parentGender,
     fatherHebrewName: input.fatherHebrewName,
+    imageUrl: input.imageUrl ?? null,
+    bio: input.bio ?? null,
+    dateOfBirth: input.dateOfBirth ?? null,
+    dateOfDeath: input.dateOfDeath ?? null,
     seferTypes: input.seferTypes ?? [],
     seferIds: input.seferIds ?? [],
+    isRabbi: input.isRabbi ?? false,
+    seferimWritten: input.isRabbi ? (input.seferimWritten ?? []) : [],
   });
 }
 

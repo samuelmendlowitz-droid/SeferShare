@@ -36,6 +36,9 @@ export interface UpdateInstitutionInput {
   type: InstitutionType;
   customType?: string;
   address: Address;
+  images?: string[];
+  bio?: string;
+  accomplishments?: string;
 }
 
 /** Full edit of an institution's own details by its creator — never touches
@@ -48,6 +51,9 @@ export async function updateInstitution(institutionId: string, input: UpdateInst
     type: input.type,
     customType: input.type === 'other' ? input.customType ?? null : null,
     address: input.address,
+    images: input.images ?? [],
+    bio: input.bio ?? null,
+    accomplishments: input.accomplishments ?? null,
   });
 }
 

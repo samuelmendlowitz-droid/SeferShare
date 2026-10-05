@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePushka } from '../../context/PushkaContext';
-import { CampaignIcon, HomeIcon, ProfileIcon, PushkaIcon, BookIcon } from '../ui/icons';
+import { CampaignIcon, HomeIcon, ProfileIcon, PushkaIcon, BookIcon, StarOfDavidIcon } from '../ui/icons';
 
 export const HEADER_TOP_ROW_HEIGHT_PX = 36;
 export const HEADER_NAV_ROW_HEIGHT_PX = 56;
@@ -22,13 +22,14 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/', icon: <HomeIcon width={18} height={18} />, labelKey: 'nav.home', exact: true },
   { path: '/campaigns', icon: <CampaignIcon width={18} height={18} />, labelKey: 'nav.campaigns' },
   { path: '/seforim', icon: <BookIcon width={18} height={18} />, labelKey: 'nav.seforim' },
+  { path: '/community', icon: <StarOfDavidIcon width={18} height={18} />, labelKey: 'nav.community' },
   { path: '/profile', icon: <ProfileIcon width={18} height={18} />, labelKey: 'nav.profile' },
   { path: '/pushka', icon: <PushkaIcon width={18} height={18} />, labelKey: 'pushka.title', exact: true },
 ];
 
 /** The app's persistent top chrome, shown on every page: the app name on its
  *  own short top row, and a full-width nav row underneath with the cart as
- *  one of its 5 items (icon + label each) rather than a separate button. */
+ *  one of its 6 items (icon + label each) rather than a separate button. */
 export function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();

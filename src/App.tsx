@@ -19,8 +19,10 @@ import { InstitutionDetailPage } from './pages/InstitutionDetailPage';
 import { InstitutionCreatePage } from './pages/InstitutionCreatePage';
 import { InstitutionEditPage } from './pages/InstitutionEditPage';
 import { NeshamaDetailPage } from './pages/NeshamaDetailPage';
+import { NeshamaCreatePage } from './pages/NeshamaCreatePage';
 import { NeshamaEditPage } from './pages/NeshamaEditPage';
 import { SeferDetailPage } from './pages/SeferDetailPage';
+import { CommunityPage } from './pages/CommunityPage';
 
 // TODO: replace "Sefer Share" with final platform name
 export default function App() {
@@ -112,6 +114,14 @@ export default function App() {
                 }
               />
               <Route
+                path="/neshamos/new"
+                element={
+                  <RequireAuth>
+                    <NeshamaCreatePage />
+                  </RequireAuth>
+                }
+              />
+              <Route
                 path="/neshamos/:neshamaId"
                 element={
                   <RequireAuth>
@@ -124,6 +134,14 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <NeshamaEditPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/community"
+                element={
+                  <RequireAuth>
+                    <CommunityPage />
                   </RequireAuth>
                 }
               />

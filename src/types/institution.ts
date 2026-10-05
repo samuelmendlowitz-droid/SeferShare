@@ -1,8 +1,13 @@
 import type { Address } from './common';
 
-export type InstitutionType = 'shul' | 'yeshiva' | 'school' | 'other';
+export type InstitutionType = 'shul' | 'yeshiva' | 'kolel' | 'school' | 'other';
 
-export const INSTITUTION_TYPES: InstitutionType[] = ['shul', 'yeshiva', 'school', 'other'];
+export const INSTITUTION_TYPES: InstitutionType[] = ['shul', 'yeshiva', 'kolel', 'school', 'other'];
+
+/** Most photos an institution's gallery wheel shows — same cap philosophy as
+ *  MAX_SEFER_IMAGES, just a separate constant since the two galleries are
+ *  unrelated and may want to diverge later. */
+export const MAX_INSTITUTION_IMAGES = 6;
 
 export interface Institution {
   institutionId: string;
@@ -13,6 +18,11 @@ export interface Institution {
    *  not in the curated list. */
   customType?: string;
   address: Address;
+  /** Shown on the institution's info page as a swipeable gallery wheel. */
+  images?: string[];
+  bio?: string;
+  /** Free-text highlights (one per line) — e.g. programs run, milestones reached. */
+  accomplishments?: string;
   createdByUid: string;
   /** Each institution needs its own admin verification, separate from its
    *  owner's person-level institutionOwnerApproved — starts false at creation,

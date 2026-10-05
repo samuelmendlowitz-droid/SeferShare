@@ -8,6 +8,7 @@ import { PlusIcon } from '../ui/icons';
 
 export type ProfileTab = 'campaigns' | 'donations' | 'institution' | 'notifications' | 'stickers' | 'settings';
 export type SeforimTab = 'gallery' | 'demand' | 'claim' | 'myGallery';
+export type CommunityTab = 'shuls' | 'yeshivas' | 'kolels' | 'schools' | 'otherInstitutions' | 'rabbeim' | 'neshamas';
 
 interface BaseLayoutProps {
   onSearch: (query: string) => void;
@@ -36,7 +37,18 @@ interface ProfileLayoutProps extends BaseLayoutProps {
   onTabChange: (tab: ProfileTab) => void;
 }
 
-type AppLayoutProps = HomeLayoutProps | CampaignsLayoutProps | SeforimLayoutProps | ProfileLayoutProps;
+interface CommunityLayoutProps extends BaseLayoutProps {
+  variant: 'community';
+  tab: CommunityTab;
+  onTabChange: (tab: CommunityTab) => void;
+}
+
+type AppLayoutProps =
+  | HomeLayoutProps
+  | CampaignsLayoutProps
+  | SeforimLayoutProps
+  | ProfileLayoutProps
+  | CommunityLayoutProps;
 
 // Shared with TopSearchBar, which needs to sit in the exact same spot as the
 // floating sub-nav row it replaces while searching (see the `top` comment there).
@@ -72,6 +84,19 @@ export function AppLayout(props: AppLayoutProps) {
           { key: 'notifications', label: t('nav.notifications') },
           { key: 'stickers', label: t('nav.stickers') },
           { key: 'settings', label: t('nav.settings') },
+        ]
+      : [];
+
+  const communityOptions: ToggleOption[] =
+    props.variant === 'community'
+      ? [
+          { key: 'shuls', label: t('nav.shuls') },
+          { key: 'yeshivas', label: t('nav.yeshivas') },
+          { key: 'kolels', label: t('nav.kolels') },
+          { key: 'schools', label: t('nav.schools') },
+          { key: 'otherInstitutions', label: t('nav.otherInstitutions') },
+          { key: 'rabbeim', label: t('nav.rabbeim') },
+          { key: 'neshamas', label: t('nav.neshamasTab') },
         ]
       : [];
 
@@ -120,6 +145,14 @@ export function AppLayout(props: AppLayoutProps) {
                 options={profileOptions}
                 activeKey={props.tab}
                 onChange={(key) => props.onTabChange(key as ProfileTab)}
+                onOpenSearch={() => setSearchOpen(true)}
+                filterSort={props.filterSort}
+              />
+            ) : props.variant === 'community' ? (
+              <FloatingToggleBar
+                options={communityOptions}
+                activeKey={props.tab}
+                onChange={(key) => props.onTabChange(key as CommunityTab)}
                 onOpenSearch={() => setSearchOpen(true)}
                 filterSort={props.filterSort}
               />

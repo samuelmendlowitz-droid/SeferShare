@@ -63,19 +63,46 @@ export function NeshamaDetailPage() {
   }
 
   const isOwn = profile?.uid === neshama.createdByUid;
-  const hasDedicatedInfo = dedicatedSefarim.length > 0 || (neshama.seferTypes ?? []).length > 0;
+  const hasFavoriteSeforim = dedicatedSefarim.length > 0 || (neshama.seferTypes ?? []).length > 0;
+  const lifespan = [neshama.dateOfBirth, neshama.dateOfDeath]
+    .map((d) => (d ? new Date(d).toLocaleDateString() : undefined))
+    .filter(Boolean);
 
   return (
     <DetailPageLayout fallbackPath="/campaigns">
       <div className="mb-4 border-b border-border pb-4">
+        {neshama.imageUrl && (
+          <img
+            src={neshama.imageUrl}
+            alt={neshama.name}
+            className="mb-3 h-24 w-24 rounded-full border border-border object-cover"
+          />
+        )}
         <h1 className="text-2xl font-bold">{prefixedName(neshama, false) ?? neshama.name}</h1>
         {neshama.hebrewName && (
           <p dir="rtl" className="mt-1 text-base text-text">
             {formatNeshamaDedication(neshama, true)}
           </p>
         )}
-        {hasDedicatedInfo && (
-          <p className="mt-2 text-xs text-text-muted">
+        {lifespan.length > 0 && <p className="mt-1 text-sm text-text-muted">{lifespan.join(' – ')}</p>}
+        {neshama.isRabbi && (
+          <span className="mt-2 inline-block rounded-pill bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+            {t('neshama.isRabbiLabel')}
+          </span>
+        )}
+      </div>
+
+      {neshama.bio && (
+        <div className="mb-4">
+          <h2 className="mb-2 text-base font-semibold">{t('neshama.bioHeading')}</h2>
+          <p className="whitespace-pre-line text-sm text-text">{neshama.bio}</p>
+        </div>
+      )}
+
+      {hasFavoriteSeforim && (
+        <div className="mb-4">
+          <h2 className="mb-2 text-base font-semibold">{t('neshama.favoriteSeforimHeading')}</h2>
+          <p className="text-sm text-text">
             {dedicatedSefarim.map((sefer, idx) => (
               <span key={sefer.seferId}>
                 {idx > 0 && ', '}
@@ -91,8 +118,19 @@ export function NeshamaDetailPage() {
             {dedicatedSefarim.length > 0 && (neshama.seferTypes ?? []).length > 0 && ', '}
             {(neshama.seferTypes ?? []).map((type) => t(`sefer.${type}`)).join(', ')}
           </p>
-        )}
-      </div>
+        </div>
+      )}
+
+      {neshama.isRabbi && (neshama.seferimWritten ?? []).length > 0 && (
+        <div className="mb-4">
+          <h2 className="mb-2 text-base font-semibold">{t('neshama.seferimWrittenHeading')}</h2>
+          <ul className="list-inside list-disc text-sm text-text">
+            {(neshama.seferimWritten ?? []).map((title) => (
+              <li key={title}>{title}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <h2 className="mb-2 text-base font-semibold">{t('neshama.chooseCampaign')}</h2>
       {campaigns.length === 0 ? (

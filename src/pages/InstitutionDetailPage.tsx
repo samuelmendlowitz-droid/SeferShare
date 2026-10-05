@@ -12,6 +12,7 @@ import { DetailPageLayout } from '../components/layout/DetailPageLayout';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { ImageGalleryWheel } from '../components/ui/ImageGalleryWheel';
 
 function addressLine(institution: Institution): string {
   const { line1, line2, city, state, postalCode } = institution.address;
@@ -67,6 +68,12 @@ export function InstitutionDetailPage() {
 
   return (
     <DetailPageLayout fallbackPath="/campaigns">
+      {institution.images && institution.images.length > 0 && (
+        <div className="mb-4">
+          <ImageGalleryWheel images={institution.images} alt={institution.name} />
+        </div>
+      )}
+
       <div className="mb-4 border-b border-border pb-4">
         <h1 className="text-2xl font-bold">{institution.name}</h1>
         <p className="mt-1 text-sm text-text-muted">
@@ -77,6 +84,20 @@ export function InstitutionDetailPage() {
           {institution.verified ? t('institution.verified') : t('institution.unverified')}
         </p>
       </div>
+
+      {institution.bio && (
+        <div className="mb-4">
+          <h2 className="mb-2 text-base font-semibold">{t('institution.bioHeading')}</h2>
+          <p className="whitespace-pre-line text-sm text-text">{institution.bio}</p>
+        </div>
+      )}
+
+      {institution.accomplishments && (
+        <div className="mb-4">
+          <h2 className="mb-2 text-base font-semibold">{t('institution.accomplishmentsHeading')}</h2>
+          <p className="whitespace-pre-line text-sm text-text">{institution.accomplishments}</p>
+        </div>
+      )}
 
       {campaigns.length > 0 && (
         <>

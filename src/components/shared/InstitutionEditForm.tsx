@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import { deleteInstitution, updateInstitution } from '../../services/institutions';
-import { INSTITUTION_TYPES, type Address, type Institution, type InstitutionType } from '../../types';
+import { uploadInstitutionImages } from '../../services/storage';
+import { INSTITUTION_TYPES, MAX_INSTITUTION_IMAGES, type Address, type Institution, type InstitutionType } from '../../types';
 import { AddressForm } from './AddressForm';
 import { Button } from '../ui/Button';
 import { BubbleGrid } from '../ui/BubbleGrid';
 import { Card } from '../ui/Card';
-import { FIELD_LABEL_CLASS, TextField } from '../ui/TextField';
+import { FIELD_LABEL_CLASS, TextAreaField, TextField } from '../ui/TextField';
+import { ImageUploadField } from '../ui/ImageUploadField';
 
 interface InstitutionEditFormProps {
   institution: Institution;
@@ -18,27 +21,36 @@ interface InstitutionEditFormProps {
  *  plus the delete action that only applies once an institution exists. */
 export function InstitutionEditForm({ institution, onSaved, onDeleted }: InstitutionEditFormProps) {
   const { t } = useTranslation();
+  const { profile } = useAuth();
 
   const [name, setName] = useState(institution.name);
   const [hebrewName, setHebrewName] = useState(institution.hebrewName ?? '');
   const [type, setType] = useState<InstitutionType>(institution.type);
   const [customType, setCustomType] = useState(institution.customType ?? '');
   const [address, setAddress] = useState<Address>(institution.address);
+  const [bio, setBio] = useState(institution.bio ?? '');
+  const [accomplishments, setAccomplishments] = useState(institution.accomplishments ?? '');
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>(institution.images ?? []);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   async function handleSave() {
-    if (!name.trim()) return;
+    if (!name.trim() || !profile) return;
     setError(null);
     setSaving(true);
     try {
+      const uploadedUrls = imageFiles.length ? await uploadInstitutionImages(profile.uid, imageFiles) : [];
       await updateInstitution(institution.institutionId, {
         name: name.trim(),
         hebrewName: hebrewName.trim() || undefined,
         type,
         customType: type === 'other' ? customType.trim() || undefined : undefined,
         address,
+        bio: bio.trim() || undefined,
+        accomplishments: accomplishments.trim() || undefined,
+        images: [...existingImageUrls, ...uploadedUrls],
       });
       onSaved();
     } catch (err) {
@@ -77,6 +89,22 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
           <TextField required label={t('institution.customTypeLabel')} value={customType} onChange={setCustomType} />
         )}
         <AddressForm value={address} onChange={setAddress} />
+        <TextAreaField label={t('institution.bioLabel')} value={bio} onChange={setBio} rows={3} />
+        <TextAreaField
+          label={t('institution.accomplishmentsLabel')}
+          value={accomplishments}
+          onChange={setAccomplishments}
+          rows={3}
+        />
+        <ImageUploadField
+          label={t('institution.imagesLabel', { max: MAX_INSTITUTION_IMAGES })}
+          existingImageUrls={existingImageUrls}
+          onRemoveExisting={(index) => setExistingImageUrls((prev) => prev.filter((_, i) => i !== index))}
+          newFiles={imageFiles}
+          onAddFiles={(files) => setImageFiles((prev) => [...prev, ...files])}
+          onRemoveNewFile={(index) => setImageFiles((prev) => prev.filter((_, i) => i !== index))}
+          max={MAX_INSTITUTION_IMAGES}
+        />
       </div>
 
       {error && <p className="mt-3 text-sm text-error">{error}</p>}
