@@ -19,10 +19,16 @@ export interface CampaignItem {
 
 export type CampaignObjective = 'institution' | 'neshama';
 
+export type CampaignColorTheme = 'accent' | 'maroon' | 'forest' | 'gold' | 'purple' | 'teal' | 'rose';
+
 export interface Campaign {
   campaignId: string;
   createdByUid: string;
   title?: string | null;
+  headerImageUrl?: string;
+  colorTheme?: CampaignColorTheme;
+  startDate?: string;
+  endDate?: string;
   objective: CampaignObjective;
   institutionId?: string;
   neshamaIds?: string[];

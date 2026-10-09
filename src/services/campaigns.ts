@@ -91,6 +91,10 @@ export interface CreateCampaignInput {
   createdByUid: string;
   title?: string;
   description?: string;
+  headerImageUrl?: string;
+  colorTheme?: Campaign['colorTheme'];
+  startDate?: string;
+  endDate?: string;
   objective: CampaignObjective;
   institutionId?: string;
   neshamaIds?: string[];
@@ -109,6 +113,9 @@ export async function createCampaign(input: CreateCampaignInput): Promise<string
   if (input.items.length === 0) {
     throw new Error('A campaign must have at least one item');
   }
+  if (input.startDate && input.endDate && input.endDate < input.startDate) {
+    throw new Error('End date must be on or after the start date');
+  }
 
   const items: CampaignItem[] = input.items.map((item) => ({ ...item, quantityFulfilled: 0 }));
   const totalItemsNeeded = items.reduce((sum, i) => sum + i.quantity, 0);
@@ -117,6 +124,10 @@ export async function createCampaign(input: CreateCampaignInput): Promise<string
     createdByUid: input.createdByUid,
     title: input.title ?? null,
     description: input.description ?? null,
+    headerImageUrl: input.headerImageUrl ?? null,
+    colorTheme: input.colorTheme ?? null,
+    startDate: input.startDate ?? null,
+    endDate: input.endDate ?? null,
     objective: input.objective,
     institutionId: input.institutionId ?? null,
     neshamaIds: input.neshamaIds ?? [],
@@ -142,6 +153,10 @@ export async function deleteCampaign(campaignId: string): Promise<void> {
 export interface UpdateCampaignInput {
   title?: string;
   description?: string;
+  headerImageUrl?: string;
+  colorTheme?: Campaign['colorTheme'];
+  startDate?: string;
+  endDate?: string;
   objective: CampaignObjective;
   institutionId?: string;
   neshamaIds?: string[];
@@ -165,6 +180,9 @@ export async function updateCampaign(campaignId: string, input: UpdateCampaignIn
   if (input.items.length === 0) {
     throw new Error('A campaign must have at least one item');
   }
+  if (input.startDate && input.endDate && input.endDate < input.startDate) {
+    throw new Error('End date must be on or after the start date');
+  }
 
   const totalItemsNeeded = input.items.reduce((sum, i) => sum + i.quantity, 0);
   const totalItemsFulfilled = input.items.reduce((sum, i) => sum + i.quantityFulfilled, 0);
@@ -172,6 +190,10 @@ export async function updateCampaign(campaignId: string, input: UpdateCampaignIn
   await updateDoc(doc(db, 'campaigns', campaignId), {
     title: input.title ?? null,
     description: input.description ?? null,
+    headerImageUrl: input.headerImageUrl ?? null,
+    colorTheme: input.colorTheme ?? null,
+    startDate: input.startDate ?? null,
+    endDate: input.endDate ?? null,
     objective: input.objective,
     institutionId: input.institutionId ?? null,
     neshamaIds: input.neshamaIds ?? [],

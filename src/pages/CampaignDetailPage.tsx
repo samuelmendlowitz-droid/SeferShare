@@ -10,6 +10,8 @@ import { getNeshama } from '../services/neshamos';
 import { listSefarim } from '../services/sefarim';
 import type { Campaign, Institution, Neshama, Sefer } from '../types';
 import { campaignDollarTotal } from '../lib/campaignMath';
+import { formatCampaignDateRange } from '../lib/campaignDates';
+import { getCampaignThemeHex } from '../lib/campaignTheme';
 import { neshamaDedicationLine } from '../lib/neshamaFormat';
 import { ProgressBar } from '../components/campaign/ProgressBar';
 import { GiftCardOption } from '../components/donation/GiftCardOption';
@@ -25,7 +27,7 @@ export function CampaignDetailPage() {
   const navigate = useNavigate();
   const { campaignId } = useParams();
   const { profile } = useAuth();
-  const { showBilingual } = useLanguage();
+  const { language, showBilingual } = useLanguage();
   const pushka = usePushka();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -115,9 +117,15 @@ export function CampaignDetailPage() {
     setStepQuantities((prev) => ({ ...prev, [itemKey]: Math.min(1, remaining - qty) }));
   }
 
+  const themeHex = getCampaignThemeHex(campaign.colorTheme);
+  const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, language);
+
   return (
     <DetailPageLayout fallbackPath="/campaigns">
       <div className="mb-4 border-b border-border pb-4">
+        {campaign.headerImageUrl && (
+          <img src={campaign.headerImageUrl} alt="" className="mb-4 h-44 w-full rounded-card object-cover" />
+        )}
         <h1 className="text-2xl font-bold">{campaign.title || t('campaign.untitled')}</h1>
         {/* Only the campaign's objective shows here — a 'neshama' campaign
             can still have an institution attached (and vice versa), but the
@@ -153,9 +161,10 @@ export function CampaignDetailPage() {
           </p>
         )}
         {campaign.description && <p className="mt-3 text-sm text-text">{campaign.description}</p>}
+        {dateRangeText && <p className="mt-2 text-xs text-text-muted">{dateRangeText}</p>}
 
         <div className="mt-4">
-          <p className="text-base font-semibold text-accent">
+          <p className="text-base font-semibold" style={{ color: themeHex }}>
             {t('home.itemsNeeded', { fulfilled: campaign.totalItemsFulfilled, needed: campaign.totalItemsNeeded })}
           </p>
           <p className="text-sm text-text-muted">
@@ -163,7 +172,7 @@ export function CampaignDetailPage() {
           </p>
         </div>
         <div className="mt-2">
-          <ProgressBar fulfilled={campaign.totalItemsFulfilled} needed={campaign.totalItemsNeeded} />
+          <ProgressBar fulfilled={campaign.totalItemsFulfilled} needed={campaign.totalItemsNeeded} colorHex={themeHex} />
         </div>
       </div>
 

@@ -5,6 +5,8 @@ import type { Campaign, Institution, Neshama, Sefer } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { campaignDollarFulfilled, campaignDollarTotal } from '../../lib/campaignMath';
+import { formatCampaignDateRange } from '../../lib/campaignDates';
+import { getCampaignThemeHex } from '../../lib/campaignTheme';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import { Card } from '../ui/Card';
 import { EditIcon } from '../ui/icons';
@@ -20,11 +22,13 @@ interface CampaignCardProps {
 export function CampaignCard({ campaign, institution, neshamas = [], sefarimById }: CampaignCardProps) {
   const { t } = useTranslation();
   const { profile } = useAuth();
-  const { showBilingual } = useLanguage();
+  const { language, showBilingual } = useLanguage();
   const navigate = useNavigate();
   const dollarTotal = campaignDollarTotal(campaign);
   const dollarFulfilled = campaignDollarFulfilled(campaign);
   const isOwn = profile?.uid === campaign.createdByUid;
+  const themeHex = getCampaignThemeHex(campaign.colorTheme);
+  const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, language);
 
   const seferTypesText = useMemo(() => {
     const types = new Set<string>();
@@ -37,9 +41,16 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
 
   return (
     <Card
-      className="mb-3 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+      className="mb-3 cursor-pointer overflow-hidden transition-transform duration-200 hover:-translate-y-0.5"
       onClick={() => navigate(`/campaigns/${campaign.campaignId}`)}
     >
+        <div className="-mx-4 -mt-4 mb-3">
+          <div className="h-1.5" style={{ backgroundColor: themeHex }} />
+          {campaign.headerImageUrl && (
+            <img src={campaign.headerImageUrl} alt="" className="h-32 w-full object-cover" />
+          )}
+        </div>
+
         <div className="flex items-start justify-between gap-2">
           {campaign.title && <p className="mb-1 text-base font-semibold">{campaign.title}</p>}
           {isOwn && (
@@ -99,20 +110,21 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
         )}
 
         <div className="mt-3">
-          <p className="text-lg font-bold text-accent">
+          <p className="text-lg font-bold" style={{ color: themeHex }}>
             {t('home.itemsNeeded', {
               fulfilled: campaign.totalItemsFulfilled,
               needed: campaign.totalItemsNeeded,
             })}
           </p>
           {seferTypesText && <p className="text-xs text-text-muted">{seferTypesText}</p>}
+          {dateRangeText && <p className="text-xs text-text-muted">{dateRangeText}</p>}
         </div>
 
         <div className="mt-2">
           <p className="mb-1 text-xs text-text-muted">
             {t('home.dollarProgress', { fulfilled: dollarFulfilled.toFixed(2), total: dollarTotal.toFixed(2) })}
           </p>
-          <ProgressBar fulfilled={dollarFulfilled} needed={dollarTotal} />
+          <ProgressBar fulfilled={dollarFulfilled} needed={dollarTotal} colorHex={themeHex} />
         </div>
 
         {campaign.status === 'fulfilled' && (

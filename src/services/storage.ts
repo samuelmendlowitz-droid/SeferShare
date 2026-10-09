@@ -37,3 +37,12 @@ export async function uploadNeshamaImage(uid: string, file: File): Promise<strin
   await uploadBytes(storageRef, file);
   return getDownloadURL(storageRef);
 }
+
+/** `uid` is the campaign's own createdByUid — same ownership-check shape as
+ *  uploadInstitutionImage/uploadNeshamaImage. */
+export async function uploadCampaignHeaderImage(uid: string, file: File): Promise<string> {
+  const path = `campaign-header-images/${uid}/${Date.now()}-${file.name}`;
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file);
+  return getDownloadURL(storageRef);
+}

@@ -3,14 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { createCampaign } from '../../services/campaigns';
-import type { Address, CampaignObjective, Institution } from '../../types';
+import { uploadCampaignHeaderImage } from '../../services/storage';
+import { CAMPAIGN_COLOR_THEMES } from '../../lib/campaignTheme';
+import type { Address, CampaignColorTheme, CampaignObjective, Institution } from '../../types';
 import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
 import { InstitutionPicker } from './InstitutionPicker';
 import { NeshamaPicker } from './NeshamaPicker';
 import { AddressForm } from './AddressForm';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
-import { TextField, TextAreaField } from '../ui/TextField';
+import { ImageUploadField } from '../ui/ImageUploadField';
+import { TextField, TextAreaField, FIELD_LABEL_CLASS } from '../ui/TextField';
 
 const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
 
@@ -27,6 +30,10 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [headerPhotoFile, setHeaderPhotoFile] = useState<File>();
+  const [colorTheme, setColorTheme] = useState<CampaignColorTheme>('accent');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [objective, setObjective] = useState<CampaignObjective>('institution');
   const [institutionId, setInstitutionId] = useState<string>();
   const [institution, setInstitution] = useState<Institution>();
@@ -63,13 +70,24 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
       setError(t('campaign.atLeastOneItem'));
       return;
     }
+    if (startDate && endDate && endDate < startDate) {
+      setError(t('campaign.endDateBeforeStart'));
+      return;
+    }
     setSaving(true);
     try {
       const shippingAddress = institution && !addressDiffers ? institution.address : customAddress;
+      const headerImageUrl = headerPhotoFile
+        ? await uploadCampaignHeaderImage(profile.uid, headerPhotoFile)
+        : undefined;
       const campaignId = await createCampaign({
         createdByUid: profile.uid,
         title: title.trim(),
         description: description || undefined,
+        headerImageUrl,
+        colorTheme,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
         objective,
         institutionId,
         neshamaIds,
@@ -107,6 +125,55 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
         rows={4}
         containerClassName="mb-4"
       />
+
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.appearanceLabel')}</h2>
+      <div className="mb-4">
+        <ImageUploadField
+          label={t('campaign.headerPhotoLabel')}
+          existingImageUrls={[]}
+          onRemoveExisting={() => {}}
+          newFiles={headerPhotoFile ? [headerPhotoFile] : []}
+          onAddFiles={(files) => setHeaderPhotoFile(files[0])}
+          onRemoveNewFile={() => setHeaderPhotoFile(undefined)}
+          max={1}
+        />
+      </div>
+      <div className="mb-4">
+        <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
+        <div className="flex flex-wrap gap-3">
+          {CAMPAIGN_COLOR_THEMES.map((theme) => (
+            <button
+              key={theme.value}
+              type="button"
+              onClick={() => setColorTheme(theme.value)}
+              aria-label={`${theme.en} · ${theme.he}`}
+              title={`${theme.en} · ${theme.he}`}
+              className={`h-9 w-9 rounded-full border-2 transition-transform duration-200 ${
+                colorTheme === theme.value ? 'scale-110 border-text' : 'border-transparent'
+              }`}
+              style={{ backgroundColor: theme.hex }}
+            />
+          ))}
+        </div>
+      </div>
+
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.datesLabel')}</h2>
+      <div className="mb-4 flex gap-2">
+        <TextField
+          type="date"
+          label={t('campaign.startDateLabel')}
+          value={startDate}
+          onChange={setStartDate}
+          containerClassName="w-full"
+        />
+        <TextField
+          type="date"
+          label={t('campaign.endDateLabel')}
+          value={endDate}
+          onChange={setEndDate}
+          containerClassName="w-full"
+        />
+      </div>
 
       <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.objectiveLabel')}</h2>
       <p className="mb-2 text-xs text-text-muted">{t('campaign.objectiveHint')}</p>

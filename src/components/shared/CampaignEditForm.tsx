@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import { deleteCampaign, updateCampaign } from '../../services/campaigns';
 import { getInstitution } from '../../services/institutions';
-import type { Address, Campaign, CampaignItem, CampaignObjective, Institution, Sefer } from '../../types';
+import { uploadCampaignHeaderImage } from '../../services/storage';
+import { CAMPAIGN_COLOR_THEMES } from '../../lib/campaignTheme';
+import type { Address, Campaign, CampaignColorTheme, CampaignItem, CampaignObjective, Institution, Sefer } from '../../types';
 import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
 import { InstitutionPicker } from './InstitutionPicker';
 import { NeshamaPicker } from './NeshamaPicker';
 import { AddressForm } from './AddressForm';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { ImageUploadField } from '../ui/ImageUploadField';
 import { NumberField } from '../ui/NumberField';
 import { SeferThumbnail } from '../ui/SeferThumbnail';
-import { TextField, TextAreaField } from '../ui/TextField';
+import { TextField, TextAreaField, FIELD_LABEL_CLASS } from '../ui/TextField';
 
 function addressesEqual(a: Address, b: Address): boolean {
   return (
@@ -35,9 +39,15 @@ interface CampaignEditFormProps {
  *  existing-items list and delete action that only apply once a campaign exists. */
 export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: CampaignEditFormProps) {
   const { t } = useTranslation();
+  const { profile } = useAuth();
 
   const [title, setTitle] = useState(campaign.title ?? '');
   const [description, setDescription] = useState(campaign.description ?? '');
+  const [existingHeaderImageUrl, setExistingHeaderImageUrl] = useState(campaign.headerImageUrl);
+  const [headerPhotoFile, setHeaderPhotoFile] = useState<File>();
+  const [colorTheme, setColorTheme] = useState<CampaignColorTheme>(campaign.colorTheme ?? 'accent');
+  const [startDate, setStartDate] = useState(campaign.startDate ?? '');
+  const [endDate, setEndDate] = useState(campaign.endDate ?? '');
   // Campaigns created before this field existed default to 'institution',
   // matching their old behavior (every campaign used to have an institution).
   const [objective, setObjective] = useState<CampaignObjective>(campaign.objective ?? 'institution');
@@ -80,6 +90,7 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
   const showAddressForm = addressDiffers || !institution;
 
   async function handleSave() {
+    if (!profile) return;
     setError(null);
     if (!title.trim()) {
       setError(t('campaign.titleRequired'));
@@ -95,6 +106,10 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
     }
     if (existingItems.length === 0 && newItems.length === 0) {
       setError(t('campaign.atLeastOneItem'));
+      return;
+    }
+    if (startDate && endDate && endDate < startDate) {
+      setError(t('campaign.endDateBeforeStart'));
       return;
     }
     setSaving(true);
@@ -118,10 +133,17 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
       }
 
       const shippingAddress = institution && !addressDiffers ? institution.address : customAddress;
+      const headerImageUrl = headerPhotoFile
+        ? await uploadCampaignHeaderImage(profile.uid, headerPhotoFile)
+        : existingHeaderImageUrl;
 
       await updateCampaign(campaign.campaignId, {
         title: title.trim(),
         description: description || undefined,
+        headerImageUrl,
+        colorTheme,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
         objective,
         institutionId,
         neshamaIds,
@@ -166,6 +188,55 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
         rows={4}
         containerClassName="mb-4"
       />
+
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.appearanceLabel')}</h2>
+      <div className="mb-4">
+        <ImageUploadField
+          label={t('campaign.headerPhotoLabel')}
+          existingImageUrls={existingHeaderImageUrl ? [existingHeaderImageUrl] : []}
+          onRemoveExisting={() => setExistingHeaderImageUrl(undefined)}
+          newFiles={headerPhotoFile ? [headerPhotoFile] : []}
+          onAddFiles={(files) => setHeaderPhotoFile(files[0])}
+          onRemoveNewFile={() => setHeaderPhotoFile(undefined)}
+          max={1}
+        />
+      </div>
+      <div className="mb-4">
+        <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
+        <div className="flex flex-wrap gap-3">
+          {CAMPAIGN_COLOR_THEMES.map((theme) => (
+            <button
+              key={theme.value}
+              type="button"
+              onClick={() => setColorTheme(theme.value)}
+              aria-label={`${theme.en} · ${theme.he}`}
+              title={`${theme.en} · ${theme.he}`}
+              className={`h-9 w-9 rounded-full border-2 transition-transform duration-200 ${
+                colorTheme === theme.value ? 'scale-110 border-text' : 'border-transparent'
+              }`}
+              style={{ backgroundColor: theme.hex }}
+            />
+          ))}
+        </div>
+      </div>
+
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.datesLabel')}</h2>
+      <div className="mb-4 flex gap-2">
+        <TextField
+          type="date"
+          label={t('campaign.startDateLabel')}
+          value={startDate}
+          onChange={setStartDate}
+          containerClassName="w-full"
+        />
+        <TextField
+          type="date"
+          label={t('campaign.endDateLabel')}
+          value={endDate}
+          onChange={setEndDate}
+          containerClassName="w-full"
+        />
+      </div>
 
       <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.objectiveLabel')}</h2>
       <p className="mb-2 text-xs text-text-muted">{t('campaign.objectiveHint')}</p>

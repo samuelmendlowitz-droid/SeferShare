@@ -18,11 +18,24 @@ export interface CampaignItem {
  *  this only picks which one is "the point." */
 export type CampaignObjective = 'institution' | 'neshama';
 
+/** A preset accent color the campaign's creator can pick to personalize its
+ *  card/detail page — see lib/campaignTheme.ts for the actual hex values and
+ *  labels. 'accent' (the app's own default blue) is the fallback for every
+ *  campaign created before this field existed. */
+export type CampaignColorTheme = 'accent' | 'maroon' | 'forest' | 'gold' | 'purple' | 'teal' | 'rose';
+
 export interface Campaign {
   campaignId: string;
   createdByUid: string;
   title?: string;
   description?: string;
+  headerImageUrl?: string;
+  colorTheme?: CampaignColorTheme;
+  /** Informational date range (YYYY-MM-DD, like Neshama's dateOfBirth/dateOfDeath) —
+   *  shown on the card/detail page. Purely descriptive: reaching endDate doesn't
+   *  pause or hide the campaign (status is still owner/algorithm controlled). */
+  startDate?: string;
+  endDate?: string;
 
   objective: CampaignObjective;
   // Where — required when objective is 'institution'; optional when it's
