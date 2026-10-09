@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { campaignDollarFulfilled, campaignDollarTotal } from '../../lib/campaignMath';
 import { formatCampaignDateRange } from '../../lib/campaignDates';
-import { getCampaignThemeHex } from '../../lib/campaignTheme';
+import { getCampaignTheme } from '../../lib/campaignTheme';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import { Card } from '../ui/Card';
 import { EditIcon } from '../ui/icons';
@@ -27,7 +27,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
   const dollarTotal = campaignDollarTotal(campaign);
   const dollarFulfilled = campaignDollarFulfilled(campaign);
   const isOwn = profile?.uid === campaign.createdByUid;
-  const themeHex = getCampaignThemeHex(campaign.colorTheme);
+  const theme = getCampaignTheme(campaign.colorTheme);
   const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, language);
 
   const seferTypesText = useMemo(() => {
@@ -42,10 +42,11 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
   return (
     <Card
       className="mb-3 cursor-pointer overflow-hidden transition-transform duration-200 hover:-translate-y-0.5"
+      style={{ backgroundColor: theme.background }}
       onClick={() => navigate(`/campaigns/${campaign.campaignId}`)}
     >
         <div className="-mx-4 -mt-4 mb-3">
-          <div className="h-1.5" style={{ backgroundColor: themeHex }} />
+          <div className="h-1.5" style={{ backgroundColor: theme.primary }} />
           {campaign.headerImageUrl && (
             <img src={campaign.headerImageUrl} alt="" className="h-32 w-full object-cover" />
           )}
@@ -78,6 +79,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
             <button
               type="button"
               className="hover:underline"
+              style={{ color: theme.accent }}
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/institutions/${institution.institutionId}`);
@@ -97,6 +99,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
                 <button
                   type="button"
                   className="hover:underline"
+                  style={{ color: theme.accent }}
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/neshamos/${n.neshamaId}`);
@@ -110,7 +113,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
         )}
 
         <div className="mt-3">
-          <p className="text-lg font-bold" style={{ color: themeHex }}>
+          <p className="text-lg font-bold" style={{ color: theme.primary }}>
             {t('home.itemsNeeded', {
               fulfilled: campaign.totalItemsFulfilled,
               needed: campaign.totalItemsNeeded,
@@ -124,7 +127,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
           <p className="mb-1 text-xs text-text-muted">
             {t('home.dollarProgress', { fulfilled: dollarFulfilled.toFixed(2), total: dollarTotal.toFixed(2) })}
           </p>
-          <ProgressBar fulfilled={dollarFulfilled} needed={dollarTotal} colorHex={themeHex} />
+          <ProgressBar fulfilled={dollarFulfilled} needed={dollarTotal} colorHex={theme.primary} />
         </div>
 
         {campaign.status === 'fulfilled' && (

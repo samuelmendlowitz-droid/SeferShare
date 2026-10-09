@@ -4,8 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { createCampaign } from '../../services/campaigns';
 import { uploadCampaignHeaderImage } from '../../services/storage';
-import { CAMPAIGN_COLOR_THEMES } from '../../lib/campaignTheme';
-import type { Address, CampaignColorTheme, CampaignObjective, Institution } from '../../types';
+import { DEFAULT_CAMPAIGN_THEME } from '../../lib/campaignTheme';
+import type { Address, CampaignObjective, Institution } from '../../types';
 import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
 import { InstitutionPicker } from './InstitutionPicker';
 import { NeshamaPicker } from './NeshamaPicker';
@@ -30,8 +30,6 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [headerPhotoFile, setHeaderPhotoFile] = useState<File>();
-  const [colorTheme, setColorTheme] = useState<CampaignColorTheme>('accent');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [objective, setObjective] = useState<CampaignObjective>('institution');
@@ -41,6 +39,10 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
   const [items, setItems] = useState<PickedItem[]>([]);
   const [addressDiffers, setAddressDiffers] = useState(false);
   const [customAddress, setCustomAddress] = useState<Address>(EMPTY_ADDRESS);
+  const [headerPhotoFile, setHeaderPhotoFile] = useState<File>();
+  const [bgColor, setBgColor] = useState(DEFAULT_CAMPAIGN_THEME.background);
+  const [primaryColor, setPrimaryColor] = useState(DEFAULT_CAMPAIGN_THEME.primary);
+  const [accentColor, setAccentColor] = useState(DEFAULT_CAMPAIGN_THEME.accent);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -85,7 +87,7 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
         title: title.trim(),
         description: description || undefined,
         headerImageUrl,
-        colorTheme,
+        colorTheme: { background: bgColor, primary: primaryColor, accent: accentColor },
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         objective,
@@ -125,37 +127,6 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
         rows={4}
         containerClassName="mb-4"
       />
-
-      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.appearanceLabel')}</h2>
-      <div className="mb-4">
-        <ImageUploadField
-          label={t('campaign.headerPhotoLabel')}
-          existingImageUrls={[]}
-          onRemoveExisting={() => {}}
-          newFiles={headerPhotoFile ? [headerPhotoFile] : []}
-          onAddFiles={(files) => setHeaderPhotoFile(files[0])}
-          onRemoveNewFile={() => setHeaderPhotoFile(undefined)}
-          max={1}
-        />
-      </div>
-      <div className="mb-4">
-        <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
-        <div className="flex flex-wrap gap-3">
-          {CAMPAIGN_COLOR_THEMES.map((theme) => (
-            <button
-              key={theme.value}
-              type="button"
-              onClick={() => setColorTheme(theme.value)}
-              aria-label={`${theme.en} · ${theme.he}`}
-              title={`${theme.en} · ${theme.he}`}
-              className={`h-9 w-9 rounded-full border-2 transition-transform duration-200 ${
-                colorTheme === theme.value ? 'scale-110 border-text' : 'border-transparent'
-              }`}
-              style={{ backgroundColor: theme.hex }}
-            />
-          ))}
-        </div>
-      </div>
 
       <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.datesLabel')}</h2>
       <div className="mb-4 flex gap-2">
@@ -218,7 +189,7 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
         <NeshamaPicker values={neshamaIds} onChange={setNeshamaIds} />
       </div>
 
-      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectedSeforimLabel')}</h2>
       <SeferPicker picked={items} onChange={setItems} />
 
       {institution && (
@@ -233,6 +204,51 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
           <AddressForm value={customAddress} onChange={setCustomAddress} />
         </Card>
       )}
+
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.appearanceLabel')}</h2>
+      <div className="mb-4">
+        <ImageUploadField
+          label={t('campaign.headerPhotoLabel')}
+          existingImageUrls={[]}
+          onRemoveExisting={() => {}}
+          newFiles={headerPhotoFile ? [headerPhotoFile] : []}
+          onAddFiles={(files) => setHeaderPhotoFile(files[0])}
+          onRemoveNewFile={() => setHeaderPhotoFile(undefined)}
+          max={1}
+        />
+      </div>
+      <div className="mb-4">
+        <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
+        <div className="flex gap-6">
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorBackgroundLabel')}</span>
+          </label>
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={primaryColor}
+              onChange={(e) => setPrimaryColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorPrimaryLabel')}</span>
+          </label>
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={accentColor}
+              onChange={(e) => setAccentColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorAccentLabel')}</span>
+          </label>
+        </div>
+      </div>
 
       {error && <p className="mb-3 text-sm text-error">{error}</p>}
 

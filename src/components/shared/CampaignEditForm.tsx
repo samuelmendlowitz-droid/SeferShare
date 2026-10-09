@@ -4,8 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { deleteCampaign, updateCampaign } from '../../services/campaigns';
 import { getInstitution } from '../../services/institutions';
 import { uploadCampaignHeaderImage } from '../../services/storage';
-import { CAMPAIGN_COLOR_THEMES } from '../../lib/campaignTheme';
-import type { Address, Campaign, CampaignColorTheme, CampaignItem, CampaignObjective, Institution, Sefer } from '../../types';
+import { getCampaignTheme } from '../../lib/campaignTheme';
+import type { Address, Campaign, CampaignItem, CampaignObjective, Institution, Sefer } from '../../types';
 import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
 import { InstitutionPicker } from './InstitutionPicker';
 import { NeshamaPicker } from './NeshamaPicker';
@@ -43,9 +43,6 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
 
   const [title, setTitle] = useState(campaign.title ?? '');
   const [description, setDescription] = useState(campaign.description ?? '');
-  const [existingHeaderImageUrl, setExistingHeaderImageUrl] = useState(campaign.headerImageUrl);
-  const [headerPhotoFile, setHeaderPhotoFile] = useState<File>();
-  const [colorTheme, setColorTheme] = useState<CampaignColorTheme>(campaign.colorTheme ?? 'accent');
   const [startDate, setStartDate] = useState(campaign.startDate ?? '');
   const [endDate, setEndDate] = useState(campaign.endDate ?? '');
   // Campaigns created before this field existed default to 'institution',
@@ -58,6 +55,12 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
   const [newItems, setNewItems] = useState<PickedItem[]>([]);
   const [addressDiffers, setAddressDiffers] = useState(false);
   const [customAddress, setCustomAddress] = useState<Address>(campaign.shippingAddress);
+  const [existingHeaderImageUrl, setExistingHeaderImageUrl] = useState(campaign.headerImageUrl);
+  const [headerPhotoFile, setHeaderPhotoFile] = useState<File>();
+  const existingTheme = getCampaignTheme(campaign.colorTheme);
+  const [bgColor, setBgColor] = useState(existingTheme.background);
+  const [primaryColor, setPrimaryColor] = useState(existingTheme.primary);
+  const [accentColor, setAccentColor] = useState(existingTheme.accent);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -141,7 +144,7 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
         title: title.trim(),
         description: description || undefined,
         headerImageUrl,
-        colorTheme,
+        colorTheme: { background: bgColor, primary: primaryColor, accent: accentColor },
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         objective,
@@ -188,37 +191,6 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
         rows={4}
         containerClassName="mb-4"
       />
-
-      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.appearanceLabel')}</h2>
-      <div className="mb-4">
-        <ImageUploadField
-          label={t('campaign.headerPhotoLabel')}
-          existingImageUrls={existingHeaderImageUrl ? [existingHeaderImageUrl] : []}
-          onRemoveExisting={() => setExistingHeaderImageUrl(undefined)}
-          newFiles={headerPhotoFile ? [headerPhotoFile] : []}
-          onAddFiles={(files) => setHeaderPhotoFile(files[0])}
-          onRemoveNewFile={() => setHeaderPhotoFile(undefined)}
-          max={1}
-        />
-      </div>
-      <div className="mb-4">
-        <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
-        <div className="flex flex-wrap gap-3">
-          {CAMPAIGN_COLOR_THEMES.map((theme) => (
-            <button
-              key={theme.value}
-              type="button"
-              onClick={() => setColorTheme(theme.value)}
-              aria-label={`${theme.en} · ${theme.he}`}
-              title={`${theme.en} · ${theme.he}`}
-              className={`h-9 w-9 rounded-full border-2 transition-transform duration-200 ${
-                colorTheme === theme.value ? 'scale-110 border-text' : 'border-transparent'
-              }`}
-              style={{ backgroundColor: theme.hex }}
-            />
-          ))}
-        </div>
-      </div>
 
       <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.datesLabel')}</h2>
       <div className="mb-4 flex gap-2">
@@ -281,7 +253,7 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
         <NeshamaPicker values={neshamaIds} onChange={setNeshamaIds} />
       </div>
 
-      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.selectedSeforimLabel')}</h2>
       <div className="mb-4 space-y-2">
         {existingItems.map((item, index) => {
           const sefer = sefarimById.get(item.seferId);
@@ -336,6 +308,51 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
           <AddressForm value={customAddress} onChange={setCustomAddress} />
         </Card>
       )}
+
+      <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.appearanceLabel')}</h2>
+      <div className="mb-4">
+        <ImageUploadField
+          label={t('campaign.headerPhotoLabel')}
+          existingImageUrls={existingHeaderImageUrl ? [existingHeaderImageUrl] : []}
+          onRemoveExisting={() => setExistingHeaderImageUrl(undefined)}
+          newFiles={headerPhotoFile ? [headerPhotoFile] : []}
+          onAddFiles={(files) => setHeaderPhotoFile(files[0])}
+          onRemoveNewFile={() => setHeaderPhotoFile(undefined)}
+          max={1}
+        />
+      </div>
+      <div className="mb-4">
+        <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
+        <div className="flex gap-6">
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorBackgroundLabel')}</span>
+          </label>
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={primaryColor}
+              onChange={(e) => setPrimaryColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorPrimaryLabel')}</span>
+          </label>
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={accentColor}
+              onChange={(e) => setAccentColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorAccentLabel')}</span>
+          </label>
+        </div>
+      </div>
 
       {error && <p className="mb-3 text-sm text-error">{error}</p>}
 

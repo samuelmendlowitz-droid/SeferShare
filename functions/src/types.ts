@@ -19,7 +19,11 @@ export interface CampaignItem {
 
 export type CampaignObjective = 'institution' | 'neshama';
 
-export type CampaignColorTheme = 'accent' | 'maroon' | 'forest' | 'gold' | 'purple' | 'teal' | 'rose';
+export interface CampaignColorTheme {
+  background: string;
+  primary: string;
+  accent: string;
+}
 
 export interface Campaign {
   campaignId: string;

@@ -18,11 +18,16 @@ export interface CampaignItem {
  *  this only picks which one is "the point." */
 export type CampaignObjective = 'institution' | 'neshama';
 
-/** A preset accent color the campaign's creator can pick to personalize its
- *  card/detail page — see lib/campaignTheme.ts for the actual hex values and
- *  labels. 'accent' (the app's own default blue) is the fallback for every
- *  campaign created before this field existed. */
-export type CampaignColorTheme = 'accent' | 'maroon' | 'forest' | 'gold' | 'purple' | 'teal' | 'rose';
+/** The three hex colors a campaign's creator can pick to personalize its
+ *  card/detail page — background (the card/header surface), primary (the
+ *  progress bar and headline number), and accent (link-style text, e.g. the
+ *  institution/neshama name). See lib/campaignTheme.ts for the defaults every
+ *  campaign created before this field existed falls back to. */
+export interface CampaignColorTheme {
+  background: string;
+  primary: string;
+  accent: string;
+}
 
 export interface Campaign {
   campaignId: string;

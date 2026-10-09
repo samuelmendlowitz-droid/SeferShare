@@ -11,7 +11,7 @@ import { listSefarim } from '../services/sefarim';
 import type { Campaign, Institution, Neshama, Sefer } from '../types';
 import { campaignDollarTotal } from '../lib/campaignMath';
 import { formatCampaignDateRange } from '../lib/campaignDates';
-import { getCampaignThemeHex } from '../lib/campaignTheme';
+import { getCampaignTheme } from '../lib/campaignTheme';
 import { neshamaDedicationLine } from '../lib/neshamaFormat';
 import { ProgressBar } from '../components/campaign/ProgressBar';
 import { GiftCardOption } from '../components/donation/GiftCardOption';
@@ -117,12 +117,12 @@ export function CampaignDetailPage() {
     setStepQuantities((prev) => ({ ...prev, [itemKey]: Math.min(1, remaining - qty) }));
   }
 
-  const themeHex = getCampaignThemeHex(campaign.colorTheme);
+  const theme = getCampaignTheme(campaign.colorTheme);
   const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, language);
 
   return (
     <DetailPageLayout fallbackPath="/campaigns">
-      <div className="mb-4 border-b border-border pb-4">
+      <div className="mb-4 rounded-card p-4" style={{ backgroundColor: theme.background }}>
         {campaign.headerImageUrl && (
           <img src={campaign.headerImageUrl} alt="" className="mb-4 h-44 w-full rounded-card object-cover" />
         )}
@@ -136,7 +136,8 @@ export function CampaignDetailPage() {
           <p className="mt-1 text-sm">
             <button
               type="button"
-              className="text-accent hover:underline"
+              className="hover:underline"
+              style={{ color: theme.accent }}
               onClick={() => navigate(`/institutions/${institution.institutionId}`)}
             >
               {institution.name}
@@ -151,7 +152,8 @@ export function CampaignDetailPage() {
                 {idx > 0 && ', '}
                 <button
                   type="button"
-                  className="text-accent hover:underline"
+                  className="hover:underline"
+                  style={{ color: theme.accent }}
                   onClick={() => navigate(`/neshamos/${n.neshamaId}`)}
                 >
                   {neshamaDedicationLine(n, showBilingual)}
@@ -164,7 +166,7 @@ export function CampaignDetailPage() {
         {dateRangeText && <p className="mt-2 text-xs text-text-muted">{dateRangeText}</p>}
 
         <div className="mt-4">
-          <p className="text-base font-semibold" style={{ color: themeHex }}>
+          <p className="text-base font-semibold" style={{ color: theme.primary }}>
             {t('home.itemsNeeded', { fulfilled: campaign.totalItemsFulfilled, needed: campaign.totalItemsNeeded })}
           </p>
           <p className="text-sm text-text-muted">
@@ -172,7 +174,7 @@ export function CampaignDetailPage() {
           </p>
         </div>
         <div className="mt-2">
-          <ProgressBar fulfilled={campaign.totalItemsFulfilled} needed={campaign.totalItemsNeeded} colorHex={themeHex} />
+          <ProgressBar fulfilled={campaign.totalItemsFulfilled} needed={campaign.totalItemsNeeded} colorHex={theme.primary} />
         </div>
       </div>
 
