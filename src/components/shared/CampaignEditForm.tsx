@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { deleteCampaign, updateCampaign } from '../../services/campaigns';
 import { getInstitution } from '../../services/institutions';
 import { uploadCampaignHeaderImage } from '../../services/storage';
-import { getCampaignTheme } from '../../lib/campaignTheme';
+import { getColorTheme } from '../../lib/colorTheme';
 import type { Address, Campaign, CampaignItem, CampaignObjective, Institution, Sefer } from '../../types';
 import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
 import { InstitutionPicker } from './InstitutionPicker';
@@ -57,7 +57,7 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
   const [customAddress, setCustomAddress] = useState<Address>(campaign.shippingAddress);
   const [existingHeaderImageUrl, setExistingHeaderImageUrl] = useState(campaign.headerImageUrl);
   const [headerPhotoFile, setHeaderPhotoFile] = useState<File>();
-  const existingTheme = getCampaignTheme(campaign.colorTheme);
+  const existingTheme = getColorTheme(campaign.colorTheme);
   const [bgColor, setBgColor] = useState(existingTheme.background);
   const [primaryColor, setPrimaryColor] = useState(existingTheme.primary);
   const [accentColor, setAccentColor] = useState(existingTheme.accent);

@@ -1,4 +1,4 @@
-import type { SeferType } from './common';
+import type { ColorTheme, SeferType } from './common';
 
 export type ParentGender = 'son' | 'daughter';
 
@@ -35,6 +35,8 @@ export interface Neshama {
   /** Rabbeim only — titles of seforim they authored, one per entry. Free text:
    *  an authored work isn't necessarily in the vendor catalog at all. */
   seferimWritten?: string[];
+  /** Personalizes this neshama's own info page — see ColorTheme in common.ts. */
+  colorTheme?: ColorTheme;
   /** Last time this neshama was used as an algorithm-picked dedication (see
    *  functions/src/algorithm.ts) — the longest-waiting eligible neshama is picked
    *  first when a campaign has no neshama of its own. */

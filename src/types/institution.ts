@@ -1,4 +1,4 @@
-import type { Address } from './common';
+import type { Address, ColorTheme } from './common';
 
 export type InstitutionType = 'shul' | 'yeshiva' | 'kolel' | 'school' | 'other';
 
@@ -23,6 +23,8 @@ export interface Institution {
   bio?: string;
   /** Free-text highlights (one per line) — e.g. programs run, milestones reached. */
   accomplishments?: string;
+  /** Personalizes this institution's own info page — see ColorTheme in common.ts. */
+  colorTheme?: ColorTheme;
   createdByUid: string;
   /** Each institution needs its own admin verification, separate from its
    *  owner's person-level institutionOwnerApproved — starts false at creation,

@@ -1,6 +1,6 @@
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { Neshama, ParentGender, SeferType } from '../types';
+import type { ColorTheme, Neshama, ParentGender, SeferType } from '../types';
 
 const neshamosRef = collection(db, 'neshamos');
 
@@ -30,6 +30,7 @@ export interface CreateNeshamaInput {
   seferIds?: string[];
   isRabbi?: boolean;
   seferimWritten?: string[];
+  colorTheme?: ColorTheme;
 }
 
 export async function createNeshama(input: CreateNeshamaInput): Promise<string> {
@@ -49,6 +50,7 @@ export async function createNeshama(input: CreateNeshamaInput): Promise<string> 
     seferIds: input.seferIds ?? [],
     isRabbi: input.isRabbi ?? false,
     seferimWritten: input.isRabbi ? (input.seferimWritten ?? []) : [],
+    colorTheme: input.colorTheme ?? null,
     lastDedicatedAt: null,
     createdAt: serverTimestamp(),
   });
@@ -70,6 +72,7 @@ export interface UpdateNeshamaInput {
   seferIds?: string[];
   isRabbi?: boolean;
   seferimWritten?: string[];
+  colorTheme?: ColorTheme;
 }
 
 /** Full edit of a neshama's own details by its creator — never touches
@@ -91,6 +94,7 @@ export async function updateNeshama(neshamaId: string, input: UpdateNeshamaInput
     seferIds: input.seferIds ?? [],
     isRabbi: input.isRabbi ?? false,
     seferimWritten: input.isRabbi ? (input.seferimWritten ?? []) : [],
+    colorTheme: input.colorTheme ?? null,
   });
 }
 

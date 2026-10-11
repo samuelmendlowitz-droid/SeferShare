@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { createCampaign } from '../../services/campaigns';
 import { uploadCampaignHeaderImage } from '../../services/storage';
-import { DEFAULT_CAMPAIGN_THEME } from '../../lib/campaignTheme';
+import { DEFAULT_COLOR_THEME } from '../../lib/colorTheme';
 import type { Address, CampaignObjective, Institution } from '../../types';
 import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
 import { InstitutionPicker } from './InstitutionPicker';
@@ -40,9 +40,9 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
   const [addressDiffers, setAddressDiffers] = useState(false);
   const [customAddress, setCustomAddress] = useState<Address>(EMPTY_ADDRESS);
   const [headerPhotoFile, setHeaderPhotoFile] = useState<File>();
-  const [bgColor, setBgColor] = useState(DEFAULT_CAMPAIGN_THEME.background);
-  const [primaryColor, setPrimaryColor] = useState(DEFAULT_CAMPAIGN_THEME.primary);
-  const [accentColor, setAccentColor] = useState(DEFAULT_CAMPAIGN_THEME.accent);
+  const [bgColor, setBgColor] = useState(DEFAULT_COLOR_THEME.background);
+  const [primaryColor, setPrimaryColor] = useState(DEFAULT_COLOR_THEME.primary);
+  const [accentColor, setAccentColor] = useState(DEFAULT_COLOR_THEME.accent);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 

@@ -11,7 +11,7 @@ import { listSefarim } from '../services/sefarim';
 import type { Campaign, Institution, Neshama, Sefer } from '../types';
 import { campaignDollarTotal } from '../lib/campaignMath';
 import { formatCampaignDateRange } from '../lib/campaignDates';
-import { getCampaignTheme } from '../lib/campaignTheme';
+import { getColorTheme } from '../lib/colorTheme';
 import { neshamaDedicationLine } from '../lib/neshamaFormat';
 import { ProgressBar } from '../components/campaign/ProgressBar';
 import { GiftCardOption } from '../components/donation/GiftCardOption';
@@ -117,16 +117,21 @@ export function CampaignDetailPage() {
     setStepQuantities((prev) => ({ ...prev, [itemKey]: Math.min(1, remaining - qty) }));
   }
 
-  const theme = getCampaignTheme(campaign.colorTheme);
+  const theme = getColorTheme(campaign.colorTheme);
   const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, language);
+  // The campaign's chosen theme styles its content "bubbles" only — the page
+  // itself always sits on a plain white backdrop (see DetailPageLayout).
+  const buttonThemeStyle = { backgroundColor: theme.accent, borderColor: theme.accent, color: '#FFFFFF' };
 
   return (
-    <DetailPageLayout fallbackPath="/campaigns" backgroundColor={theme.background}>
-      <div className="mb-4 border-b border-border pb-4">
+    <DetailPageLayout fallbackPath="/campaigns" backgroundColor="#FFFFFF">
+      <Card className="mb-4" style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
         {campaign.headerImageUrl && (
           <img src={campaign.headerImageUrl} alt="" className="mb-4 h-44 w-full rounded-card object-cover" />
         )}
-        <h1 className="text-2xl font-bold">{campaign.title || t('campaign.untitled')}</h1>
+        <h1 className="text-2xl font-bold" style={{ color: theme.primary }}>
+          {campaign.title || t('campaign.untitled')}
+        </h1>
         {/* Only the campaign's objective shows here — a 'neshama' campaign
             can still have an institution attached (and vice versa), but the
             info card is about whichever one is the actual point. Campaigns
@@ -145,7 +150,7 @@ export function CampaignDetailPage() {
           </p>
         )}
         {(campaign.objective ?? 'institution') === 'neshama' && neshamas.length > 0 && (
-          <p className="mt-1 text-sm text-text-muted">
+          <p className="mt-1 text-sm" style={{ color: theme.accent }}>
             {t('neshama.liluyNishmat')}{' '}
             {neshamas.map((n, idx) => (
               <span key={n.neshamaId}>
@@ -162,21 +167,29 @@ export function CampaignDetailPage() {
             ))}
           </p>
         )}
-        {campaign.description && <p className="mt-3 text-sm text-text">{campaign.description}</p>}
-        {dateRangeText && <p className="mt-2 text-xs text-text-muted">{dateRangeText}</p>}
+        {campaign.description && (
+          <p className="mt-3 text-sm" style={{ color: theme.accent }}>
+            {campaign.description}
+          </p>
+        )}
+        {dateRangeText && (
+          <p className="mt-2 text-xs" style={{ color: theme.accent }}>
+            {dateRangeText}
+          </p>
+        )}
 
         <div className="mt-4">
           <p className="text-base font-semibold" style={{ color: theme.primary }}>
             {t('home.itemsNeeded', { fulfilled: campaign.totalItemsFulfilled, needed: campaign.totalItemsNeeded })}
           </p>
-          <p className="text-sm text-text-muted">
+          <p className="text-sm" style={{ color: theme.accent }}>
             {t('home.dollarTotal', { amount: campaignDollarTotal(campaign).toFixed(2) })}
           </p>
         </div>
         <div className="mt-2">
           <ProgressBar fulfilled={campaign.totalItemsFulfilled} needed={campaign.totalItemsNeeded} colorHex={theme.primary} />
         </div>
-      </div>
+      </Card>
 
       <h2 className="mb-2 text-base font-semibold">{t('campaign.selectSeforim')}</h2>
       {campaign.institutionId && (
@@ -202,19 +215,19 @@ export function CampaignDetailPage() {
           const stepQty = stepQuantityFor(itemKey, remaining);
 
           return (
-            <Card key={itemKey} style={{ backgroundColor: theme.background }}>
+            <Card key={itemKey} style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
               <div className="flex items-center gap-3">
                 <SeferThumbnail imageUrl={listing?.imageUrls?.[0]} alt={sefer?.englishName ?? item.seferId} />
                 <div className="min-w-0 flex-1">
                   <button
                     type="button"
                     className="truncate text-start text-sm font-semibold hover:underline"
-                    style={{ color: theme.accent }}
+                    style={{ color: theme.primary }}
                     onClick={() => navigate(`/seforim/${item.seferId}`)}
                   >
                     {sefer?.englishName ?? item.seferId} {sefer?.hebrewName ? `· ${sefer.hebrewName}` : ''}
                   </button>
-                  <p className="text-xs text-text-muted">
+                  <p className="text-xs" style={{ color: theme.accent }}>
                     {item.quantityFulfilled}/{item.quantity} — ${item.retailPrice.toFixed(2)}
                   </p>
                   {inPushka > 0 && (
@@ -254,7 +267,7 @@ export function CampaignDetailPage() {
                   <Button
                     variant="secondary"
                     className="flex-1"
-                    style={{ borderColor: theme.accent, color: theme.accent }}
+                    style={buttonThemeStyle}
                     disabled={stepQty <= 0}
                     onClick={() => handleAddToPushka(itemKey, item.seferId, item.vendorId, item.retailPrice, remaining)}
                   >
@@ -280,7 +293,7 @@ export function CampaignDetailPage() {
             <Button
               variant="secondary"
               className="w-full"
-              style={{ borderColor: theme.accent, color: theme.accent }}
+              style={buttonThemeStyle}
               onClick={() => navigate(`/campaigns/${campaign.campaignId}/edit`)}
             >
               {t('campaign.edit')}
@@ -290,7 +303,7 @@ export function CampaignDetailPage() {
       )}
 
       {pushka.totalCount > 0 && (
-        <Button className="mt-4 w-full" style={{ backgroundColor: theme.primary }} onClick={() => navigate('/pushka')}>
+        <Button className="mt-4 w-full" style={buttonThemeStyle} onClick={() => navigate('/pushka')}>
           {t('pushka.completeDonation', { count: pushka.totalCount, amount: pushka.totalPrice.toFixed(2) })}
         </Button>
       )}

@@ -7,6 +7,7 @@ import { getInstitution } from '../services/institutions';
 import { listCampaignsByInstitution } from '../services/campaigns';
 import type { Campaign, Institution } from '../types';
 import { institutionTypeText } from '../lib/institutionFormat';
+import { getColorTheme } from '../lib/colorTheme';
 import { GiftCardOption } from '../components/donation/GiftCardOption';
 import { DetailPageLayout } from '../components/layout/DetailPageLayout';
 import { Card } from '../components/ui/Card';
@@ -65,38 +66,55 @@ export function InstitutionDetailPage() {
   }
 
   const isOwn = profile?.uid === institution.createdByUid;
+  const theme = getColorTheme(institution.colorTheme);
+  const buttonThemeStyle = { backgroundColor: theme.accent, borderColor: theme.accent, color: '#FFFFFF' };
 
   return (
-    <DetailPageLayout fallbackPath="/campaigns">
+    <DetailPageLayout fallbackPath="/campaigns" backgroundColor="#FFFFFF">
       {institution.images && institution.images.length > 0 && (
         <div className="mb-4">
           <ImageGalleryWheel images={institution.images} alt={institution.name} />
         </div>
       )}
 
-      <div className="mb-4 border-b border-border pb-4">
-        <h1 className="text-2xl font-bold">{institution.name}</h1>
-        <p className="mt-1 text-sm text-text-muted">
+      <Card className="mb-4" style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
+        <h1 className="text-2xl font-bold" style={{ color: theme.primary }}>
+          {institution.name}
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: theme.accent }}>
           {institutionTypeText(institution.type, institution.customType, t(`institution.${institution.type}`))}
         </p>
-        <p className="mt-1 text-sm text-text">{addressLine(institution)}</p>
-        <p className={`mt-1 text-xs font-medium ${institution.verified ? 'text-success' : 'text-text-muted'}`}>
+        <p className="mt-1 text-sm" style={{ color: theme.accent }}>
+          {addressLine(institution)}
+        </p>
+        <p
+          className={`mt-1 text-xs font-medium ${institution.verified ? 'text-success' : ''}`}
+          style={institution.verified ? undefined : { color: theme.accent }}
+        >
           {institution.verified ? t('institution.verified') : t('institution.unverified')}
         </p>
-      </div>
+      </Card>
 
       {institution.bio && (
-        <div className="mb-4">
-          <h2 className="mb-2 text-base font-semibold">{t('institution.bioHeading')}</h2>
-          <p className="whitespace-pre-line text-sm text-text">{institution.bio}</p>
-        </div>
+        <Card className="mb-4" style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
+          <h2 className="mb-2 text-base font-semibold" style={{ color: theme.primary }}>
+            {t('institution.bioHeading')}
+          </h2>
+          <p className="whitespace-pre-line text-sm" style={{ color: theme.accent }}>
+            {institution.bio}
+          </p>
+        </Card>
       )}
 
       {institution.accomplishments && (
-        <div className="mb-4">
-          <h2 className="mb-2 text-base font-semibold">{t('institution.accomplishmentsHeading')}</h2>
-          <p className="whitespace-pre-line text-sm text-text">{institution.accomplishments}</p>
-        </div>
+        <Card className="mb-4" style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
+          <h2 className="mb-2 text-base font-semibold" style={{ color: theme.primary }}>
+            {t('institution.accomplishmentsHeading')}
+          </h2>
+          <p className="whitespace-pre-line text-sm" style={{ color: theme.accent }}>
+            {institution.accomplishments}
+          </p>
+        </Card>
       )}
 
       {campaigns.length > 0 && (
@@ -124,10 +142,15 @@ export function InstitutionDetailPage() {
         <div className="mt-4 space-y-2 border-t border-border pt-4">
           {/* Spending the gift card balance happens from Seforim > Gallery's
               institution switcher now, not from here — this just surfaces it. */}
-          <p className="text-xs text-text-muted">
+          <p className="text-xs" style={{ color: theme.accent }}>
             {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
           </p>
-          <Button variant="secondary" className="w-full" onClick={() => navigate(`/institutions/${institution.institutionId}/edit`)}>
+          <Button
+            variant="secondary"
+            className="w-full"
+            style={buttonThemeStyle}
+            onClick={() => navigate(`/institutions/${institution.institutionId}/edit`)}
+          >
             {t('institution.edit')}
           </Button>
         </div>

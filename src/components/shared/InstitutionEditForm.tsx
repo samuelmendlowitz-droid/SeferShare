@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { deleteInstitution, updateInstitution } from '../../services/institutions';
 import { uploadInstitutionImages } from '../../services/storage';
+import { getColorTheme } from '../../lib/colorTheme';
 import { INSTITUTION_TYPES, MAX_INSTITUTION_IMAGES, type Address, type Institution, type InstitutionType } from '../../types';
 import { AddressForm } from './AddressForm';
 import { Button } from '../ui/Button';
@@ -32,6 +33,10 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
   const [accomplishments, setAccomplishments] = useState(institution.accomplishments ?? '');
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>(institution.images ?? []);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const existingTheme = getColorTheme(institution.colorTheme);
+  const [bgColor, setBgColor] = useState(existingTheme.background);
+  const [primaryColor, setPrimaryColor] = useState(existingTheme.primary);
+  const [accentColor, setAccentColor] = useState(existingTheme.accent);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -51,6 +56,7 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
         bio: bio.trim() || undefined,
         accomplishments: accomplishments.trim() || undefined,
         images: [...existingImageUrls, ...uploadedUrls],
+        colorTheme: { background: bgColor, primary: primaryColor, accent: accentColor },
       });
       onSaved();
     } catch (err) {
@@ -105,6 +111,38 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
           onRemoveNewFile={(index) => setImageFiles((prev) => prev.filter((_, i) => i !== index))}
           max={MAX_INSTITUTION_IMAGES}
         />
+        <div>
+          <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
+          <div className="flex gap-6">
+            <label className="flex flex-col items-center gap-1">
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+              />
+              <span className="text-[11px] text-text-muted">{t('campaign.colorBackgroundLabel')}</span>
+            </label>
+            <label className="flex flex-col items-center gap-1">
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={(e) => setPrimaryColor(e.target.value)}
+                className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+              />
+              <span className="text-[11px] text-text-muted">{t('campaign.colorPrimaryLabel')}</span>
+            </label>
+            <label className="flex flex-col items-center gap-1">
+              <input
+                type="color"
+                value={accentColor}
+                onChange={(e) => setAccentColor(e.target.value)}
+                className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+              />
+              <span className="text-[11px] text-text-muted">{t('campaign.colorAccentLabel')}</span>
+            </label>
+          </div>
+        </div>
       </div>
 
       {error && <p className="mt-3 text-sm text-error">{error}</p>}

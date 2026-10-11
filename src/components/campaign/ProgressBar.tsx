@@ -2,7 +2,7 @@ interface ProgressBarProps {
   fulfilled: number;
   needed: number;
   /** Overrides the fill color — a campaign's chosen color theme (see
-   *  lib/campaignTheme.ts). Omitted, it falls back to the default accent class. */
+   *  lib/colorTheme.ts). Omitted, it falls back to the default accent class. */
   colorHex?: string;
 }
 

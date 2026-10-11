@@ -5,6 +5,7 @@ import { deleteNeshama, updateNeshama } from '../../services/neshamos';
 import { uploadNeshamaImage } from '../../services/storage';
 import { SEFER_TYPES, type Neshama, type ParentGender, type SeferType } from '../../types';
 import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../../lib/neshamaPrefixes';
+import { getColorTheme } from '../../lib/colorTheme';
 import { Button } from '../ui/Button';
 import { BubbleGrid } from '../ui/BubbleGrid';
 import { Card } from '../ui/Card';
@@ -38,6 +39,10 @@ export function NeshamaEditForm({ neshama, onSaved, onDeleted }: NeshamaEditForm
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [seferTypes, setSeferTypes] = useState<SeferType[]>(neshama.seferTypes ?? []);
   const [seferTypeQuery, setSeferTypeQuery] = useState('');
+  const existingTheme = getColorTheme(neshama.colorTheme);
+  const [bgColor, setBgColor] = useState(existingTheme.background);
+  const [primaryColor, setPrimaryColor] = useState(existingTheme.primary);
+  const [accentColor, setAccentColor] = useState(existingTheme.accent);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -74,6 +79,7 @@ export function NeshamaEditForm({ neshama, onSaved, onDeleted }: NeshamaEditForm
         seferIds: neshama.seferIds,
         isRabbi,
         seferimWritten,
+        colorTheme: { background: bgColor, primary: primaryColor, accent: accentColor },
       });
       onSaved();
     } catch (err) {
@@ -197,6 +203,38 @@ export function NeshamaEditForm({ neshama, onSaved, onDeleted }: NeshamaEditForm
             placeholder={t('neshama.seferimWrittenPlaceholder') ?? ''}
           />
         )}
+        <div>
+          <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
+          <div className="flex gap-6">
+            <label className="flex flex-col items-center gap-1">
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+              />
+              <span className="text-[11px] text-text-muted">{t('campaign.colorBackgroundLabel')}</span>
+            </label>
+            <label className="flex flex-col items-center gap-1">
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={(e) => setPrimaryColor(e.target.value)}
+                className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+              />
+              <span className="text-[11px] text-text-muted">{t('campaign.colorPrimaryLabel')}</span>
+            </label>
+            <label className="flex flex-col items-center gap-1">
+              <input
+                type="color"
+                value={accentColor}
+                onChange={(e) => setAccentColor(e.target.value)}
+                className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+              />
+              <span className="text-[11px] text-text-muted">{t('campaign.colorAccentLabel')}</span>
+            </label>
+          </div>
+        </div>
       </div>
 
       {error && <p className="mt-3 text-sm text-error">{error}</p>}

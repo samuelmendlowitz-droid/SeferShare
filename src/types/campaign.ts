@@ -1,4 +1,4 @@
-import type { Address, Language } from './common';
+import type { Address, ColorTheme, Language } from './common';
 
 export type CampaignStatus = 'active' | 'fulfilled' | 'paused';
 
@@ -18,16 +18,9 @@ export interface CampaignItem {
  *  this only picks which one is "the point." */
 export type CampaignObjective = 'institution' | 'neshama';
 
-/** The three hex colors a campaign's creator can pick to personalize its
- *  card/detail page — background (the card/header surface), primary (the
- *  progress bar and headline number), and accent (link-style text, e.g. the
- *  institution/neshama name). See lib/campaignTheme.ts for the defaults every
- *  campaign created before this field existed falls back to. */
-export interface CampaignColorTheme {
-  background: string;
-  primary: string;
-  accent: string;
-}
+/** Campaign-specific alias of the shared ColorTheme (see common.ts) — kept so
+ *  existing imports of `CampaignColorTheme` don't need to change. */
+export type CampaignColorTheme = ColorTheme;
 
 export interface Campaign {
   campaignId: string;

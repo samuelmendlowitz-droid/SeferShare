@@ -6,6 +6,7 @@ import { getNeshama } from '../services/neshamos';
 import { listCampaignsByNeshama } from '../services/campaigns';
 import { getSefer } from '../services/sefarim';
 import { formatNeshamaDedication, prefixedName } from '../lib/neshamaFormat';
+import { getColorTheme } from '../lib/colorTheme';
 import type { Campaign, Neshama, Sefer } from '../types';
 import { DetailPageLayout } from '../components/layout/DetailPageLayout';
 import { Card } from '../components/ui/Card';
@@ -67,10 +68,12 @@ export function NeshamaDetailPage() {
   const lifespan = [neshama.dateOfBirth, neshama.dateOfDeath]
     .map((d) => (d ? new Date(d).toLocaleDateString() : undefined))
     .filter(Boolean);
+  const theme = getColorTheme(neshama.colorTheme);
+  const buttonThemeStyle = { backgroundColor: theme.accent, borderColor: theme.accent, color: '#FFFFFF' };
 
   return (
-    <DetailPageLayout fallbackPath="/campaigns">
-      <div className="mb-4 border-b border-border pb-4">
+    <DetailPageLayout fallbackPath="/campaigns" backgroundColor="#FFFFFF">
+      <Card className="mb-4" style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
         {neshama.imageUrl && (
           <img
             src={neshama.imageUrl}
@@ -78,39 +81,47 @@ export function NeshamaDetailPage() {
             className="mb-3 h-24 w-24 rounded-full border border-border object-cover"
           />
         )}
-        <h1 className="text-2xl font-bold">{prefixedName(neshama, false) ?? neshama.name}</h1>
+        <h1 className="text-2xl font-bold" style={{ color: theme.primary }}>
+          {prefixedName(neshama, false) ?? neshama.name}
+        </h1>
         {neshama.hebrewName && (
-          <p dir="rtl" className="mt-1 text-base text-text">
+          <p dir="rtl" className="mt-1 text-base" style={{ color: theme.accent }}>
             {formatNeshamaDedication(neshama, true)}
           </p>
         )}
-        {lifespan.length > 0 && <p className="mt-1 text-sm text-text-muted">{lifespan.join(' – ')}</p>}
+        {lifespan.length > 0 && (
+          <p className="mt-1 text-sm" style={{ color: theme.accent }}>
+            {lifespan.join(' – ')}
+          </p>
+        )}
         {neshama.isRabbi && (
           <span className="mt-2 inline-block rounded-pill bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
             {t('neshama.isRabbiLabel')}
           </span>
         )}
-      </div>
+      </Card>
 
       {neshama.bio && (
-        <div className="mb-4">
-          <h2 className="mb-2 text-base font-semibold">{t('neshama.bioHeading')}</h2>
-          <p className="whitespace-pre-line text-sm text-text">{neshama.bio}</p>
-        </div>
+        <Card className="mb-4" style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
+          <h2 className="mb-2 text-base font-semibold" style={{ color: theme.primary }}>
+            {t('neshama.bioHeading')}
+          </h2>
+          <p className="whitespace-pre-line text-sm" style={{ color: theme.accent }}>
+            {neshama.bio}
+          </p>
+        </Card>
       )}
 
       {hasFavoriteSeforim && (
-        <div className="mb-4">
-          <h2 className="mb-2 text-base font-semibold">{t('neshama.favoriteSeforimHeading')}</h2>
-          <p className="text-sm text-text">
+        <Card className="mb-4" style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
+          <h2 className="mb-2 text-base font-semibold" style={{ color: theme.primary }}>
+            {t('neshama.favoriteSeforimHeading')}
+          </h2>
+          <p className="text-sm" style={{ color: theme.accent }}>
             {dedicatedSefarim.map((sefer, idx) => (
               <span key={sefer.seferId}>
                 {idx > 0 && ', '}
-                <button
-                  type="button"
-                  className="text-accent hover:underline"
-                  onClick={() => navigate(`/seforim/${sefer.seferId}`)}
-                >
+                <button type="button" className="hover:underline" onClick={() => navigate(`/seforim/${sefer.seferId}`)}>
                   {sefer.englishName}
                 </button>
               </span>
@@ -118,18 +129,20 @@ export function NeshamaDetailPage() {
             {dedicatedSefarim.length > 0 && (neshama.seferTypes ?? []).length > 0 && ', '}
             {(neshama.seferTypes ?? []).map((type) => t(`sefer.${type}`)).join(', ')}
           </p>
-        </div>
+        </Card>
       )}
 
       {neshama.isRabbi && (neshama.seferimWritten ?? []).length > 0 && (
-        <div className="mb-4">
-          <h2 className="mb-2 text-base font-semibold">{t('neshama.seferimWrittenHeading')}</h2>
-          <ul className="list-inside list-disc text-sm text-text">
+        <Card className="mb-4" style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
+          <h2 className="mb-2 text-base font-semibold" style={{ color: theme.primary }}>
+            {t('neshama.seferimWrittenHeading')}
+          </h2>
+          <ul className="list-inside list-disc text-sm" style={{ color: theme.accent }}>
             {(neshama.seferimWritten ?? []).map((title) => (
               <li key={title}>{title}</li>
             ))}
           </ul>
-        </div>
+        </Card>
       )}
 
       <h2 className="mb-2 text-base font-semibold">{t('neshama.chooseCampaign')}</h2>
@@ -150,11 +163,16 @@ export function NeshamaDetailPage() {
       )}
 
       <div className="space-y-2 border-t border-border pt-4">
-        <Button className="w-full" onClick={() => navigate(`/neshamos/${neshama.neshamaId}/donate`)}>
+        <Button className="w-full" style={buttonThemeStyle} onClick={() => navigate(`/neshamos/${neshama.neshamaId}/donate`)}>
           {t('neshama.donateInTheirName')}
         </Button>
         {isOwn && (
-          <Button variant="secondary" className="w-full" onClick={() => navigate(`/neshamos/${neshama.neshamaId}/edit`)}>
+          <Button
+            variant="secondary"
+            className="w-full"
+            style={buttonThemeStyle}
+            onClick={() => navigate(`/neshamos/${neshama.neshamaId}/edit`)}
+          >
             {t('neshama.edit')}
           </Button>
         )}

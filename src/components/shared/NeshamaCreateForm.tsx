@@ -4,6 +4,7 @@ import { SEFER_TYPES, type Neshama, type ParentGender, type SeferType } from '..
 import { createNeshama } from '../../services/neshamos';
 import { uploadNeshamaImage } from '../../services/storage';
 import { NESHAMA_PREFIXES, OTHER_PREFIX_VALUE } from '../../lib/neshamaPrefixes';
+import { DEFAULT_COLOR_THEME } from '../../lib/colorTheme';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { BubbleGrid } from '../ui/BubbleGrid';
@@ -33,6 +34,9 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [seferTypes, setSeferTypes] = useState<SeferType[]>([]);
   const [seferTypeQuery, setSeferTypeQuery] = useState('');
+  const [bgColor, setBgColor] = useState(DEFAULT_COLOR_THEME.background);
+  const [primaryColor, setPrimaryColor] = useState(DEFAULT_COLOR_THEME.primary);
+  const [accentColor, setAccentColor] = useState(DEFAULT_COLOR_THEME.accent);
   const [saving, setSaving] = useState(false);
 
   function toggleSeferType(type: SeferType) {
@@ -48,6 +52,7 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
         .split('\n')
         .map((line) => line.trim())
         .filter(Boolean);
+      const colorTheme = { background: bgColor, primary: primaryColor, accent: accentColor };
       const id = await createNeshama({
         createdByUid: profile.uid,
         name: name.trim(),
@@ -63,6 +68,7 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
         seferTypes,
         isRabbi,
         seferimWritten,
+        colorTheme,
       });
       const created: Neshama = {
         neshamaId: id,
@@ -81,6 +87,7 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
         seferIds: [],
         isRabbi,
         seferimWritten,
+        colorTheme,
         createdAt: Date.now(),
       };
       onCreated(created);
@@ -98,6 +105,9 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
       setImageFile(null);
       setSeferTypes([]);
       setSeferTypeQuery('');
+      setBgColor(DEFAULT_COLOR_THEME.background);
+      setPrimaryColor(DEFAULT_COLOR_THEME.primary);
+      setAccentColor(DEFAULT_COLOR_THEME.accent);
     } finally {
       setSaving(false);
     }
@@ -204,6 +214,38 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
           placeholder={t('neshama.seferimWrittenPlaceholder') ?? ''}
         />
       )}
+      <div>
+        <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
+        <div className="flex gap-6">
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorBackgroundLabel')}</span>
+          </label>
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={primaryColor}
+              onChange={(e) => setPrimaryColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorPrimaryLabel')}</span>
+          </label>
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={accentColor}
+              onChange={(e) => setAccentColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorAccentLabel')}</span>
+          </label>
+        </div>
+      </div>
       <Button className="w-full" disabled={!name.trim() || !fatherHebrewName.trim() || saving} onClick={handleCreate}>
         {t('actions.add')}
       </Button>

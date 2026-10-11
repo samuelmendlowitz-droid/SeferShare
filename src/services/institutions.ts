@@ -1,7 +1,15 @@
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../lib/firebase';
-import type { Address, DonationAd, DonationDedication, DonationItem, Institution, InstitutionType } from '../types';
+import type {
+  Address,
+  ColorTheme,
+  DonationAd,
+  DonationDedication,
+  DonationItem,
+  Institution,
+  InstitutionType,
+} from '../types';
 
 const institutionsRef = collection(db, 'institutions');
 
@@ -39,6 +47,7 @@ export interface UpdateInstitutionInput {
   images?: string[];
   bio?: string;
   accomplishments?: string;
+  colorTheme?: ColorTheme;
 }
 
 /** Full edit of an institution's own details by its creator — never touches
@@ -54,6 +63,7 @@ export async function updateInstitution(institutionId: string, input: UpdateInst
     images: input.images ?? [],
     bio: input.bio ?? null,
     accomplishments: input.accomplishments ?? null,
+    colorTheme: input.colorTheme ?? null,
   });
 }
 

@@ -5,6 +5,7 @@ import { INSTITUTION_TYPES, MAX_INSTITUTION_IMAGES } from '../../types';
 import { createInstitution } from '../../services/institutions';
 import { uploadInstitutionImages } from '../../services/storage';
 import { useAuth } from '../../context/AuthContext';
+import { DEFAULT_COLOR_THEME } from '../../lib/colorTheme';
 import { Button } from '../ui/Button';
 import { BubbleGrid } from '../ui/BubbleGrid';
 import { FIELD_LABEL_CLASS, TextAreaField, TextField } from '../ui/TextField';
@@ -30,6 +31,9 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
   const [bio, setBio] = useState('');
   const [accomplishments, setAccomplishments] = useState('');
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [bgColor, setBgColor] = useState(DEFAULT_COLOR_THEME.background);
+  const [primaryColor, setPrimaryColor] = useState(DEFAULT_COLOR_THEME.primary);
+  const [accentColor, setAccentColor] = useState(DEFAULT_COLOR_THEME.accent);
   const [saving, setSaving] = useState(false);
 
   async function handleCreate() {
@@ -38,6 +42,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
     try {
       const resolvedCustomType = type === 'other' ? customType.trim() || undefined : undefined;
       const images = imageFiles.length ? await uploadInstitutionImages(profile.uid, imageFiles) : [];
+      const colorTheme = { background: bgColor, primary: primaryColor, accent: accentColor };
       const id = await createInstitution({
         name: name.trim(),
         hebrewName: hebrewName.trim() || undefined,
@@ -47,6 +52,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         bio: bio.trim() || undefined,
         accomplishments: accomplishments.trim() || undefined,
         images,
+        colorTheme,
         createdByUid: profile.uid,
         verified: false,
       });
@@ -60,6 +66,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         bio: bio.trim() || undefined,
         accomplishments: accomplishments.trim() || undefined,
         images,
+        colorTheme,
         createdByUid: profile.uid,
         verified: false,
         createdAt: Date.now(),
@@ -73,6 +80,9 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
       setBio('');
       setAccomplishments('');
       setImageFiles([]);
+      setBgColor(DEFAULT_COLOR_THEME.background);
+      setPrimaryColor(DEFAULT_COLOR_THEME.primary);
+      setAccentColor(DEFAULT_COLOR_THEME.accent);
     } finally {
       setSaving(false);
     }
@@ -110,6 +120,38 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         onRemoveNewFile={(index) => setImageFiles((prev) => prev.filter((_, i) => i !== index))}
         max={MAX_INSTITUTION_IMAGES}
       />
+      <div>
+        <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
+        <div className="flex gap-6">
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorBackgroundLabel')}</span>
+          </label>
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={primaryColor}
+              onChange={(e) => setPrimaryColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorPrimaryLabel')}</span>
+          </label>
+          <label className="flex flex-col items-center gap-1">
+            <input
+              type="color"
+              value={accentColor}
+              onChange={(e) => setAccentColor(e.target.value)}
+              className="h-9 w-9 cursor-pointer rounded-full border border-border p-0"
+            />
+            <span className="text-[11px] text-text-muted">{t('campaign.colorAccentLabel')}</span>
+          </label>
+        </div>
+      </div>
       <Button className="w-full" disabled={!name.trim() || saving} onClick={handleCreate}>
         {t('actions.add')}
       </Button>

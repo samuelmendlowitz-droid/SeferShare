@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { campaignDollarFulfilled, campaignDollarTotal } from '../../lib/campaignMath';
 import { formatCampaignDateRange } from '../../lib/campaignDates';
-import { getCampaignTheme } from '../../lib/campaignTheme';
+import { getColorTheme } from '../../lib/colorTheme';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import { Card } from '../ui/Card';
 import { EditIcon } from '../ui/icons';
@@ -27,7 +27,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
   const dollarTotal = campaignDollarTotal(campaign);
   const dollarFulfilled = campaignDollarFulfilled(campaign);
   const isOwn = profile?.uid === campaign.createdByUid;
-  const theme = getCampaignTheme(campaign.colorTheme);
+  const theme = getColorTheme(campaign.colorTheme);
   const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, language);
 
   const seferTypesText = useMemo(() => {
