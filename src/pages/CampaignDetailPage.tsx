@@ -121,8 +121,8 @@ export function CampaignDetailPage() {
   const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, language);
 
   return (
-    <DetailPageLayout fallbackPath="/campaigns">
-      <div className="mb-4 rounded-card p-4" style={{ backgroundColor: theme.background }}>
+    <DetailPageLayout fallbackPath="/campaigns" backgroundColor={theme.background}>
+      <div className="mb-4 border-b border-border pb-4">
         {campaign.headerImageUrl && (
           <img src={campaign.headerImageUrl} alt="" className="mb-4 h-44 w-full rounded-card object-cover" />
         )}
@@ -202,13 +202,14 @@ export function CampaignDetailPage() {
           const stepQty = stepQuantityFor(itemKey, remaining);
 
           return (
-            <Card key={itemKey}>
+            <Card key={itemKey} style={{ backgroundColor: theme.background }}>
               <div className="flex items-center gap-3">
                 <SeferThumbnail imageUrl={listing?.imageUrls?.[0]} alt={sefer?.englishName ?? item.seferId} />
                 <div className="min-w-0 flex-1">
                   <button
                     type="button"
-                    className="truncate text-start text-sm font-semibold text-accent hover:underline"
+                    className="truncate text-start text-sm font-semibold hover:underline"
+                    style={{ color: theme.accent }}
                     onClick={() => navigate(`/seforim/${item.seferId}`)}
                   >
                     {sefer?.englishName ?? item.seferId} {sefer?.hebrewName ? `· ${sefer.hebrewName}` : ''}
@@ -217,7 +218,9 @@ export function CampaignDetailPage() {
                     {item.quantityFulfilled}/{item.quantity} — ${item.retailPrice.toFixed(2)}
                   </p>
                   {inPushka > 0 && (
-                    <p className="text-xs font-medium text-accent">{t('pushka.inPushka', { count: inPushka })}</p>
+                    <p className="text-xs font-medium" style={{ color: theme.accent }}>
+                      {t('pushka.inPushka', { count: inPushka })}
+                    </p>
                   )}
                 </div>
                 {remaining <= 0 && inPushka === 0 && (
@@ -251,6 +254,7 @@ export function CampaignDetailPage() {
                   <Button
                     variant="secondary"
                     className="flex-1"
+                    style={{ borderColor: theme.accent, color: theme.accent }}
                     disabled={stepQty <= 0}
                     onClick={() => handleAddToPushka(itemKey, item.seferId, item.vendorId, item.retailPrice, remaining)}
                   >
@@ -273,7 +277,12 @@ export function CampaignDetailPage() {
             </p>
           )}
           {profile?.uid === campaign.createdByUid && (
-            <Button variant="secondary" className="w-full" onClick={() => navigate(`/campaigns/${campaign.campaignId}/edit`)}>
+            <Button
+              variant="secondary"
+              className="w-full"
+              style={{ borderColor: theme.accent, color: theme.accent }}
+              onClick={() => navigate(`/campaigns/${campaign.campaignId}/edit`)}
+            >
               {t('campaign.edit')}
             </Button>
           )}
@@ -281,7 +290,7 @@ export function CampaignDetailPage() {
       )}
 
       {pushka.totalCount > 0 && (
-        <Button className="mt-4 w-full" onClick={() => navigate('/pushka')}>
+        <Button className="mt-4 w-full" style={{ backgroundColor: theme.primary }} onClick={() => navigate('/pushka')}>
           {t('pushka.completeDonation', { count: pushka.totalCount, amount: pushka.totalPrice.toFixed(2) })}
         </Button>
       )}

@@ -13,6 +13,11 @@ interface DetailPageLayoutProps {
    *  page was opened directly from a shared link) — otherwise the actual
    *  previous page. */
   fallbackPath?: string;
+  /** Overrides the page's own background color — used by CampaignDetailPage
+   *  so a campaign's chosen theme covers its whole page, not just its header
+   *  panel. AppHeader keeps its own fixed background regardless (app chrome
+   *  stays consistent); omitted, the page falls back to the global bg-bg. */
+  backgroundColor?: string;
 }
 
 /** Shared chrome for every detail/editor page (campaign, institution, neshama,
@@ -20,7 +25,7 @@ interface DetailPageLayoutProps {
  *  tabbed pages, full-screen content underneath it, and a small back button
  *  in place of the floating sub-nav — these pages have nothing to search,
  *  filter, or switch between. */
-export function DetailPageLayout({ children, fallbackPath = '/' }: DetailPageLayoutProps) {
+export function DetailPageLayout({ children, fallbackPath = '/', backgroundColor }: DetailPageLayoutProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { dir } = useLanguage();
@@ -31,7 +36,7 @@ export function DetailPageLayout({ children, fallbackPath = '/' }: DetailPageLay
   }
 
   return (
-    <div className="min-h-dvh pb-8">
+    <div className="min-h-dvh pb-8" style={backgroundColor ? { backgroundColor } : undefined}>
       <AppHeader />
       <main
         className="mx-auto max-w-2xl px-4 pb-4"
