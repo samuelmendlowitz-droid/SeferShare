@@ -8,7 +8,8 @@ export type NotificationKind =
   | 'institution_owner_application_received'
   | 'institution_owner_application_approved'
   | 'institution_owner_application_declined'
-  | 'institution_verified';
+  | 'institution_verified'
+  | 'message_received';
 
 export interface Notification {
   notificationId: string;
@@ -25,5 +26,7 @@ export interface Notification {
   relatedInstitutionOwnerUid?: string;
   /** Set on institution_verified — the institution that was verified. */
   relatedInstitutionId?: string;
+  /** Set on message_received — which conversation thread to open (see Conversation). */
+  relatedConversationId?: string;
   createdAt: number;
 }

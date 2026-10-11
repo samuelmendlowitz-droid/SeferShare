@@ -466,5 +466,11 @@
     "active": "פעיל",
     "fulfilled": "הושלם",
     "paused": "מושהה"
+  },
+  "messages": {
+    "startConversation": "הודעה",
+    "send": "שליחה",
+    "placeholder": "כתבו הודעה…",
+    "empty": "אין עדיין הודעות."
   }
 }

@@ -466,5 +466,11 @@
     "active": "Active",
     "fulfilled": "Fulfilled",
     "paused": "Paused"
+  },
+  "messages": {
+    "startConversation": "Message",
+    "send": "Send",
+    "placeholder": "Type a message…",
+    "empty": "No messages yet."
   }
 }

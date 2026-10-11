@@ -7,3 +7,4 @@ export * from './campaign';
 export * from './donation';
 export * from './order';
 export * from './notification';
+export * from './conversation';

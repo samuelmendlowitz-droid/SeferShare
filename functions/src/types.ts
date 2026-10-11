@@ -291,4 +291,22 @@ export type NotificationKind =
   | 'institution_owner_application_received'
   | 'institution_owner_application_approved'
   | 'institution_owner_application_declined'
-  | 'institution_verified';
+  | 'institution_verified'
+  | 'message_received';
+
+export type ConversationContext = 'vendor' | 'institutionOwner';
+
+export interface Conversation {
+  conversationId: string;
+  participants: [string, string];
+  context: ConversationContext;
+  applicantUid: string;
+  createdAt: FirebaseFirestore.Timestamp;
+}
+
+export interface ConversationMessage {
+  messageId: string;
+  senderUid: string;
+  body: string;
+  createdAt: FirebaseFirestore.Timestamp;
+}

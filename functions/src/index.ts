@@ -16,3 +16,4 @@ export { setUserBlocked, deleteUserAccount } from './manageUsers';
 export { spendInstitutionBalance } from './spendInstitutionBalance';
 // Also no Stripe secrets — claiming free stock never touches payment.
 export { claimAvailableStock } from './claimAvailableStock';
+export { onConversationMessageCreated } from './onConversationMessageCreated';
