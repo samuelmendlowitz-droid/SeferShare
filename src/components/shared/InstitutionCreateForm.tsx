@@ -35,9 +35,11 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
   const [primaryColor, setPrimaryColor] = useState(DEFAULT_COLOR_THEME.primary);
   const [accentColor, setAccentColor] = useState(DEFAULT_COLOR_THEME.accent);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleCreate() {
     if (!profile || !name.trim()) return;
+    setError(null);
     setSaving(true);
     try {
       const resolvedCustomType = type === 'other' ? customType.trim() || undefined : undefined;
@@ -83,6 +85,8 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
       setBgColor(DEFAULT_COLOR_THEME.background);
       setPrimaryColor(DEFAULT_COLOR_THEME.primary);
       setAccentColor(DEFAULT_COLOR_THEME.accent);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }
@@ -152,6 +156,8 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
           </label>
         </div>
       </div>
+      {error && <p className="text-sm text-error">{error}</p>}
+
       <Button className="w-full" disabled={!name.trim() || saving} onClick={handleCreate}>
         {t('actions.add')}
       </Button>

@@ -12,7 +12,6 @@ interface NotifyInput {
   relatedVendorUid?: string;
   relatedInstitutionOwnerUid?: string;
   relatedInstitutionId?: string;
-  relatedConversationId?: string;
 }
 
 export async function notify(input: NotifyInput): Promise<void> {

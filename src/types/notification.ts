@@ -26,7 +26,5 @@ export interface Notification {
   relatedInstitutionOwnerUid?: string;
   /** Set on institution_verified — the institution that was verified. */
   relatedInstitutionId?: string;
-  /** Set on message_received — which conversation thread to open (see Conversation). */
-  relatedConversationId?: string;
   createdAt: number;
 }

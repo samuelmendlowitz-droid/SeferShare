@@ -38,6 +38,7 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
   const [primaryColor, setPrimaryColor] = useState(DEFAULT_COLOR_THEME.primary);
   const [accentColor, setAccentColor] = useState(DEFAULT_COLOR_THEME.accent);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function toggleSeferType(type: SeferType) {
     setSeferTypes((prev) => (prev.includes(type) ? prev.filter((t2) => t2 !== type) : [...prev, type]));
@@ -45,6 +46,7 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
 
   async function handleCreate() {
     if (!name.trim() || !fatherHebrewName.trim() || !profile) return;
+    setError(null);
     setSaving(true);
     try {
       const imageUrl = imageFile ? await uploadNeshamaImage(profile.uid, imageFile) : undefined;
@@ -108,6 +110,8 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
       setBgColor(DEFAULT_COLOR_THEME.background);
       setPrimaryColor(DEFAULT_COLOR_THEME.primary);
       setAccentColor(DEFAULT_COLOR_THEME.accent);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }
@@ -246,6 +250,7 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
           </label>
         </div>
       </div>
+      {error && <p className="text-sm text-error">{error}</p>}
       <Button className="w-full" disabled={!name.trim() || !fatherHebrewName.trim() || saving} onClick={handleCreate}>
         {t('actions.add')}
       </Button>

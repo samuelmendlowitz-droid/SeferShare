@@ -146,24 +146,29 @@ service cloud.firestore {
       allow create, delete: if isAdmin();
     }
 
-    // --- Conversations — an admin↔applicant message thread opened from an
-    // application notification's "Message" button. Only an admin can start one
-    // (the applicant can't message an admin out of the blue); either
-    // participant can read it and post further messages once it exists. The
-    // notification that tells the other side a message arrived is created by
-    // onConversationMessageCreated.ts (Cloud Functions bypass these rules).
+    // --- Conversations — an admin↔applicant message thread, opened automatically
+    // the moment someone applies to be a vendor/institution owner (see
+    // functions/src/conversations.ts) — never by a client directly, so there's
+    // no `create` here at all; Cloud Functions bypass these rules. The
+    // application itself, the admin's decision, and any later back-and-forth
+    // all land in this same thread. Either participant can read it, post a
+    // plain text reply, and update the thread's own preview/read-marker fields.
     match /conversations/{conversationId} {
       allow read: if signedIn() && request.auth.uid in resource.data.participants;
-      allow create: if isAdmin() &&
-        request.resource.data.participants.size() == 2 &&
-        request.auth.uid in request.resource.data.participants;
+      allow update: if signedIn() && request.auth.uid in resource.data.participants &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['lastMessageAt', 'lastMessageBody', 'lastMessageSenderUid', 'lastRead']);
 
       match /messages/{messageId} {
         allow read: if signedIn() &&
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        // Only a plain text reply can be written by a client — the system
+        // messages (application_submitted/approved/declined) only ever come
+        // from Cloud Functions, which bypass this rule entirely.
         allow create: if signedIn() &&
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants &&
-          request.resource.data.senderUid == request.auth.uid;
+          request.resource.data.senderUid == request.auth.uid &&
+          request.resource.data.kind == 'text';
       }
     }
   }

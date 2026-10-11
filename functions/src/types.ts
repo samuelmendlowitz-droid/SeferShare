@@ -295,6 +295,7 @@ export type NotificationKind =
   | 'message_received';
 
 export type ConversationContext = 'vendor' | 'institutionOwner';
+export type MessageKind = 'text' | 'application_submitted' | 'application_approved' | 'application_declined';
 
 export interface Conversation {
   conversationId: string;
@@ -302,11 +303,16 @@ export interface Conversation {
   context: ConversationContext;
   applicantUid: string;
   createdAt: FirebaseFirestore.Timestamp;
+  lastMessageAt?: FirebaseFirestore.Timestamp;
+  lastMessageBody?: string;
+  lastMessageSenderUid?: string;
+  lastRead?: Record<string, FirebaseFirestore.Timestamp>;
 }
 
 export interface ConversationMessage {
   messageId: string;
   senderUid: string;
+  kind: MessageKind;
   body: string;
   createdAt: FirebaseFirestore.Timestamp;
 }

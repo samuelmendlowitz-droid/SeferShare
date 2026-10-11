@@ -468,9 +468,8 @@
     "paused": "מושהה"
   },
   "messages": {
-    "startConversation": "הודעה",
+    "applicationSubmitted": "בקשה",
     "send": "שליחה",
-    "placeholder": "כתבו הודעה…",
-    "empty": "אין עדיין הודעות."
+    "placeholder": "כתבו הודעה…"
   }
 }

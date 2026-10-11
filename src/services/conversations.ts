@@ -1,33 +1,26 @@
-import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp, setDoc } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { Conversation, ConversationContext, ConversationMessage } from '../types';
+import type { Conversation, ConversationMessage } from '../types';
 
-/** One conversation per admin+applicant+context triple — a deterministic id
- *  so clicking "Message" again on the same application reopens the same
- *  thread instead of starting a new one. */
-export function conversationIdFor(context: ConversationContext, applicantUid: string): string {
-  return `${context}_${applicantUid}`;
-}
-
-/** Creates the conversation if it doesn't exist yet (admin-only per
- *  firestore.rules); a no-op write if it's already there. */
-export async function ensureConversation(
-  context: ConversationContext,
-  applicantUid: string,
-  adminUid: string,
-): Promise<string> {
-  const conversationId = conversationIdFor(context, applicantUid);
-  const ref = doc(db, 'conversations', conversationId);
-  const existing = await getDoc(ref);
-  if (!existing.exists()) {
-    await setDoc(ref, {
-      participants: [adminUid, applicantUid],
-      context,
-      applicantUid,
-      createdAt: serverTimestamp(),
-    });
-  }
-  return conversationId;
+/** Every conversation the given user is a participant in, most-recently-active
+ *  first — the "Messages" list. Conversations are only ever created by Cloud
+ *  Functions (see firestore.rules); the client never starts one directly. */
+export async function listMyConversations(uid: string): Promise<Conversation[]> {
+  const snap = await getDocs(
+    query(collection(db, 'conversations'), where('participants', 'array-contains', uid), orderBy('lastMessageAt', 'desc')),
+  );
+  return snap.docs.map((d) => ({ ...(d.data() as Conversation), conversationId: d.id }));
 }
 
 export async function getConversation(conversationId: string): Promise<Conversation | null> {
@@ -42,10 +35,27 @@ export async function listMessages(conversationId: string): Promise<Conversation
   return snap.docs.map((d) => ({ ...(d.data() as ConversationMessage), messageId: d.id }));
 }
 
+/** Posts a plain reply and refreshes the thread's preview so the list sorts
+ *  by recency — the system messages (application submitted/approved/declined)
+ *  are only ever posted server-side (see functions/src/conversations.ts). */
 export async function sendMessage(conversationId: string, senderUid: string, body: string): Promise<void> {
   await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
     senderUid,
+    kind: 'text',
     body,
     createdAt: serverTimestamp(),
+  });
+  await updateDoc(doc(db, 'conversations', conversationId), {
+    lastMessageAt: serverTimestamp(),
+    lastMessageBody: body,
+    lastMessageSenderUid: senderUid,
+  });
+}
+
+/** Marks everything in this conversation as read for `uid` — call when they
+ *  open the thread, so its unread dot clears on their own list. */
+export async function markConversationRead(conversationId: string, uid: string): Promise<void> {
+  await updateDoc(doc(db, 'conversations', conversationId), {
+    [`lastRead.${uid}`]: serverTimestamp(),
   });
 }

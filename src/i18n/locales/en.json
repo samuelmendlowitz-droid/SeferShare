@@ -468,9 +468,8 @@
     "paused": "Paused"
   },
   "messages": {
-    "startConversation": "Message",
+    "applicationSubmitted": "Application",
     "send": "Send",
-    "placeholder": "Type a message…",
-    "empty": "No messages yet."
+    "placeholder": "Type a message…"
   }
 }
