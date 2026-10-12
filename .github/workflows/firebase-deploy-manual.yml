@@ -1,0 +1,27 @@
+name: Deploy Firestore rules/indexes + Cloud Functions
+
+# Manual-only: tap "Run workflow" in the Actions tab (works fine from GitHub's
+# mobile Safari UI, no typing required) whenever firestore.rules,
+# firestore.indexes.json, or anything under functions/ has changed and needs
+# to reach the live sefershare Firebase project.
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install functions dependencies
+        run: npm ci --prefix functions
+      - name: Write service account credentials
+        run: echo "$FIREBASE_SERVICE_ACCOUNT_SEFERSHARE" > "$RUNNER_TEMP/service-account.json"
+        env:
+          FIREBASE_SERVICE_ACCOUNT_SEFERSHARE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SEFERSHARE }}
+      - name: Deploy Firestore rules/indexes + Functions
+        run: npx firebase-tools@13 deploy --project sefershare --only firestore:rules,firestore:indexes,functions --non-interactive
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/service-account.json
