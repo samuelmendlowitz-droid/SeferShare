@@ -25,11 +25,11 @@ jobs:
       # print it so there's no need to hunt for or retype it from elsewhere
       # when granting IAM permissions.
       - name: Show which service account this deploy runs as
-        run: node -e "console.log('Service account email: ' + require(process.env.SA_FILE).client_email)"
+        run: |
+          node -e "console.log('Service account email: ' + require(process.env.SA_FILE).client_email)"
         env:
           SA_FILE: ${{ runner.temp }}/service-account.json
       - name: Deploy Firestore rules/indexes + Functions
         run: npx firebase-tools@13 deploy --project sefershare --only firestore:rules,firestore:indexes,functions --non-interactive
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/service-account.json
-# retrigger-1792343142
