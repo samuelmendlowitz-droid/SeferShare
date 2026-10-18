@@ -21,6 +21,13 @@ jobs:
         run: echo "$FIREBASE_SERVICE_ACCOUNT_SEFERSHARE" > "$RUNNER_TEMP/service-account.json"
         env:
           FIREBASE_SERVICE_ACCOUNT_SEFERSHARE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SEFERSHARE }}
+      # The email below is not secret (only the private key in the JSON is) —
+      # print it so there's no need to hunt for or retype it from elsewhere
+      # when granting IAM permissions.
+      - name: Show which service account this deploy runs as
+        run: node -e "console.log('Service account email: ' + require(process.env.SA_FILE).client_email)"
+        env:
+          SA_FILE: ${{ runner.temp }}/service-account.json
       - name: Deploy Firestore rules/indexes + Functions
         run: npx firebase-tools@13 deploy --project sefershare --only firestore:rules,firestore:indexes,functions --non-interactive
         env:
