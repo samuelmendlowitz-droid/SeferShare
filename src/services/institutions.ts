@@ -34,7 +34,18 @@ export async function getInstitution(institutionId: string): Promise<Institution
 export async function createInstitution(
   input: Omit<Institution, 'institutionId' | 'createdAt'>,
 ): Promise<string> {
-  const docRef = await addDoc(institutionsRef, { ...input, createdAt: serverTimestamp() });
+  // addDoc() rejects undefined field values outright, so optional fields left
+  // blank by the form (hebrewName, customType, bio, accomplishments, colorTheme)
+  // must be normalized to null before writing.
+  const docRef = await addDoc(institutionsRef, {
+    ...input,
+    hebrewName: input.hebrewName ?? null,
+    customType: input.customType ?? null,
+    bio: input.bio ?? null,
+    accomplishments: input.accomplishments ?? null,
+    colorTheme: input.colorTheme ?? null,
+    createdAt: serverTimestamp(),
+  });
   return docRef.id;
 }
 
