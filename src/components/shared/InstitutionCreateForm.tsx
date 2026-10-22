@@ -9,7 +9,7 @@ import { DEFAULT_COLOR_THEME } from '../../lib/colorTheme';
 import { Button } from '../ui/Button';
 import { BubbleGrid } from '../ui/BubbleGrid';
 import { FIELD_LABEL_CLASS, TextAreaField, TextField } from '../ui/TextField';
-import { ImageUploadField } from '../ui/ImageUploadField';
+import { ImageUploadField, resolveImageUrls, type ImageItem } from '../ui/ImageUploadField';
 import { AddressForm } from './AddressForm';
 
 const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
@@ -30,7 +30,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
   const [bio, setBio] = useState('');
   const [accomplishments, setAccomplishments] = useState('');
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imageItems, setImageItems] = useState<ImageItem[]>([]);
   const [bgColor, setBgColor] = useState(DEFAULT_COLOR_THEME.background);
   const [primaryColor, setPrimaryColor] = useState(DEFAULT_COLOR_THEME.primary);
   const [accentColor, setAccentColor] = useState(DEFAULT_COLOR_THEME.accent);
@@ -43,7 +43,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
     setSaving(true);
     try {
       const resolvedCustomType = type === 'other' ? customType.trim() || undefined : undefined;
-      const images = imageFiles.length ? await uploadInstitutionImages(profile.uid, imageFiles) : [];
+      const images = await resolveImageUrls(imageItems, (files) => uploadInstitutionImages(profile.uid, files));
       const colorTheme = { background: bgColor, primary: primaryColor, accent: accentColor };
       const id = await createInstitution({
         name: name.trim(),
@@ -81,7 +81,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
       setAddress(EMPTY_ADDRESS);
       setBio('');
       setAccomplishments('');
-      setImageFiles([]);
+      setImageItems([]);
       setBgColor(DEFAULT_COLOR_THEME.background);
       setPrimaryColor(DEFAULT_COLOR_THEME.primary);
       setAccentColor(DEFAULT_COLOR_THEME.accent);
@@ -117,12 +117,10 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
       />
       <ImageUploadField
         label={t('institution.imagesLabel', { max: MAX_INSTITUTION_IMAGES })}
-        existingImageUrls={[]}
-        onRemoveExisting={() => {}}
-        newFiles={imageFiles}
-        onAddFiles={(files) => setImageFiles((prev) => [...prev, ...files])}
-        onRemoveNewFile={(index) => setImageFiles((prev) => prev.filter((_, i) => i !== index))}
+        items={imageItems}
+        onChange={setImageItems}
         max={MAX_INSTITUTION_IMAGES}
+        allowPrimarySelection
       />
       <div>
         <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>

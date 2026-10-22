@@ -80,7 +80,7 @@
     "titleRequired": "כותרת הקמפיין היא שדה חובה",
     "descriptionOptional": "תיאור (אופציונלי)",
     "appearanceLabel": "מראה",
-    "headerPhotoLabel": "תמונת כותרת (אופציונלי)",
+    "headerPhotoLabel": "תמונות (עד {{max}}, אופציונלי)",
     "colorThemeLabel": "ערכת צבעים",
     "colorBackgroundLabel": "רקע",
     "colorPrimaryLabel": "ראשי",
@@ -355,6 +355,8 @@
     "reset": "איפוס",
     "done": "סיום",
     "noResults": "אין תוצאות",
+    "primary": "ראשי",
+    "setPrimary": "הגדרה כתמונה ראשית",
     "groupBy": "קיבוץ לפי",
     "notAuthorized": "אין הרשאה.",
     "closeSearch": "סגירת חיפוש"

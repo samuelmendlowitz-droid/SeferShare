@@ -30,6 +30,8 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
   const theme = getColorTheme(campaign.colorTheme);
   const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, language);
 
+  const primaryImageUrl = campaign.images?.[0] ?? campaign.headerImageUrl;
+
   const seferTypesText = useMemo(() => {
     const types = new Set<string>();
     campaign.items.forEach((item) => {
@@ -47,9 +49,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
     >
         <div className="-mx-4 -mt-4 mb-3">
           <div className="h-1.5" style={{ backgroundColor: theme.primary }} />
-          {campaign.headerImageUrl && (
-            <img src={campaign.headerImageUrl} alt="" className="h-32 w-full object-cover" />
-          )}
+          {primaryImageUrl && <img src={primaryImageUrl} alt="" className="h-32 w-full object-cover" />}
         </div>
 
         <div className="flex items-start justify-between gap-2">

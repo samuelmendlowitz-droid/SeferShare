@@ -22,12 +22,22 @@ export type CampaignObjective = 'institution' | 'neshama';
  *  existing imports of `CampaignColorTheme` don't need to change. */
 export type CampaignColorTheme = ColorTheme;
 
+/** Most photos a campaign's gallery wheel shows — same cap philosophy as
+ *  MAX_INSTITUTION_IMAGES. */
+export const MAX_CAMPAIGN_IMAGES = 6;
+
 export interface Campaign {
   campaignId: string;
   createdByUid: string;
   title?: string;
   description?: string;
+  /** @deprecated superseded by `images` (images[0] is the primary/card photo) —
+   *  kept for campaigns saved before that field existed. */
   headerImageUrl?: string;
+  /** Shown on the card/detail page as a swipeable gallery wheel; the first
+   *  photo is the one that appears on the info card — see ImageUploadField's
+   *  primary-photo selection. */
+  images?: string[];
   colorTheme?: CampaignColorTheme;
   /** Informational date range (YYYY-MM-DD, like Neshama's dateOfBirth/dateOfDeath) —
    *  shown on the card/detail page. Purely descriptive: reaching endDate doesn't

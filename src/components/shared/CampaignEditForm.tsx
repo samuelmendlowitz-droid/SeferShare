@@ -3,16 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { deleteCampaign, updateCampaign } from '../../services/campaigns';
 import { getInstitution } from '../../services/institutions';
-import { uploadCampaignHeaderImage } from '../../services/storage';
+import { uploadCampaignImages } from '../../services/storage';
 import { getColorTheme } from '../../lib/colorTheme';
-import type { Address, Campaign, CampaignItem, CampaignObjective, Institution, Sefer } from '../../types';
+import { MAX_CAMPAIGN_IMAGES, type Address, type Campaign, type CampaignItem, type CampaignObjective, type Institution, type Sefer } from '../../types';
 import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
 import { InstitutionPicker } from './InstitutionPicker';
 import { NeshamaPicker } from './NeshamaPicker';
 import { AddressForm } from './AddressForm';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
-import { ImageUploadField } from '../ui/ImageUploadField';
+import { ImageUploadField, resolveImageUrls, type ImageItem } from '../ui/ImageUploadField';
 import { NumberField } from '../ui/NumberField';
 import { SeferThumbnail } from '../ui/SeferThumbnail';
 import { TextField, TextAreaField, FIELD_LABEL_CLASS } from '../ui/TextField';
@@ -55,8 +55,13 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
   const [newItems, setNewItems] = useState<PickedItem[]>([]);
   const [addressDiffers, setAddressDiffers] = useState(false);
   const [customAddress, setCustomAddress] = useState<Address>(campaign.shippingAddress);
-  const [existingHeaderImageUrl, setExistingHeaderImageUrl] = useState(campaign.headerImageUrl);
-  const [headerPhotoFile, setHeaderPhotoFile] = useState<File>();
+  // Falls back to the legacy single headerImageUrl for campaigns saved before
+  // the multi-photo `images` field existed.
+  const [imageItems, setImageItems] = useState<ImageItem[]>(
+    (campaign.images?.length ? campaign.images : campaign.headerImageUrl ? [campaign.headerImageUrl] : []).map(
+      (url): ImageItem => ({ kind: 'existing', url }),
+    ),
+  );
   const existingTheme = getColorTheme(campaign.colorTheme);
   const [bgColor, setBgColor] = useState(existingTheme.background);
   const [primaryColor, setPrimaryColor] = useState(existingTheme.primary);
@@ -136,14 +141,12 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
       }
 
       const shippingAddress = institution && !addressDiffers ? institution.address : customAddress;
-      const headerImageUrl = headerPhotoFile
-        ? await uploadCampaignHeaderImage(profile.uid, headerPhotoFile)
-        : existingHeaderImageUrl;
+      const images = await resolveImageUrls(imageItems, (files) => uploadCampaignImages(profile.uid, files));
 
       await updateCampaign(campaign.campaignId, {
         title: title.trim(),
         description: description || undefined,
-        headerImageUrl,
+        images,
         colorTheme: { background: bgColor, primary: primaryColor, accent: accentColor },
         startDate: startDate || undefined,
         endDate: endDate || undefined,
@@ -312,13 +315,11 @@ export function CampaignEditForm({ campaign, sefarimById, onSaved, onDeleted }: 
       <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.appearanceLabel')}</h2>
       <div className="mb-4">
         <ImageUploadField
-          label={t('campaign.headerPhotoLabel')}
-          existingImageUrls={existingHeaderImageUrl ? [existingHeaderImageUrl] : []}
-          onRemoveExisting={() => setExistingHeaderImageUrl(undefined)}
-          newFiles={headerPhotoFile ? [headerPhotoFile] : []}
-          onAddFiles={(files) => setHeaderPhotoFile(files[0])}
-          onRemoveNewFile={() => setHeaderPhotoFile(undefined)}
-          max={1}
+          label={t('campaign.headerPhotoLabel', { max: MAX_CAMPAIGN_IMAGES })}
+          items={imageItems}
+          onChange={setImageItems}
+          max={MAX_CAMPAIGN_IMAGES}
+          allowPrimarySelection
         />
       </div>
       <div className="mb-4">

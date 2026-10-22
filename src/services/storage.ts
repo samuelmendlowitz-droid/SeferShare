@@ -2,6 +2,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { storage } from '../lib/firebase';
 import { MAX_SEFER_IMAGES } from '../types/sefer';
 import { MAX_INSTITUTION_IMAGES } from '../types/institution';
+import { MAX_CAMPAIGN_IMAGES } from '../types/campaign';
 
 export async function uploadSeferImage(vendorId: string, file: File, index = 0): Promise<string> {
   const path = `sefer-images/${vendorId}/${Date.now()}-${index}-${file.name}`;
@@ -39,10 +40,17 @@ export async function uploadNeshamaImage(uid: string, file: File): Promise<strin
 }
 
 /** `uid` is the campaign's own createdByUid — same ownership-check shape as
- *  uploadInstitutionImage/uploadNeshamaImage. */
-export async function uploadCampaignHeaderImage(uid: string, file: File): Promise<string> {
-  const path = `campaign-header-images/${uid}/${Date.now()}-${file.name}`;
+ *  uploadInstitutionImage/uploadNeshamaImage. Keeps the historical
+ *  "campaign-header-images" storage path (storage.rules already allows any
+ *  file under it) even though a campaign can have more than one photo now. */
+export async function uploadCampaignImage(uid: string, file: File, index = 0): Promise<string> {
+  const path = `campaign-header-images/${uid}/${Date.now()}-${index}-${file.name}`;
   const storageRef = ref(storage, path);
   await uploadBytes(storageRef, file);
   return getDownloadURL(storageRef);
+}
+
+export async function uploadCampaignImages(uid: string, files: File[]): Promise<string[]> {
+  const capped = files.slice(0, MAX_CAMPAIGN_IMAGES);
+  return Promise.all(capped.map((file, index) => uploadCampaignImage(uid, file, index)));
 }

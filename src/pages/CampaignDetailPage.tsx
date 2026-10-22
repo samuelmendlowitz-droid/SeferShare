@@ -19,6 +19,7 @@ import { DetailPageLayout } from '../components/layout/DetailPageLayout';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { ImageGalleryWheel } from '../components/ui/ImageGalleryWheel';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
 import { MinusIcon, PlusIcon } from '../components/ui/icons';
 
@@ -123,12 +124,17 @@ export function CampaignDetailPage() {
   // itself always sits on a plain white backdrop (see DetailPageLayout).
   const buttonThemeStyle = { backgroundColor: theme.accent, borderColor: theme.accent, color: '#FFFFFF' };
 
+  const galleryImages = campaign.images?.length ? campaign.images : campaign.headerImageUrl ? [campaign.headerImageUrl] : [];
+
   return (
     <DetailPageLayout fallbackPath="/campaigns" backgroundColor="#FFFFFF">
+      {galleryImages.length > 0 && (
+        <div className="mb-4">
+          <ImageGalleryWheel images={galleryImages} alt={campaign.title || t('campaign.untitled')} />
+        </div>
+      )}
+
       <Card className="mb-4" style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
-        {campaign.headerImageUrl && (
-          <img src={campaign.headerImageUrl} alt="" className="mb-4 h-44 w-full rounded-card object-cover" />
-        )}
         <h1 className="text-2xl font-bold" style={{ color: theme.primary }}>
           {campaign.title || t('campaign.untitled')}
         </h1>

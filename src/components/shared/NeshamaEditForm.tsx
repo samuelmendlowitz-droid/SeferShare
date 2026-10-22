@@ -10,7 +10,7 @@ import { Button } from '../ui/Button';
 import { BubbleGrid } from '../ui/BubbleGrid';
 import { Card } from '../ui/Card';
 import { FIELD_LABEL_CLASS, TextAreaField, TextField } from '../ui/TextField';
-import { ImageUploadField } from '../ui/ImageUploadField';
+import { ImageUploadField, type ImageItem } from '../ui/ImageUploadField';
 
 interface NeshamaEditFormProps {
   neshama: Neshama;
@@ -35,8 +35,9 @@ export function NeshamaEditForm({ neshama, onSaved, onDeleted }: NeshamaEditForm
   const [dateOfDeath, setDateOfDeath] = useState(neshama.dateOfDeath ?? '');
   const [isRabbi, setIsRabbi] = useState(neshama.isRabbi ?? false);
   const [seferimWrittenText, setSeferimWrittenText] = useState((neshama.seferimWritten ?? []).join('\n'));
-  const [existingImageUrl, setExistingImageUrl] = useState(neshama.imageUrl ? [neshama.imageUrl] : []);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageItems, setImageItems] = useState<ImageItem[]>(
+    neshama.imageUrl ? [{ kind: 'existing', url: neshama.imageUrl }] : [],
+  );
   const [seferTypes, setSeferTypes] = useState<SeferType[]>(neshama.seferTypes ?? []);
   const [seferTypeQuery, setSeferTypeQuery] = useState('');
   const existingTheme = getColorTheme(neshama.colorTheme);
@@ -56,7 +57,13 @@ export function NeshamaEditForm({ neshama, onSaved, onDeleted }: NeshamaEditForm
     setError(null);
     setSaving(true);
     try {
-      const imageUrl = imageFile ? await uploadNeshamaImage(profile.uid, imageFile) : existingImageUrl[0];
+      const imageItem = imageItems[0];
+      const imageUrl =
+        imageItem === undefined
+          ? undefined
+          : imageItem.kind === 'new'
+            ? await uploadNeshamaImage(profile.uid, imageItem.file)
+            : imageItem.url;
       const seferimWritten = seferimWrittenText
         .split('\n')
         .map((line) => line.trim())
@@ -104,15 +111,7 @@ export function NeshamaEditForm({ neshama, onSaved, onDeleted }: NeshamaEditForm
   return (
     <div>
       <div className="space-y-2">
-        <ImageUploadField
-          label={t('neshama.imageLabel')}
-          existingImageUrls={existingImageUrl}
-          onRemoveExisting={() => setExistingImageUrl([])}
-          newFiles={imageFile ? [imageFile] : []}
-          onAddFiles={(files) => setImageFile(files[0] ?? null)}
-          onRemoveNewFile={() => setImageFile(null)}
-          max={1}
-        />
+        <ImageUploadField label={t('neshama.imageLabel')} items={imageItems} onChange={setImageItems} max={1} />
         <TextField label={t('neshama.name')} value={name} onChange={setName} />
         <TextField label={t('neshama.hebrewName')} value={hebrewName} onChange={setHebrewName} />
         <div>

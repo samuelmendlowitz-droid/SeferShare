@@ -91,7 +91,7 @@ export interface CreateCampaignInput {
   createdByUid: string;
   title?: string;
   description?: string;
-  headerImageUrl?: string;
+  images?: string[];
   colorTheme?: Campaign['colorTheme'];
   startDate?: string;
   endDate?: string;
@@ -124,7 +124,7 @@ export async function createCampaign(input: CreateCampaignInput): Promise<string
     createdByUid: input.createdByUid,
     title: input.title ?? null,
     description: input.description ?? null,
-    headerImageUrl: input.headerImageUrl ?? null,
+    images: input.images ?? [],
     colorTheme: input.colorTheme ?? null,
     startDate: input.startDate ?? null,
     endDate: input.endDate ?? null,
@@ -153,7 +153,7 @@ export async function deleteCampaign(campaignId: string): Promise<void> {
 export interface UpdateCampaignInput {
   title?: string;
   description?: string;
-  headerImageUrl?: string;
+  images?: string[];
   colorTheme?: Campaign['colorTheme'];
   startDate?: string;
   endDate?: string;
@@ -190,7 +190,7 @@ export async function updateCampaign(campaignId: string, input: UpdateCampaignIn
   await updateDoc(doc(db, 'campaigns', campaignId), {
     title: input.title ?? null,
     description: input.description ?? null,
-    headerImageUrl: input.headerImageUrl ?? null,
+    images: input.images ?? [],
     colorTheme: input.colorTheme ?? null,
     startDate: input.startDate ?? null,
     endDate: input.endDate ?? null,

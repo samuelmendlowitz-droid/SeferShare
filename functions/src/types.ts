@@ -30,6 +30,7 @@ export interface Campaign {
   createdByUid: string;
   title?: string | null;
   headerImageUrl?: string;
+  images?: string[];
   colorTheme?: CampaignColorTheme;
   startDate?: string;
   endDate?: string;

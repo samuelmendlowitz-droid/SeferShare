@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { BubbleGrid } from '../ui/BubbleGrid';
 import { FIELD_LABEL_CLASS, TextAreaField, TextField } from '../ui/TextField';
-import { ImageUploadField } from '../ui/ImageUploadField';
+import { ImageUploadField, type ImageItem } from '../ui/ImageUploadField';
 
 interface NeshamaCreateFormProps {
   onCreated: (neshama: Neshama) => void;
@@ -31,7 +31,7 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
   const [dateOfDeath, setDateOfDeath] = useState('');
   const [isRabbi, setIsRabbi] = useState(false);
   const [seferimWrittenText, setSeferimWrittenText] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageItems, setImageItems] = useState<ImageItem[]>([]);
   const [seferTypes, setSeferTypes] = useState<SeferType[]>([]);
   const [seferTypeQuery, setSeferTypeQuery] = useState('');
   const [bgColor, setBgColor] = useState(DEFAULT_COLOR_THEME.background);
@@ -49,7 +49,13 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
     setError(null);
     setSaving(true);
     try {
-      const imageUrl = imageFile ? await uploadNeshamaImage(profile.uid, imageFile) : undefined;
+      const imageItem = imageItems[0];
+      const imageUrl =
+        imageItem === undefined
+          ? undefined
+          : imageItem.kind === 'new'
+            ? await uploadNeshamaImage(profile.uid, imageItem.file)
+            : imageItem.url;
       const seferimWritten = seferimWrittenText
         .split('\n')
         .map((line) => line.trim())
@@ -104,7 +110,7 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
       setDateOfDeath('');
       setIsRabbi(false);
       setSeferimWrittenText('');
-      setImageFile(null);
+      setImageItems([]);
       setSeferTypes([]);
       setSeferTypeQuery('');
       setBgColor(DEFAULT_COLOR_THEME.background);
@@ -121,11 +127,8 @@ export function NeshamaCreateForm({ onCreated }: NeshamaCreateFormProps) {
     <div className="space-y-2">
       <ImageUploadField
         label={t('neshama.imageLabel')}
-        existingImageUrls={[]}
-        onRemoveExisting={() => {}}
-        newFiles={imageFile ? [imageFile] : []}
-        onAddFiles={(files) => setImageFile(files[0] ?? null)}
-        onRemoveNewFile={() => setImageFile(null)}
+        items={imageItems}
+        onChange={setImageItems}
         max={1}
       />
       <TextField label={t('neshama.name')} value={name} onChange={setName} />

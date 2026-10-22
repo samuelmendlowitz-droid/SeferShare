@@ -9,7 +9,7 @@ import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { institutionTypeText } from '../lib/institutionFormat';
 import { neshamaDedicationLine } from '../lib/neshamaFormat';
-import { StarOfDavidIcon, StoreIcon } from '../components/ui/icons';
+import { StoreIcon } from '../components/ui/icons';
 import type { Institution, InstitutionType, Neshama } from '../types';
 
 const INSTITUTION_TAB_TYPE: Partial<Record<CommunityTab, InstitutionType>> = {
@@ -134,11 +134,10 @@ export function CommunityPage() {
           {filteredNeshamos.map((n) => (
             <Card
               key={n.neshamaId}
-              className="flex cursor-pointer items-center gap-3 transition-transform duration-200 hover:-translate-y-0.5"
+              className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
               onClick={() => navigate(`/neshamos/${n.neshamaId}`)}
             >
-              <BioThumbnail imageUrl={n.imageUrl} fallbackIcon={StarOfDavidIcon} />
-              <p className="min-w-0 flex-1 text-sm font-semibold">{neshamaDedicationLine(n, showBilingual)}</p>
+              <p className="text-sm font-semibold">{neshamaDedicationLine(n, showBilingual)}</p>
             </Card>
           ))}
         </div>

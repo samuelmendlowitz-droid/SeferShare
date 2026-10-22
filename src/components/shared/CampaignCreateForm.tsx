@@ -3,16 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { createCampaign } from '../../services/campaigns';
-import { uploadCampaignHeaderImage } from '../../services/storage';
+import { uploadCampaignImages } from '../../services/storage';
 import { DEFAULT_COLOR_THEME } from '../../lib/colorTheme';
-import type { Address, CampaignObjective, Institution } from '../../types';
+import { MAX_CAMPAIGN_IMAGES, type Address, type CampaignObjective, type Institution } from '../../types';
 import { SeferPicker, type PickedItem } from '../donation/SeferPicker';
 import { InstitutionPicker } from './InstitutionPicker';
 import { NeshamaPicker } from './NeshamaPicker';
 import { AddressForm } from './AddressForm';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
-import { ImageUploadField } from '../ui/ImageUploadField';
+import { ImageUploadField, resolveImageUrls, type ImageItem } from '../ui/ImageUploadField';
 import { TextField, TextAreaField, FIELD_LABEL_CLASS } from '../ui/TextField';
 
 const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
@@ -39,7 +39,7 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
   const [items, setItems] = useState<PickedItem[]>([]);
   const [addressDiffers, setAddressDiffers] = useState(false);
   const [customAddress, setCustomAddress] = useState<Address>(EMPTY_ADDRESS);
-  const [headerPhotoFile, setHeaderPhotoFile] = useState<File>();
+  const [imageItems, setImageItems] = useState<ImageItem[]>([]);
   const [bgColor, setBgColor] = useState(DEFAULT_COLOR_THEME.background);
   const [primaryColor, setPrimaryColor] = useState(DEFAULT_COLOR_THEME.primary);
   const [accentColor, setAccentColor] = useState(DEFAULT_COLOR_THEME.accent);
@@ -79,14 +79,12 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
     setSaving(true);
     try {
       const shippingAddress = institution && !addressDiffers ? institution.address : customAddress;
-      const headerImageUrl = headerPhotoFile
-        ? await uploadCampaignHeaderImage(profile.uid, headerPhotoFile)
-        : undefined;
+      const images = await resolveImageUrls(imageItems, (files) => uploadCampaignImages(profile.uid, files));
       const campaignId = await createCampaign({
         createdByUid: profile.uid,
         title: title.trim(),
         description: description || undefined,
-        headerImageUrl,
+        images,
         colorTheme: { background: bgColor, primary: primaryColor, accent: accentColor },
         startDate: startDate || undefined,
         endDate: endDate || undefined,
@@ -208,13 +206,11 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
       <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.appearanceLabel')}</h2>
       <div className="mb-4">
         <ImageUploadField
-          label={t('campaign.headerPhotoLabel')}
-          existingImageUrls={[]}
-          onRemoveExisting={() => {}}
-          newFiles={headerPhotoFile ? [headerPhotoFile] : []}
-          onAddFiles={(files) => setHeaderPhotoFile(files[0])}
-          onRemoveNewFile={() => setHeaderPhotoFile(undefined)}
-          max={1}
+          label={t('campaign.headerPhotoLabel', { max: MAX_CAMPAIGN_IMAGES })}
+          items={imageItems}
+          onChange={setImageItems}
+          max={MAX_CAMPAIGN_IMAGES}
+          allowPrimarySelection
         />
       </div>
       <div className="mb-4">

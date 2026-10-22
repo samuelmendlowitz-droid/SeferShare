@@ -80,7 +80,7 @@
     "titleRequired": "Campaign title is required",
     "descriptionOptional": "Description (optional)",
     "appearanceLabel": "Appearance",
-    "headerPhotoLabel": "Header photo (optional)",
+    "headerPhotoLabel": "Photos (up to {{max}}, optional)",
     "colorThemeLabel": "Color theme",
     "colorBackgroundLabel": "Background",
     "colorPrimaryLabel": "Primary",
@@ -355,6 +355,8 @@
     "reset": "Reset",
     "done": "Done",
     "noResults": "No results",
+    "primary": "Primary",
+    "setPrimary": "Set as primary photo",
     "groupBy": "Group by",
     "notAuthorized": "Not authorized.",
     "closeSearch": "Close search"

@@ -10,7 +10,7 @@ import { Button } from '../ui/Button';
 import { BubbleGrid } from '../ui/BubbleGrid';
 import { Card } from '../ui/Card';
 import { FIELD_LABEL_CLASS, TextAreaField, TextField } from '../ui/TextField';
-import { ImageUploadField } from '../ui/ImageUploadField';
+import { ImageUploadField, resolveImageUrls, type ImageItem } from '../ui/ImageUploadField';
 
 interface InstitutionEditFormProps {
   institution: Institution;
@@ -31,8 +31,9 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
   const [address, setAddress] = useState<Address>(institution.address);
   const [bio, setBio] = useState(institution.bio ?? '');
   const [accomplishments, setAccomplishments] = useState(institution.accomplishments ?? '');
-  const [existingImageUrls, setExistingImageUrls] = useState<string[]>(institution.images ?? []);
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imageItems, setImageItems] = useState<ImageItem[]>(
+    (institution.images ?? []).map((url): ImageItem => ({ kind: 'existing', url })),
+  );
   const existingTheme = getColorTheme(institution.colorTheme);
   const [bgColor, setBgColor] = useState(existingTheme.background);
   const [primaryColor, setPrimaryColor] = useState(existingTheme.primary);
@@ -46,7 +47,7 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
     setError(null);
     setSaving(true);
     try {
-      const uploadedUrls = imageFiles.length ? await uploadInstitutionImages(profile.uid, imageFiles) : [];
+      const images = await resolveImageUrls(imageItems, (files) => uploadInstitutionImages(profile.uid, files));
       await updateInstitution(institution.institutionId, {
         name: name.trim(),
         hebrewName: hebrewName.trim() || undefined,
@@ -55,7 +56,7 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
         address,
         bio: bio.trim() || undefined,
         accomplishments: accomplishments.trim() || undefined,
-        images: [...existingImageUrls, ...uploadedUrls],
+        images,
         colorTheme: { background: bgColor, primary: primaryColor, accent: accentColor },
       });
       onSaved();
@@ -104,12 +105,10 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
         />
         <ImageUploadField
           label={t('institution.imagesLabel', { max: MAX_INSTITUTION_IMAGES })}
-          existingImageUrls={existingImageUrls}
-          onRemoveExisting={(index) => setExistingImageUrls((prev) => prev.filter((_, i) => i !== index))}
-          newFiles={imageFiles}
-          onAddFiles={(files) => setImageFiles((prev) => [...prev, ...files])}
-          onRemoveNewFile={(index) => setImageFiles((prev) => prev.filter((_, i) => i !== index))}
+          items={imageItems}
+          onChange={setImageItems}
           max={MAX_INSTITUTION_IMAGES}
+          allowPrimarySelection
         />
         <div>
           <p className={FIELD_LABEL_CLASS}>{t('campaign.colorThemeLabel')}</p>
