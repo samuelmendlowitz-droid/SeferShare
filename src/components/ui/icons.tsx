@@ -180,6 +180,20 @@ export function StarOfDavidIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+/** A directory/contact-card glyph — used for the Bios tab (institutions,
+ *  rabbeim, neshamos), where a plain person or building icon would only
+ *  describe half of what's browsable there. */
+export function DirectoryIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <circle cx="9.5" cy="10" r="2" />
+      <path d="M6 16c.6-2 2-3 3.5-3s2.9 1 3.5 3" />
+      <path d="M14.5 9h3M14.5 13h3" />
+    </Icon>
+  );
+}
+
 export function LeafIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>

@@ -39,7 +39,7 @@ function BioThumbnail({
   );
 }
 
-/** Bios: browse institutions by type, plus Rabbeim and
+/** Directory: browse institutions by type, plus Rabbeim and
  *  Neshamas. Rabbeim (people flagged isRabbi at creation — see
  *  NeshamaCreateForm) are always listed; ordinary neshamas need a search
  *  first, since donors can quick-add any number of them and an unsearched

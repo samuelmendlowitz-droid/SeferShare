@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { usePushka } from '../../context/PushkaContext';
-import { CampaignIcon, HomeIcon, ProfileIcon, PushkaIcon, BookIcon, StarOfDavidIcon } from '../ui/icons';
+import { CampaignIcon, HomeIcon, ProfileIcon, PushkaIcon, BookIcon, DirectoryIcon } from '../ui/icons';
 
 export const HEADER_TOP_ROW_HEIGHT_PX = 36;
 export const HEADER_NAV_ROW_HEIGHT_PX = 56;
@@ -18,10 +18,7 @@ interface NavItem {
   exact?: boolean;
 }
 
-// Community's label is two words stacked onto two lines (see its '\n'
-// below) — a smaller icon keeps the taller label from crowding the row.
 const DEFAULT_ICON_SIZE = 18;
-const COMMUNITY_ICON_SIZE = 14;
 
 const NAV_ITEMS: NavItem[] = [
   { path: '/', icon: <HomeIcon width={DEFAULT_ICON_SIZE} height={DEFAULT_ICON_SIZE} />, labelKey: 'nav.home', exact: true },
@@ -29,7 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/seforim', icon: <BookIcon width={DEFAULT_ICON_SIZE} height={DEFAULT_ICON_SIZE} />, labelKey: 'nav.seforim' },
   {
     path: '/community',
-    icon: <StarOfDavidIcon width={COMMUNITY_ICON_SIZE} height={COMMUNITY_ICON_SIZE} />,
+    icon: <DirectoryIcon width={DEFAULT_ICON_SIZE} height={DEFAULT_ICON_SIZE} />,
     labelKey: 'nav.community',
   },
   { path: '/profile', icon: <ProfileIcon width={DEFAULT_ICON_SIZE} height={DEFAULT_ICON_SIZE} />, labelKey: 'nav.profile' },
