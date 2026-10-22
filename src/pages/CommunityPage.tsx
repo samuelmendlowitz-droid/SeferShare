@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ComponentType, type SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
@@ -9,6 +9,7 @@ import { Card } from '../components/ui/Card';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { institutionTypeText } from '../lib/institutionFormat';
 import { neshamaDedicationLine } from '../lib/neshamaFormat';
+import { StarOfDavidIcon, StoreIcon } from '../components/ui/icons';
 import type { Institution, InstitutionType, Neshama } from '../types';
 
 const INSTITUTION_TAB_TYPE: Partial<Record<CommunityTab, InstitutionType>> = {
@@ -19,7 +20,26 @@ const INSTITUTION_TAB_TYPE: Partial<Record<CommunityTab, InstitutionType>> = {
   otherInstitutions: 'other',
 };
 
-/** Neshamas & Mokomos: browse institutions by type, plus Rabbeim and
+/** Each bio's list-row photo — its first gallery image for an institution, its
+ *  one portrait for a neshama — falling back to a generic icon when it has none. */
+function BioThumbnail({
+  imageUrl,
+  fallbackIcon: FallbackIcon,
+}: {
+  imageUrl?: string;
+  fallbackIcon: ComponentType<SVGProps<SVGSVGElement>>;
+}) {
+  if (imageUrl) {
+    return <img src={imageUrl} alt="" className="h-14 w-14 shrink-0 rounded-btn border border-border object-cover" />;
+  }
+  return (
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-btn border border-border bg-bg text-text-muted">
+      <FallbackIcon width={22} height={22} />
+    </div>
+  );
+}
+
+/** Bios: browse institutions by type, plus Rabbeim and
  *  Neshamas. Rabbeim (people flagged isRabbi at creation — see
  *  NeshamaCreateForm) are always listed; ordinary neshamas need a search
  *  first, since donors can quick-add any number of them and an unsearched
@@ -89,15 +109,18 @@ export function CommunityPage() {
             {filteredInstitutions.map((inst) => (
               <Card
                 key={inst.institutionId}
-                className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+                className="flex cursor-pointer items-center gap-3 transition-transform duration-200 hover:-translate-y-0.5"
                 onClick={() => navigate(`/institutions/${inst.institutionId}`)}
               >
-                <p className="text-sm font-semibold">{inst.name}</p>
-                {inst.hebrewName && <p className="text-xs text-text-muted">{inst.hebrewName}</p>}
-                <p className="mt-1 text-xs text-text-muted">
-                  {institutionTypeText(inst.type, inst.customType, t(`institution.${inst.type}`))}
-                  {inst.address.city ? ` · ${inst.address.city}${inst.address.state ? `, ${inst.address.state}` : ''}` : ''}
-                </p>
+                <BioThumbnail imageUrl={inst.images?.[0]} fallbackIcon={StoreIcon} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">{inst.name}</p>
+                  {inst.hebrewName && <p className="text-xs text-text-muted">{inst.hebrewName}</p>}
+                  <p className="mt-1 text-xs text-text-muted">
+                    {institutionTypeText(inst.type, inst.customType, t(`institution.${inst.type}`))}
+                    {inst.address.city ? ` · ${inst.address.city}${inst.address.state ? `, ${inst.address.state}` : ''}` : ''}
+                  </p>
+                </div>
               </Card>
             ))}
           </div>
@@ -111,10 +134,11 @@ export function CommunityPage() {
           {filteredNeshamos.map((n) => (
             <Card
               key={n.neshamaId}
-              className="cursor-pointer transition-transform duration-200 hover:-translate-y-0.5"
+              className="flex cursor-pointer items-center gap-3 transition-transform duration-200 hover:-translate-y-0.5"
               onClick={() => navigate(`/neshamos/${n.neshamaId}`)}
             >
-              <p className="text-sm font-semibold">{neshamaDedicationLine(n, showBilingual)}</p>
+              <BioThumbnail imageUrl={n.imageUrl} fallbackIcon={StarOfDavidIcon} />
+              <p className="min-w-0 flex-1 text-sm font-semibold">{neshamaDedicationLine(n, showBilingual)}</p>
             </Card>
           ))}
         </div>

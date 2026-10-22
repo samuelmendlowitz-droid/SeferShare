@@ -10,7 +10,7 @@ export function NeshamaCreatePage() {
   return (
     <DetailPageLayout fallbackPath="/community">
       <h1 className="mb-4 text-xl font-bold">{t('neshama.addNew')}</h1>
-      <NeshamaCreateForm onCreated={(neshama) => navigate(`/neshamos/${neshama.neshamaId}`)} />
+      <NeshamaCreateForm onCreated={(neshama) => navigate(`/neshamos/${neshama.neshamaId}`, { replace: true })} />
     </DetailPageLayout>
   );
 }

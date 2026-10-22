@@ -10,7 +10,7 @@ export function CampaignCreatePage() {
   return (
     <DetailPageLayout fallbackPath="/profile">
       <h1 className="mb-4 text-xl font-bold">{t('campaign.create')}</h1>
-      <CampaignCreateForm onCreated={(campaignId) => navigate(`/campaigns/${campaignId}`)} />
+      <CampaignCreateForm onCreated={(campaignId) => navigate(`/campaigns/${campaignId}`, { replace: true })} />
     </DetailPageLayout>
   );
 }

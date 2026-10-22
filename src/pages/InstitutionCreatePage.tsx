@@ -10,7 +10,9 @@ export function InstitutionCreatePage() {
   return (
     <DetailPageLayout fallbackPath="/profile">
       <h1 className="mb-4 text-xl font-bold">{t('institution.addNew')}</h1>
-      <InstitutionCreateForm onCreated={(institution) => navigate(`/institutions/${institution.institutionId}`)} />
+      <InstitutionCreateForm
+        onCreated={(institution) => navigate(`/institutions/${institution.institutionId}`, { replace: true })}
+      />
     </DetailPageLayout>
   );
 }
