@@ -127,6 +127,7 @@ export function CampaignCreateForm({ onCreated }: CampaignCreateFormProps) {
       />
 
       <h2 className="mb-2 mt-6 border-t border-border pt-4 text-base font-semibold">{t('campaign.datesLabel')}</h2>
+      <p className="mb-2 text-xs text-text-muted">{t('campaign.datesHint')}</p>
       <div className="mb-4 flex gap-2">
         <TextField
           type="date"

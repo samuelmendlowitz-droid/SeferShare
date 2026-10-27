@@ -10,6 +10,7 @@ import { getColorTheme } from '../../lib/colorTheme';
 import { neshamaDedicationLine } from '../../lib/neshamaFormat';
 import { Card } from '../ui/Card';
 import { EditIcon } from '../ui/icons';
+import { InstitutionLogo } from '../ui/InstitutionLogo';
 import { ProgressBar } from './ProgressBar';
 
 interface CampaignCardProps {
@@ -28,7 +29,7 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
   const dollarFulfilled = campaignDollarFulfilled(campaign);
   const isOwn = profile?.uid === campaign.createdByUid;
   const theme = getColorTheme(campaign.colorTheme);
-  const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, language);
+  const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, campaign.createdAt, language);
 
   const primaryImageUrl = campaign.images?.[0] ?? campaign.headerImageUrl;
 
@@ -75,7 +76,8 @@ export function CampaignCard({ campaign, institution, neshamas = [], sefarimById
             whichever one is the actual point. Campaigns created before this field
             existed default to 'institution', matching their old behavior. */}
         {(campaign.objective ?? 'institution') === 'institution' && institution && (
-          <p className="text-sm text-text">
+          <p className="flex items-center gap-1.5 text-sm text-text">
+            <InstitutionLogo logoUrl={institution.logoUrl} alt={institution.name} />
             <button
               type="button"
               className="hover:underline"

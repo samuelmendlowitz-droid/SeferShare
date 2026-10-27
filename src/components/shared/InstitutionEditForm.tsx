@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { deleteInstitution, updateInstitution } from '../../services/institutions';
-import { uploadInstitutionImages } from '../../services/storage';
+import { uploadInstitutionImages, uploadInstitutionLogo } from '../../services/storage';
 import { getColorTheme } from '../../lib/colorTheme';
 import { INSTITUTION_TYPES, MAX_INSTITUTION_IMAGES, type Address, type Institution, type InstitutionType } from '../../types';
 import { AddressForm } from './AddressForm';
@@ -31,6 +31,9 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
   const [address, setAddress] = useState<Address>(institution.address);
   const [bio, setBio] = useState(institution.bio ?? '');
   const [accomplishments, setAccomplishments] = useState(institution.accomplishments ?? '');
+  const [logoItems, setLogoItems] = useState<ImageItem[]>(
+    institution.logoUrl ? [{ kind: 'existing', url: institution.logoUrl }] : [],
+  );
   const [imageItems, setImageItems] = useState<ImageItem[]>(
     (institution.images ?? []).map((url): ImageItem => ({ kind: 'existing', url })),
   );
@@ -48,6 +51,13 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
     setSaving(true);
     try {
       const images = await resolveImageUrls(imageItems, (files) => uploadInstitutionImages(profile.uid, files));
+      const logoItem = logoItems[0];
+      const logoUrl =
+        logoItem === undefined
+          ? undefined
+          : logoItem.kind === 'new'
+            ? await uploadInstitutionLogo(profile.uid, logoItem.file)
+            : logoItem.url;
       await updateInstitution(institution.institutionId, {
         name: name.trim(),
         hebrewName: hebrewName.trim() || undefined,
@@ -57,6 +67,7 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
         bio: bio.trim() || undefined,
         accomplishments: accomplishments.trim() || undefined,
         images,
+        logoUrl,
         colorTheme: { background: bgColor, primary: primaryColor, accent: accentColor },
       });
       onSaved();
@@ -103,6 +114,7 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
           onChange={setAccomplishments}
           rows={3}
         />
+        <ImageUploadField label={t('institution.logoLabel')} items={logoItems} onChange={setLogoItems} max={1} />
         <ImageUploadField
           label={t('institution.imagesLabel', { max: MAX_INSTITUTION_IMAGES })}
           items={imageItems}

@@ -32,6 +32,16 @@ export async function uploadInstitutionImages(uid: string, files: File[]): Promi
   return Promise.all(capped.map((file, index) => uploadInstitutionImage(uid, file, index)));
 }
 
+/** Reuses the "institution-images" storage path (a "logo-" prefixed filename
+ *  keeps it distinct from gallery photos) so no storage.rules change is
+ *  needed for this separate, single-file field. */
+export async function uploadInstitutionLogo(uid: string, file: File): Promise<string> {
+  const path = `institution-images/${uid}/logo-${Date.now()}-${file.name}`;
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file);
+  return getDownloadURL(storageRef);
+}
+
 export async function uploadNeshamaImage(uid: string, file: File): Promise<string> {
   const path = `neshama-images/${uid}/${Date.now()}-${file.name}`;
   const storageRef = ref(storage, path);

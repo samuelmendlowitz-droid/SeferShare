@@ -20,6 +20,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { ImageGalleryWheel } from '../components/ui/ImageGalleryWheel';
+import { InstitutionLogo } from '../components/ui/InstitutionLogo';
 import { SeferThumbnail } from '../components/ui/SeferThumbnail';
 import { MinusIcon, PlusIcon } from '../components/ui/icons';
 
@@ -119,7 +120,7 @@ export function CampaignDetailPage() {
   }
 
   const theme = getColorTheme(campaign.colorTheme);
-  const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, language);
+  const dateRangeText = formatCampaignDateRange(campaign.startDate, campaign.endDate, campaign.createdAt, language);
   // The campaign's chosen theme styles its content "bubbles" only — the page
   // itself always sits on a plain white backdrop (see DetailPageLayout).
   const buttonThemeStyle = { backgroundColor: theme.accent, borderColor: theme.accent, color: '#FFFFFF' };
@@ -144,7 +145,8 @@ export function CampaignDetailPage() {
             created before this field existed default to 'institution', which
             matches how every campaign used to behave. */}
         {(campaign.objective ?? 'institution') === 'institution' && institution && (
-          <p className="mt-1 text-sm">
+          <p className="mt-1 flex items-center gap-1.5 text-sm">
+            <InstitutionLogo logoUrl={institution.logoUrl} alt={institution.name} />
             <button
               type="button"
               className="hover:underline"

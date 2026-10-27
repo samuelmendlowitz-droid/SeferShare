@@ -14,6 +14,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { ImageGalleryWheel } from '../components/ui/ImageGalleryWheel';
+import { InstitutionLogo } from '../components/ui/InstitutionLogo';
 
 function addressLine(institution: Institution): string {
   const { line1, line2, city, state, postalCode } = institution.address;
@@ -78,9 +79,12 @@ export function InstitutionDetailPage() {
       )}
 
       <Card className="mb-4" style={{ backgroundColor: theme.background, borderColor: theme.accent }}>
-        <h1 className="text-2xl font-bold" style={{ color: theme.primary }}>
-          {institution.name}
-        </h1>
+        <div className="flex items-center gap-2">
+          <InstitutionLogo logoUrl={institution.logoUrl} alt={institution.name} size={32} />
+          <h1 className="text-2xl font-bold" style={{ color: theme.primary }}>
+            {institution.name}
+          </h1>
+        </div>
         <p className="mt-1 text-sm" style={{ color: theme.accent }}>
           {institutionTypeText(institution.type, institution.customType, t(`institution.${institution.type}`))}
         </p>

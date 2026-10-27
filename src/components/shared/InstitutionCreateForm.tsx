@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Address, Institution, InstitutionType } from '../../types';
 import { INSTITUTION_TYPES, MAX_INSTITUTION_IMAGES } from '../../types';
 import { createInstitution } from '../../services/institutions';
-import { uploadInstitutionImages } from '../../services/storage';
+import { uploadInstitutionImages, uploadInstitutionLogo } from '../../services/storage';
 import { useAuth } from '../../context/AuthContext';
 import { DEFAULT_COLOR_THEME } from '../../lib/colorTheme';
 import { Button } from '../ui/Button';
@@ -30,6 +30,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
   const [bio, setBio] = useState('');
   const [accomplishments, setAccomplishments] = useState('');
+  const [logoItems, setLogoItems] = useState<ImageItem[]>([]);
   const [imageItems, setImageItems] = useState<ImageItem[]>([]);
   const [bgColor, setBgColor] = useState(DEFAULT_COLOR_THEME.background);
   const [primaryColor, setPrimaryColor] = useState(DEFAULT_COLOR_THEME.primary);
@@ -44,6 +45,13 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
     try {
       const resolvedCustomType = type === 'other' ? customType.trim() || undefined : undefined;
       const images = await resolveImageUrls(imageItems, (files) => uploadInstitutionImages(profile.uid, files));
+      const logoItem = logoItems[0];
+      const logoUrl =
+        logoItem === undefined
+          ? undefined
+          : logoItem.kind === 'new'
+            ? await uploadInstitutionLogo(profile.uid, logoItem.file)
+            : logoItem.url;
       const colorTheme = { background: bgColor, primary: primaryColor, accent: accentColor };
       const id = await createInstitution({
         name: name.trim(),
@@ -54,6 +62,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         bio: bio.trim() || undefined,
         accomplishments: accomplishments.trim() || undefined,
         images,
+        logoUrl,
         colorTheme,
         createdByUid: profile.uid,
         verified: false,
@@ -68,6 +77,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         bio: bio.trim() || undefined,
         accomplishments: accomplishments.trim() || undefined,
         images,
+        logoUrl,
         colorTheme,
         createdByUid: profile.uid,
         verified: false,
@@ -81,6 +91,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
       setAddress(EMPTY_ADDRESS);
       setBio('');
       setAccomplishments('');
+      setLogoItems([]);
       setImageItems([]);
       setBgColor(DEFAULT_COLOR_THEME.background);
       setPrimaryColor(DEFAULT_COLOR_THEME.primary);
@@ -115,6 +126,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         onChange={setAccomplishments}
         rows={3}
       />
+      <ImageUploadField label={t('institution.logoLabel')} items={logoItems} onChange={setLogoItems} max={1} />
       <ImageUploadField
         label={t('institution.imagesLabel', { max: MAX_INSTITUTION_IMAGES })}
         items={imageItems}

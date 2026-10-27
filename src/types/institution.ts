@@ -20,6 +20,11 @@ export interface Institution {
   address: Address;
   /** Shown on the institution's info page as a swipeable gallery wheel. */
   images?: string[];
+  /** A small square mark shown alongside the institution's name wherever it's
+   *  referenced (its own card, a campaign's card/detail page) — separate from
+   *  `images` since it's displayed uncropped (object-contain), not as a photo
+   *  in the gallery. */
+  logoUrl?: string;
   bio?: string;
   /** Free-text highlights (one per line) — e.g. programs run, milestones reached. */
   accomplishments?: string;

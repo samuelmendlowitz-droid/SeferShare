@@ -20,17 +20,28 @@ const INSTITUTION_TAB_TYPE: Partial<Record<CommunityTab, InstitutionType>> = {
   otherInstitutions: 'other',
 };
 
-/** Each bio's list-row photo — its first gallery image for an institution, its
- *  one portrait for a neshama — falling back to a generic icon when it has none. */
+/** Each bio's list-row photo — an institution's logo (uncropped) if it has
+ *  one, else its first gallery photo (cropped to fill), else a neshama's one
+ *  portrait — falling back to a generic icon when it has none of those. */
 function BioThumbnail({
   imageUrl,
+  contain,
   fallbackIcon: FallbackIcon,
 }: {
   imageUrl?: string;
+  /** True for a logo, which must never be cropped — false for an ordinary
+   *  gallery/portrait photo, which fills the square like any other thumbnail. */
+  contain?: boolean;
   fallbackIcon: ComponentType<SVGProps<SVGSVGElement>>;
 }) {
   if (imageUrl) {
-    return <img src={imageUrl} alt="" className="h-14 w-14 shrink-0 rounded-btn border border-border object-cover" />;
+    return (
+      <img
+        src={imageUrl}
+        alt=""
+        className={`h-14 w-14 shrink-0 rounded-btn border border-border ${contain ? 'bg-white object-contain p-1' : 'object-cover'}`}
+      />
+    );
   }
   return (
     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-btn border border-border bg-bg text-text-muted">
@@ -112,7 +123,7 @@ export function CommunityPage() {
                 className="flex cursor-pointer items-center gap-3 transition-transform duration-200 hover:-translate-y-0.5"
                 onClick={() => navigate(`/institutions/${inst.institutionId}`)}
               >
-                <BioThumbnail imageUrl={inst.images?.[0]} fallbackIcon={StoreIcon} />
+                <BioThumbnail imageUrl={inst.logoUrl ?? inst.images?.[0]} contain={Boolean(inst.logoUrl)} fallbackIcon={StoreIcon} />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold">{inst.name}</p>
                   {inst.hebrewName && <p className="text-xs text-text-muted">{inst.hebrewName}</p>}
