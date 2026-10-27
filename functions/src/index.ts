@@ -4,6 +4,7 @@
 // which requires the Secret Manager API to be enabled on the project.
 // export { createPaymentIntent } from './createPaymentIntent';
 // export { confirmDonation } from './confirmDonation';
+export { bootstrapAdmin } from './bootstrapAdmin';
 export { onCampaignUpdate } from './onCampaignUpdate';
 export { approveVendor } from './approveVendor';
 export { onVendorApplicationSubmitted } from './onVendorApplicationSubmitted';

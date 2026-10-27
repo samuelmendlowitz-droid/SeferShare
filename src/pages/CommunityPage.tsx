@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ComponentType, type SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { listInstitutions } from '../services/institutions';
 import { listNeshamos } from '../services/neshamos';
@@ -58,7 +59,9 @@ function BioThumbnail({
 export function CommunityPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const { showBilingual } = useLanguage();
+  const canAddInstitution = Boolean(profile?.isAdmin || (profile?.isInstitutionOwner && profile.institutionOwnerApproved));
   const [tab, setTab] = useState<CommunityTab>('shuls');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -106,7 +109,13 @@ export function CommunityPage() {
       tab={tab}
       onTabChange={setTab}
       onSearch={setSearchQuery}
-      createAction={{ caption: isNeshamaTab ? t('neshama.addNew') : t('institution.addNew'), onClick: handleCreate }}
+      createAction={
+        isNeshamaTab
+          ? { caption: t('neshama.addNew'), onClick: handleCreate }
+          : canAddInstitution
+            ? { caption: t('institution.addNew'), onClick: handleCreate }
+            : undefined
+      }
     >
       <h1 className="mb-4 text-xl font-bold">{t('nav.community')}</h1>
 

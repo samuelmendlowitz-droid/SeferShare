@@ -59,11 +59,14 @@ service cloud.firestore {
       allow read: if signedIn();
       // Only an approved institution owner may create one, and every new
       // institution starts unverified — verification is a separate, admin-only
-      // step per institution (see functions/src/verifyInstitution.ts).
-      allow create: if signedIn() &&
+      // step per institution (see functions/src/verifyInstitution.ts). An admin
+      // bypasses both restrictions, same as every other admin override below.
+      allow create: if isAdmin() || (
+        signedIn() &&
         request.resource.data.createdByUid == request.auth.uid &&
         isApprovedInstitutionOwner(request.auth.uid) &&
-        request.resource.data.verified == false;
+        request.resource.data.verified == false
+      );
       // giftCardBalance and verified are only ever changed server-side (Cloud
       // Functions bypass these rules) — a gift card donation adds to the
       // balance, spending it subtracts, and only an admin verifies.

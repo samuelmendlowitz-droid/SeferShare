@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import type { Institution, InstitutionType } from '../../types';
 import { INSTITUTION_TYPES } from '../../types';
 import { listInstitutions } from '../../services/institutions';
@@ -19,6 +20,8 @@ interface InstitutionPickerProps {
 
 export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
   const { t } = useTranslation();
+  const { profile } = useAuth();
+  const canAddInstitution = Boolean(profile?.isAdmin || (profile?.isInstitutionOwner && profile.institutionOwnerApproved));
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [neediestByInstitution, setNeediestByInstitution] = useState<Map<string, number>>(new Map());
   const [query, setQuery] = useState('');
@@ -107,14 +110,16 @@ export function InstitutionPicker({ value, onChange }: InstitutionPickerProps) {
           <FilterIcon width={16} height={16} />
           {filtersActive && <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-accent" />}
         </button>
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          aria-label={t('institution.addNew') ?? ''}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-btn bg-accent text-white"
-        >
-          <PlusIcon width={16} height={16} />
-        </button>
+        {canAddInstitution && (
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            aria-label={t('institution.addNew') ?? ''}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-btn bg-accent text-white"
+          >
+            <PlusIcon width={16} height={16} />
+          </button>
+        )}
       </div>
 
       <BubbleGrid

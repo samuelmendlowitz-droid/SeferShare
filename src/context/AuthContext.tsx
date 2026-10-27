@@ -14,7 +14,12 @@ import {
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { auth, db } from '../lib/firebase';
+import { bootstrapAdmin } from '../services/users';
 import type { User } from '../types';
+
+// Same designated admin email as the Cloud Function's own check (functions/src/bootstrapAdmin.ts)
+// and the MANAGEMENT_EMAIL used by the application-notification triggers.
+const ADMIN_EMAIL = 'samuelmendlowitz@gmail.com';
 
 interface AuthContextValue {
   firebaseUser: FirebaseUser | null;
@@ -69,7 +74,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function loadProfile(fbUser: FirebaseUser) {
     try {
-      const p = await ensureUserProfile(fbUser);
+      let p = await ensureUserProfile(fbUser);
+      if (fbUser.email === ADMIN_EMAIL && !p.isAdmin) {
+        await bootstrapAdmin();
+        // The custom claim just granted isn't on the current ID token yet —
+        // Firestore rules (and the re-read below) need a forced refresh to see it.
+        await fbUser.getIdToken(true);
+        p = await ensureUserProfile(fbUser);
+      }
       setProfile(p);
       setProfileError(null);
     } catch (err) {

@@ -12,6 +12,14 @@ export async function getUser(uid: string): Promise<User | null> {
   return snap.exists() ? (snap.data() as User) : null;
 }
 
+/** Self-service admin bootstrap — the Cloud Function itself only ever grants
+ *  this to the one designated admin email, no matter who calls it. See
+ *  AuthContext, which calls this automatically on sign-in when needed. */
+export async function bootstrapAdmin(): Promise<void> {
+  const call = httpsCallable<void, { success: boolean }>(functions, 'bootstrapAdmin');
+  await call();
+}
+
 /**
  * Submits the vendor questionnaire; requires manual admin approval (spec §4.3).
  * A Cloud Function trigger on this write notifies every admin.
