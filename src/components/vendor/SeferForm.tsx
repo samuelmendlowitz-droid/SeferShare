@@ -10,7 +10,7 @@ import {
   type SeferType,
 } from '../../types';
 import { getSubtypesFor, OTHER_SUBTYPE_VALUE } from '../../lib/seferTaxonomy';
-import { upsertVendorListing } from '../../services/sefarim';
+import { updateSeferCore, upsertVendorListing } from '../../services/sefarim';
 import { uploadSeferImages } from '../../services/storage';
 import { Button } from '../ui/Button';
 import { CloseIcon } from '../ui/icons';
@@ -22,11 +22,16 @@ interface SeferFormProps {
   sefer?: Sefer;
   /** This vendor's own wholesale price for `sefer`, prefilled when editing. */
   wholesalePrice?: number;
+  /** Admin-only: edits just the sefer's shared catalog fields (name, type,
+   *  languages, …) with no price/stock/photo fields and no vendor-listing
+   *  side effect — unlike the normal save, which would otherwise attribute a
+   *  phantom listing to whichever account used this form. Requires `sefer`. */
+  coreOnly?: boolean;
   onSaved: () => void;
   onCancel?: () => void;
 }
 
-export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFormProps) {
+export function SeferForm({ sefer, wholesalePrice, coreOnly, onSaved, onCancel }: SeferFormProps) {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const myListing = sefer?.vendorListings.find((l) => l.vendorId === profile?.uid);
@@ -96,6 +101,21 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
     setSaving(true);
     setError(null);
     try {
+      if (coreOnly && sefer) {
+        await updateSeferCore(sefer.seferId, {
+          hebrewName,
+          englishName,
+          phoneticName,
+          type,
+          customType: type === 'other' ? customType.trim() || undefined : undefined,
+          subType: resolveSubType(),
+          customSubType: customSubType.trim() || undefined,
+          languages,
+        });
+        onSaved();
+        return;
+      }
+
       const uploadedUrls = imageFiles.length ? await uploadSeferImages(profile.uid, imageFiles) : [];
 
       await upsertVendorListing({
@@ -223,56 +243,60 @@ export function SeferForm({ sefer, wholesalePrice, onSaved, onCancel }: SeferFor
         </div>
       </div>
 
-      <NumberField required label={t('vendor.retailPrice')} value={retailPrice} onChange={setRetailPrice} min={0} money />
-      <NumberField required label={t('vendor.wholesalePrice')} value={wholesale} onChange={setWholesale} min={0} money />
-      <NumberField required label={t('vendor.stockQty')} value={stockQty} onChange={setStockQty} min={0} />
+      {!coreOnly && (
+        <>
+          <NumberField required label={t('vendor.retailPrice')} value={retailPrice} onChange={setRetailPrice} min={0} money />
+          <NumberField required label={t('vendor.wholesalePrice')} value={wholesale} onChange={setWholesale} min={0} money />
+          <NumberField required label={t('vendor.stockQty')} value={stockQty} onChange={setStockQty} min={0} />
 
-      <div>
-        <p className="mb-2 text-sm text-text-muted">{t('vendor.images', { max: MAX_SEFER_IMAGES })}</p>
-        <div className="flex flex-wrap gap-2">
-          {existingImageUrls.map((url, index) => (
-            <div key={url} className="relative h-16 w-16 shrink-0">
-              <img src={url} alt="" className="h-16 w-16 rounded-btn object-cover" />
-              <button
-                type="button"
-                onClick={() => removeExistingImage(index)}
-                aria-label={t('actions.cancel')}
-                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white shadow-card"
-              >
-                <CloseIcon width={12} height={12} />
-              </button>
+          <div>
+            <p className="mb-2 text-sm text-text-muted">{t('vendor.images', { max: MAX_SEFER_IMAGES })}</p>
+            <div className="flex flex-wrap gap-2">
+              {existingImageUrls.map((url, index) => (
+                <div key={url} className="relative h-16 w-16 shrink-0">
+                  <img src={url} alt="" className="h-16 w-16 rounded-btn object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeExistingImage(index)}
+                    aria-label={t('actions.cancel')}
+                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white shadow-card"
+                  >
+                    <CloseIcon width={12} height={12} />
+                  </button>
+                </div>
+              ))}
+              {previewUrls.map((url, index) => (
+                <div key={url} className="relative h-16 w-16 shrink-0">
+                  <img src={url} alt="" className="h-16 w-16 rounded-btn object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeNewFile(index)}
+                    aria-label={t('actions.cancel')}
+                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white shadow-card"
+                  >
+                    <CloseIcon width={12} height={12} />
+                  </button>
+                </div>
+              ))}
+              {totalImages < MAX_SEFER_IMAGES && (
+                <label className="flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center rounded-btn border border-dashed border-border text-xs text-text-muted">
+                  {t('vendor.addPhoto')}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      addFiles(e.target.files);
+                      e.target.value = '';
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
-          ))}
-          {previewUrls.map((url, index) => (
-            <div key={url} className="relative h-16 w-16 shrink-0">
-              <img src={url} alt="" className="h-16 w-16 rounded-btn object-cover" />
-              <button
-                type="button"
-                onClick={() => removeNewFile(index)}
-                aria-label={t('actions.cancel')}
-                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-white shadow-card"
-              >
-                <CloseIcon width={12} height={12} />
-              </button>
-            </div>
-          ))}
-          {totalImages < MAX_SEFER_IMAGES && (
-            <label className="flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center rounded-btn border border-dashed border-border text-xs text-text-muted">
-              {t('vendor.addPhoto')}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => {
-                  addFiles(e.target.files);
-                  e.target.value = '';
-                }}
-                className="hidden"
-              />
-            </label>
-          )}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
 
       {error && <p className="text-sm text-error">{error}</p>}
 

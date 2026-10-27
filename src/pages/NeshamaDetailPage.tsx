@@ -166,7 +166,7 @@ export function NeshamaDetailPage() {
         <Button className="w-full" style={buttonThemeStyle} onClick={() => navigate(`/neshamos/${neshama.neshamaId}/donate`)}>
           {t('neshama.donateInTheirName')}
         </Button>
-        {isOwn && (
+        {(isOwn || profile?.isAdmin) && (
           <Button
             variant="secondary"
             className="w-full"

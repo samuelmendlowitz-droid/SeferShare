@@ -288,7 +288,9 @@ export function CampaignDetailPage() {
         })}
       </div>
 
-      {(profile?.uid === campaign.createdByUid || (institution && profile?.uid === institution.createdByUid)) && (
+      {(profile?.uid === campaign.createdByUid ||
+        (institution && profile?.uid === institution.createdByUid) ||
+        profile?.isAdmin) && (
         <div className="mt-4 space-y-2 border-t border-border pt-4">
           {institution && profile?.uid === institution.createdByUid && (
             // Spending the balance happens from Seforim > Gallery's institution
@@ -297,7 +299,7 @@ export function CampaignDetailPage() {
               {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
             </p>
           )}
-          {profile?.uid === campaign.createdByUid && (
+          {(profile?.uid === campaign.createdByUid || profile?.isAdmin) && (
             <Button
               variant="secondary"
               className="w-full"

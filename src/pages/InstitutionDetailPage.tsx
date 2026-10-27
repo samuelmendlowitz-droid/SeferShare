@@ -67,6 +67,7 @@ export function InstitutionDetailPage() {
   }
 
   const isOwn = profile?.uid === institution.createdByUid;
+  const canEdit = isOwn || Boolean(profile?.isAdmin);
   const theme = getColorTheme(institution.colorTheme);
   const buttonThemeStyle = { backgroundColor: theme.accent, borderColor: theme.accent, color: '#FFFFFF' };
 
@@ -142,13 +143,17 @@ export function InstitutionDetailPage() {
         onAdd={(amount) => pushka.addGiftCard({ institutionId: institution.institutionId, institutionName: institution.name, amount })}
       />
 
-      {isOwn && (
+      {canEdit && (
         <div className="mt-4 space-y-2 border-t border-border pt-4">
           {/* Spending the gift card balance happens from Seforim > Gallery's
-              institution switcher now, not from here — this just surfaces it. */}
-          <p className="text-xs" style={{ color: theme.accent }}>
-            {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
-          </p>
+              institution switcher now, not from here — this just surfaces it,
+              and only to the actual owner (an admin edits/deletes but doesn't
+              need this financial detail surfaced inline). */}
+          {isOwn && (
+            <p className="text-xs" style={{ color: theme.accent }}>
+              {t('institution.giftCardBalance', { amount: (institution.giftCardBalance ?? 0).toFixed(2) })}
+            </p>
+          )}
           <Button
             variant="secondary"
             className="w-full"

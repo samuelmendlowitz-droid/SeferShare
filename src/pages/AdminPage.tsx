@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   approveInstitutionOwner,
@@ -10,10 +11,10 @@ import {
   listPendingVendorApplications,
   setUserBlocked,
 } from '../services/users';
-import { listInstitutions, verifyInstitution } from '../services/institutions';
+import { deleteInstitution, listInstitutions, verifyInstitution } from '../services/institutions';
 import { deleteVendorListing, listSefarim } from '../services/sefarim';
 import { seferTypeText, subtypeLabel } from '../lib/seferTaxonomy';
-import { listNeshamos } from '../services/neshamos';
+import { deleteNeshama, listNeshamos } from '../services/neshamos';
 import { deleteCampaign } from '../services/campaigns';
 import {
   listAllCampaignsAdmin,
@@ -36,8 +37,10 @@ const ORDER_STATUSES: OrderStatus[] = ['pending', 'shipped', 'delivered'];
 
 export function AdminPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { profile, loading } = useAuth();
   const [section, setSection] = useState<Section>('vendors');
+  const [editingSeferId, setEditingSeferId] = useState<string | null>(null);
 
   const [pendingVendors, setPendingVendors] = useState<User[]>([]);
   const [pendingInstitutionOwners, setPendingInstitutionOwners] = useState<User[]>([]);
@@ -167,22 +170,37 @@ export function AdminPage() {
           <h2 className="pt-2 text-base font-semibold">{t('admin.institutions')}</h2>
           {institutions.length === 0 && <p className="text-text-muted">—</p>}
           {institutions.map((inst) => (
-            <Card key={inst.institutionId} className="flex items-center justify-between">
+            <Card key={inst.institutionId} className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold">{inst.name}</p>
                 <p className="text-xs text-text-muted">
                   {inst.verified ? t('institution.verified') : t('institution.unverified')}
                 </p>
               </div>
-              <Button
-                variant={inst.verified ? 'secondary' : 'primary'}
-                onClick={async () => {
-                  await verifyInstitution({ institutionId: inst.institutionId, verify: !inst.verified });
-                  reload();
-                }}
-              >
-                {inst.verified ? t('admin.unverify') : t('admin.verify')}
-              </Button>
+              <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                <Button
+                  variant={inst.verified ? 'secondary' : 'primary'}
+                  onClick={async () => {
+                    await verifyInstitution({ institutionId: inst.institutionId, verify: !inst.verified });
+                    reload();
+                  }}
+                >
+                  {inst.verified ? t('admin.unverify') : t('admin.verify')}
+                </Button>
+                <Button variant="secondary" onClick={() => navigate(`/institutions/${inst.institutionId}/edit`)}>
+                  {t('institution.edit')}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    if (!window.confirm(t('institution.confirmDelete') ?? '')) return;
+                    await deleteInstitution(inst.institutionId);
+                    reload();
+                  }}
+                >
+                  {t('actions.delete')}
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
@@ -191,34 +209,57 @@ export function AdminPage() {
       {section === 'sefarim' && (
         <div className="space-y-3">
           <h2 className="text-base font-semibold">{t('admin.catalog')}</h2>
-          {sefarim.map((s) => (
-            <Card key={s.seferId}>
-              <p className="text-sm font-semibold">
-                {s.englishName} · {s.hebrewName} ({seferTypeText(s.type, s.customType, t(`sefer.${s.type}`))}
-              {subtypeLabel(s.type, s.subType, true, s.customSubType) ? ` · ${subtypeLabel(s.type, s.subType, true, s.customSubType)}` : ''})
-              </p>
-              <div className="mt-2 space-y-1">
-                {s.vendorListings.map((l) => (
-                  <div key={l.vendorId} className="flex items-center justify-between text-sm">
-                    <span>
-                      {l.vendorName} — ${l.price.toFixed(2)} ({l.stockQty} {t('vendor.stockQty')})
-                      {l.stockQty === 0 ? ` (${t('admin.outOfStock')})` : ''}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await deleteVendorListing(s.seferId, l.vendorId);
-                        reload();
-                      }}
-                      className="text-xs font-medium text-error"
-                    >
-                      {t('actions.delete')}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          ))}
+          {sefarim.map((s) =>
+            editingSeferId === s.seferId ? (
+              <Card key={s.seferId}>
+                <SeferForm
+                  sefer={s}
+                  coreOnly
+                  onSaved={() => {
+                    setEditingSeferId(null);
+                    reload();
+                  }}
+                  onCancel={() => setEditingSeferId(null)}
+                />
+              </Card>
+            ) : (
+              <Card key={s.seferId}>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-semibold">
+                    {s.englishName} · {s.hebrewName} ({seferTypeText(s.type, s.customType, t(`sefer.${s.type}`))}
+                    {subtypeLabel(s.type, s.subType, true, s.customSubType) ? ` · ${subtypeLabel(s.type, s.subType, true, s.customSubType)}` : ''})
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setEditingSeferId(s.seferId)}
+                    className="shrink-0 text-xs font-medium text-accent"
+                  >
+                    {t('vendor.editSefer')}
+                  </button>
+                </div>
+                <div className="mt-2 space-y-1">
+                  {s.vendorListings.map((l) => (
+                    <div key={l.vendorId} className="flex items-center justify-between text-sm">
+                      <span>
+                        {l.vendorName} — ${l.price.toFixed(2)} ({l.stockQty} {t('vendor.stockQty')})
+                        {l.stockQty === 0 ? ` (${t('admin.outOfStock')})` : ''}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await deleteVendorListing(s.seferId, l.vendorId);
+                          reload();
+                        }}
+                        className="text-xs font-medium text-error"
+                      >
+                        {t('actions.delete')}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            ),
+          )}
 
           {showAddSefer ? (
             <SeferForm
@@ -263,7 +304,32 @@ export function AdminPage() {
 
       {section === 'neshamos' && (
         <div className="space-y-3">
-          <h2 className="text-base font-semibold">{t('admin.neshamaDedup')}</h2>
+          <h2 className="text-base font-semibold">{t('admin.neshamos')}</h2>
+          {neshamos.length === 0 && <p className="text-text-muted">—</p>}
+          {neshamos.map((n) => (
+            <Card key={n.neshamaId} className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold">
+                {n.name} {n.hebrewName ? `· ${n.hebrewName}` : ''}
+              </p>
+              <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                <Button variant="secondary" onClick={() => navigate(`/neshamos/${n.neshamaId}/edit`)}>
+                  {t('neshama.edit')}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    if (!window.confirm(t('neshama.confirmDelete') ?? '')) return;
+                    await deleteNeshama(n.neshamaId);
+                    reload();
+                  }}
+                >
+                  {t('actions.delete')}
+                </Button>
+              </div>
+            </Card>
+          ))}
+
+          <h2 className="pt-2 text-base font-semibold">{t('admin.neshamaDedup')}</h2>
           <p className="text-xs text-text-muted">{t('admin.selectTwoToMerge')}</p>
           {neshamos.map((n) => (
             <label key={n.neshamaId} className="flex items-center gap-2 rounded-btn border border-border p-2 text-sm">
@@ -296,23 +362,28 @@ export function AdminPage() {
         <div className="space-y-3">
           <h2 className="text-base font-semibold">{t('admin.campaigns')}</h2>
           {campaigns.map((c) => (
-            <Card key={c.campaignId} className="flex items-center justify-between">
+            <Card key={c.campaignId} className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold">{c.title ?? c.campaignId}</p>
                 <p className="text-xs text-text-muted">
                   {t(`campaignStatus.${c.status}`)} · {c.totalItemsFulfilled}/{c.totalItemsNeeded}
                 </p>
               </div>
-              <Button
-                variant="secondary"
-                onClick={async () => {
-                  if (!window.confirm(t('admin.confirmDeleteCampaign') ?? '')) return;
-                  await deleteCampaign(c.campaignId);
-                  reload();
-                }}
-              >
-                {t('actions.delete')}
-              </Button>
+              <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                <Button variant="secondary" onClick={() => navigate(`/campaigns/${c.campaignId}/edit`)}>
+                  {t('campaign.edit')}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    if (!window.confirm(t('admin.confirmDeleteCampaign') ?? '')) return;
+                    await deleteCampaign(c.campaignId);
+                    reload();
+                  }}
+                >
+                  {t('actions.delete')}
+                </Button>
+              </div>
             </Card>
           ))}
         </div>

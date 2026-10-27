@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, query, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import type { PublicVendorListing, Sefer, SeferLanguage, SeferType } from '../types';
 
@@ -122,6 +122,36 @@ export async function upsertVendorListing(input: UpsertVendorListingInput): Prom
 
   await batch.commit();
   return seferId;
+}
+
+export interface UpdateSeferCoreInput {
+  hebrewName: string;
+  englishName: string;
+  phoneticName: string;
+  type: SeferType;
+  customType?: string;
+  subType?: string;
+  customSubType?: string;
+  languages?: SeferLanguage[];
+}
+
+/**
+ * Admin-only direct edit of a sefer's shared catalog fields. Deliberately
+ * never touches vendorListings or vendorPricing — unlike upsertVendorListing,
+ * which is vendor-listing-centric and would otherwise attribute a phantom
+ * listing to whichever account calls it (see SeferForm's `coreOnly` mode).
+ */
+export async function updateSeferCore(seferId: string, input: UpdateSeferCoreInput): Promise<void> {
+  await updateDoc(doc(db, 'sefarim', seferId), {
+    hebrewName: input.hebrewName,
+    englishName: input.englishName,
+    phoneticName: input.phoneticName,
+    type: input.type,
+    customType: input.type === 'other' ? input.customType ?? null : null,
+    subType: input.subType ?? null,
+    customSubType: input.subType === 'other' ? input.customSubType ?? null : null,
+    languages: input.languages ?? [],
+  });
 }
 
 /**
