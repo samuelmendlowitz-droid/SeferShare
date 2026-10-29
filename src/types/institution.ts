@@ -18,6 +18,10 @@ export interface Institution {
    *  not in the curated list. */
   customType?: string;
   address: Address;
+  /** Where physical seforim ship — e.g. a separate storage garage — when it
+   *  differs from the institution's own address above. Falls back to
+   *  `address` wherever a destination is needed (fulfillment, shipments). */
+  shippingAddress?: Address;
   /** Shown on the institution's info page as a swipeable gallery wheel. */
   images?: string[];
   /** A small square mark shown alongside the institution's name wherever it's

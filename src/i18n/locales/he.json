@@ -157,6 +157,7 @@
     "bioLabel": "ביוגרפיה (אופציונלי)",
     "accomplishmentsLabel": "הישגים (אופציונלי, שורה לכל הישג)",
     "logoLabel": "לוגו (אופציונלי)",
+    "shipsElsewhereLabel": "משלוח ספרים לכתובת אחרת (למשל מחסן אחסון)",
     "imagesLabel": "תמונות (עד {{max}}, אופציונלי)",
     "bioHeading": "אודות",
     "accomplishmentsHeading": "הישגים",
@@ -310,7 +311,7 @@
       "neshamos": "נשמות",
       "campaigns": "קמפיינים",
       "donations": "תרומות",
-      "orders": "הזמנות",
+      "fulfillment": "מימוש הזמנות",
       "users": "משתמשים"
     },
     "vendorApplications": "בקשות ספקים",
@@ -324,12 +325,17 @@
     "selectTwoToMerge": "יש לבחור בדיוק שניים למיזוג (הראשון יישאר הרשומה הקנונית).",
     "campaigns": "קמפיינים",
     "donations": "תרומות",
-    "orders": "הזמנות",
     "neshamos": "נשמות",
     "neshamaDedup": "איחוד רשומות נשמה",
     "catalog": "קטלוג ספרים",
     "outOfStock": "אזל מהמלאי",
     "confirmDeleteCampaign": "למחוק את הקמפיין הזה? לא ניתן לבטל פעולה זו.",
+    "stockOnHand": "מלאי קיים",
+    "selectSefer": "בחר ספר…",
+    "quantity": "כמות",
+    "addStock": "הוספת מלאי",
+    "fulfillmentNeeds": "פריטים למימוש",
+    "fulfillFromStock": "מימוש מהמלאי",
     "users": "משתמשים",
     "blocked": "חסום",
     "block": "חסימה",
@@ -455,8 +461,12 @@
       "donatedTo": "נתרם ל"
     }
   },
-  "orderStatus": {
-    "pending": "ממתין",
+  "fulfillmentNeedStatus": {
+    "needsFulfillment": "דורש מימוש",
+    "fulfilledFromStock": "מומש מהמלאי",
+    "onOrder": "בהזמנה",
+    "received": "התקבל",
+    "packed": "אוחסן לאריזה",
     "shipped": "נשלח",
     "delivered": "הושלם"
   },

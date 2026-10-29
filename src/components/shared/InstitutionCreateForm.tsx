@@ -28,6 +28,8 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
   const [type, setType] = useState<InstitutionType>('shul');
   const [customType, setCustomType] = useState('');
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
+  const [shipsElsewhere, setShipsElsewhere] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState<Address>(EMPTY_ADDRESS);
   const [bio, setBio] = useState('');
   const [accomplishments, setAccomplishments] = useState('');
   const [logoItems, setLogoItems] = useState<ImageItem[]>([]);
@@ -44,6 +46,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
     setSaving(true);
     try {
       const resolvedCustomType = type === 'other' ? customType.trim() || undefined : undefined;
+      const resolvedShippingAddress = shipsElsewhere ? shippingAddress : undefined;
       const images = await resolveImageUrls(imageItems, (files) => uploadInstitutionImages(profile.uid, files));
       const logoItem = logoItems[0];
       const logoUrl =
@@ -59,6 +62,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         type,
         customType: resolvedCustomType,
         address,
+        shippingAddress: resolvedShippingAddress,
         bio: bio.trim() || undefined,
         accomplishments: accomplishments.trim() || undefined,
         images,
@@ -74,6 +78,7 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         type,
         customType: resolvedCustomType,
         address,
+        shippingAddress: resolvedShippingAddress,
         bio: bio.trim() || undefined,
         accomplishments: accomplishments.trim() || undefined,
         images,
@@ -89,6 +94,8 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
       setType('shul');
       setCustomType('');
       setAddress(EMPTY_ADDRESS);
+      setShipsElsewhere(false);
+      setShippingAddress(EMPTY_ADDRESS);
       setBio('');
       setAccomplishments('');
       setLogoItems([]);
@@ -119,6 +126,15 @@ export function InstitutionCreateForm({ onCreated }: InstitutionCreateFormProps)
         <TextField required label={t('institution.customTypeLabel')} value={customType} onChange={setCustomType} />
       )}
       <AddressForm value={address} onChange={setAddress} />
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={shipsElsewhere} onChange={(e) => setShipsElsewhere(e.target.checked)} />
+        {t('institution.shipsElsewhereLabel')}
+      </label>
+      {shipsElsewhere && (
+        <div className="rounded-btn border border-border p-3">
+          <AddressForm value={shippingAddress} onChange={setShippingAddress} />
+        </div>
+      )}
       <TextAreaField label={t('institution.bioLabel')} value={bio} onChange={setBio} rows={3} />
       <TextAreaField
         label={t('institution.accomplishmentsLabel')}

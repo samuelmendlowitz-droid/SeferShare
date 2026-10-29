@@ -36,7 +36,7 @@ export async function createInstitution(
 ): Promise<string> {
   // addDoc() rejects undefined field values outright, so optional fields left
   // blank by the form (hebrewName, customType, bio, accomplishments, colorTheme,
-  // logoUrl) must be normalized to null before writing.
+  // logoUrl, shippingAddress) must be normalized to null before writing.
   const docRef = await addDoc(institutionsRef, {
     ...input,
     hebrewName: input.hebrewName ?? null,
@@ -45,6 +45,7 @@ export async function createInstitution(
     accomplishments: input.accomplishments ?? null,
     colorTheme: input.colorTheme ?? null,
     logoUrl: input.logoUrl ?? null,
+    shippingAddress: input.shippingAddress ?? null,
     createdAt: serverTimestamp(),
   });
   return docRef.id;
@@ -56,6 +57,7 @@ export interface UpdateInstitutionInput {
   type: InstitutionType;
   customType?: string;
   address: Address;
+  shippingAddress?: Address;
   images?: string[];
   logoUrl?: string;
   bio?: string;
@@ -73,6 +75,7 @@ export async function updateInstitution(institutionId: string, input: UpdateInst
     type: input.type,
     customType: input.type === 'other' ? input.customType ?? null : null,
     address: input.address,
+    shippingAddress: input.shippingAddress ?? null,
     images: input.images ?? [],
     logoUrl: input.logoUrl ?? null,
     bio: input.bio ?? null,

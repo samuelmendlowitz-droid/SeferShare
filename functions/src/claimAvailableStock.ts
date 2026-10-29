@@ -2,7 +2,9 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from './lib/firebaseAdmin';
 import { applyToCampaign, keyFor, type MutableCampaign } from './algorithm';
-import type { AvailableStockEntry, Campaign, Institution } from './types';
+import { assignStickerDedications } from './dedication';
+import { buildFulfillmentNeedsForFixedDestination } from './fulfillment';
+import type { AvailableStockEntry, Campaign, DonationItem, Institution } from './types';
 
 interface ClaimRequest {
   institutionId: string;
@@ -76,7 +78,7 @@ export const claimAvailableStock = onCall<ClaimRequest>(async (request) => {
   const batch = db.batch();
   let anyUpdated = false;
   for (const campaign of campaigns) {
-    const assigned = applyToCampaign(campaign, available, Infinity);
+    const { assigned } = applyToCampaign(campaign, available, Infinity);
     if (assigned > 0) {
       anyUpdated = true;
       batch.update(db.collection('campaigns').doc(campaign.id), {
@@ -90,6 +92,29 @@ export const claimAvailableStock = onCall<ClaimRequest>(async (request) => {
     }
   }
   if (anyUpdated) await batch.commit();
+
+  // The claiming institution keeps the full claimed quantity regardless of
+  // whether any of its own campaigns currently need it (see the doc comment
+  // above) — so every claimed copy becomes a FulfillmentNeed for this
+  // institution, with a fresh algorithm-picked dedication (claimed stock was
+  // never tied to one donor's own dedication choice).
+  const claimedItems: DonationItem[] = claims.map((c) => ({
+    seferId: c.seferId,
+    vendorId: c.vendorId,
+    quantity: c.quantity,
+    priceEach: 0,
+  }));
+  const stickers = await assignStickerDedications(claimedItems, null);
+  const needs = buildFulfillmentNeedsForFixedDestination(
+    stickers,
+    { destinationInstitutionId: institutionId, destinationAddress: institution.shippingAddress ?? institution.address },
+    undefined,
+  );
+  const needsBatch = db.batch();
+  for (const need of needs) {
+    needsBatch.set(db.collection('fulfillmentNeeds').doc(), need);
+  }
+  await needsBatch.commit();
 
   const claimedCount = claims.reduce((sum, claim) => sum + claim.quantity, 0);
   const result: ClaimResult = { claimedCount };

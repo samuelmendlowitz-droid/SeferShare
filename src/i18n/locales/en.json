@@ -157,6 +157,7 @@
     "bioLabel": "Bio (optional)",
     "accomplishmentsLabel": "Accomplishments (optional, one per line)",
     "logoLabel": "Logo (optional)",
+    "shipsElsewhereLabel": "Ship seforim to a different address (e.g. a storage garage)",
     "imagesLabel": "Photos (up to {{max}}, optional)",
     "bioHeading": "About",
     "accomplishmentsHeading": "Accomplishments",
@@ -310,7 +311,7 @@
       "neshamos": "Neshamos",
       "campaigns": "Campaigns",
       "donations": "Donations",
-      "orders": "Orders",
+      "fulfillment": "Fulfillment",
       "users": "Users"
     },
     "vendorApplications": "Vendor Applications",
@@ -324,12 +325,17 @@
     "selectTwoToMerge": "Select exactly two to merge (the first stays canonical).",
     "campaigns": "Campaigns",
     "donations": "Donations",
-    "orders": "Orders",
     "neshamos": "Neshamos",
     "neshamaDedup": "Neshama Deduplication",
     "catalog": "Sefer Catalog",
     "outOfStock": "out of stock",
     "confirmDeleteCampaign": "Delete this campaign? This can't be undone.",
+    "stockOnHand": "Stock On Hand",
+    "selectSefer": "Select sefer…",
+    "quantity": "Quantity",
+    "addStock": "Add Stock",
+    "fulfillmentNeeds": "Fulfillment Needs",
+    "fulfillFromStock": "Fulfill from stock",
     "users": "Users",
     "blocked": "Blocked",
     "block": "Block",
@@ -455,10 +461,14 @@
       "donatedTo": "Donated To"
     }
   },
-  "orderStatus": {
-    "pending": "Pending",
+  "fulfillmentNeedStatus": {
+    "needsFulfillment": "Needs Fulfillment",
+    "fulfilledFromStock": "Fulfilled From Stock",
+    "onOrder": "On Order",
+    "received": "Received",
+    "packed": "Packed",
     "shipped": "Shipped",
-    "delivered": "Fulfilled"
+    "delivered": "Delivered"
   },
   "donationStatus": {
     "pending": "Pending",

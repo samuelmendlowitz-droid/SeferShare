@@ -13,6 +13,22 @@ function remainingForMilestone(campaign: MutableCampaign): number {
   return Math.max(0, milestoneTarget - campaign.totalItemsFulfilled);
 }
 
+export interface AssignmentBreakdownEntry {
+  seferId: string;
+  vendorId: string;
+  quantity: number;
+}
+
+export interface ApplyToCampaignResult {
+  assigned: number;
+  /** Exactly which (seferId, vendorId) pools this campaign drew from, and how
+   *  much of each — lets a caller resolve a precise per-copy destination
+   *  instead of just this campaign's aggregate total (see FulfillmentNeed
+   *  creation in confirmDonation.ts / spendInstitutionBalance.ts /
+   *  claimAvailableStock.ts). */
+  breakdown: AssignmentBreakdownEntry[];
+}
+
 /**
  * Applies as much of `available` (grouped by seferId+vendorId) as the campaign's
  * items still need, capped by `cap` (the current 10% milestone allowance, or
@@ -22,8 +38,9 @@ export function applyToCampaign(
   campaign: MutableCampaign,
   available: Map<string, number>,
   cap: number,
-): number {
+): ApplyToCampaignResult {
   let assigned = 0;
+  const breakdown: AssignmentBreakdownEntry[] = [];
   for (const item of campaign.items) {
     if (assigned >= cap) break;
     const key = `${item.seferId}::${item.vendorId}`;
@@ -37,6 +54,7 @@ export function applyToCampaign(
     item.quantityFulfilled += take;
     assigned += take;
     available.set(key, have - take);
+    breakdown.push({ seferId: item.seferId, vendorId: item.vendorId, quantity: take });
   }
 
   if (assigned > 0) {
@@ -55,7 +73,7 @@ export function applyToCampaign(
     campaign.lastProgressAt = Timestamp.now();
   }
 
-  return assigned;
+  return { assigned, breakdown };
 }
 
 export function keyFor(seferId: string, vendorId: string) {
@@ -68,11 +86,22 @@ export interface AssignDonationInput {
   requestedNeshamaId?: string;
 }
 
+/** One (seferId, vendorId) pool's units, all resolved to the same campaign —
+ *  the precise per-copy destination lookup FulfillmentNeed creation needs. */
+export interface ItemAssignment extends AssignmentBreakdownEntry {
+  campaignId: string;
+}
+
 export interface AssignDonationResult {
   assignments: CampaignAssignment[];
   /** The full campaign record behind each assignment, already loaded in memory here
    *  from the same query — lets callers notify campaigners without refetching. */
   campaignsById: Map<string, Campaign>;
+  /** Precise per-copy breakdown of which campaign absorbed each unit. Quantity
+   *  from `input.items` not covered here (campaigns exhausted their milestone
+   *  caps) got no campaign and no destination — callers credit it to
+   *  availableStock, same as a donor-marked "no destination" item. */
+  itemAssignments: ItemAssignment[];
 }
 
 export async function assignDonationToCampaigns(
@@ -109,6 +138,13 @@ export async function assignDonationToCampaigns(
   const campaignsById = new Map(campaigns.map((c) => [c.id, c]));
 
   const assignedByCampaign = new Map<string, number>();
+  const itemAssignments: ItemAssignment[] = [];
+
+  function record(campaignId: string, result: ApplyToCampaignResult) {
+    if (result.assigned <= 0) return;
+    assignedByCampaign.set(campaignId, (assignedByCampaign.get(campaignId) ?? 0) + result.assigned);
+    for (const entry of result.breakdown) itemAssignments.push({ ...entry, campaignId });
+  }
 
   function totalRemaining(): number {
     let sum = 0;
@@ -126,10 +162,7 @@ export async function assignDonationToCampaigns(
   for (const [campaignId, bucket] of taggedByCampaign) {
     const campaign = campaignsById.get(campaignId);
     if (campaign) {
-      const assigned = applyToCampaign(campaign, bucket, Infinity);
-      if (assigned > 0) {
-        assignedByCampaign.set(campaign.id, (assignedByCampaign.get(campaign.id) ?? 0) + assigned);
-      }
+      record(campaign.id, applyToCampaign(campaign, bucket, Infinity));
     }
     for (const [key, qty] of bucket) {
       if (qty > 0) available.set(key, (available.get(key) ?? 0) + qty);
@@ -144,10 +177,7 @@ export async function assignDonationToCampaigns(
   for (const [institutionId, bucket] of taggedByInstitution) {
     const targeted = campaigns.filter((c) => c.institutionId === institutionId);
     for (const campaign of targeted) {
-      const assigned = applyToCampaign(campaign, bucket, Infinity);
-      if (assigned > 0) {
-        assignedByCampaign.set(campaign.id, (assignedByCampaign.get(campaign.id) ?? 0) + assigned);
-      }
+      record(campaign.id, applyToCampaign(campaign, bucket, Infinity));
     }
     for (const [key, qty] of bucket) {
       if (qty > 0) available.set(key, (available.get(key) ?? 0) + qty);
@@ -163,10 +193,7 @@ export async function assignDonationToCampaigns(
     );
     for (const campaign of targeted) {
       if (totalRemaining() <= 0) break;
-      const assigned = applyToCampaign(campaign, available, Infinity);
-      if (assigned > 0) {
-        assignedByCampaign.set(campaign.id, (assignedByCampaign.get(campaign.id) ?? 0) + assigned);
-      }
+      record(campaign.id, applyToCampaign(campaign, available, Infinity));
     }
   }
 
@@ -176,10 +203,7 @@ export async function assignDonationToCampaigns(
     if (campaign.status === 'fulfilled') continue;
     const cap = remainingForMilestone(campaign);
     if (cap <= 0) continue;
-    const assigned = applyToCampaign(campaign, available, cap);
-    if (assigned > 0) {
-      assignedByCampaign.set(campaign.id, (assignedByCampaign.get(campaign.id) ?? 0) + assigned);
-    }
+    record(campaign.id, applyToCampaign(campaign, available, cap));
   }
 
   if (assignedByCampaign.size > 0) {
@@ -206,5 +230,6 @@ export async function assignDonationToCampaigns(
     campaignsById: new Map(
       Array.from(assignedByCampaign.keys()).map((campaignId) => [campaignId, campaignsById.get(campaignId)!]),
     ),
+    itemAssignments,
   };
 }

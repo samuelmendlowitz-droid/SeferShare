@@ -5,10 +5,10 @@ import { db } from './lib/firebaseAdmin';
 import { getStripe, stripeSecretKey, stripeWebhookSecret } from './lib/stripe';
 import { assignDonationToCampaigns } from './algorithm';
 import { assignStickerDedications } from './dedication';
-import { splitOrdersByVendor } from './orders';
+import { buildFulfillmentNeeds, resolveCampaignDestinations } from './fulfillment';
 import { notify, notifyCampaigners } from './notify';
 import { creditAvailableStock } from './availableStock';
-import type { Donation, Order } from './types';
+import type { Donation } from './types';
 
 export const confirmDonation = onRequest(
   { secrets: [stripeSecretKey, stripeWebhookSecret] },
@@ -78,15 +78,44 @@ export const confirmDonation = onRequest(
     const claimItems = donation.items.filter((item) => item.availableForClaim);
     const routedItems = donation.items.filter((item) => !item.availableForClaim);
 
-    await creditAvailableStock(claimItems);
-
-    const { assignments: campaignAssignments, campaignsById } = await assignDonationToCampaigns({
+    const { assignments: campaignAssignments, campaignsById, itemAssignments } = await assignDonationToCampaigns({
       items: routedItems,
       requestedInstitutionId: donation.requestedInstitutionId ?? undefined,
       requestedNeshamaId: donation.requestedNeshamaId ?? undefined,
     });
 
     const stickers = await assignStickerDedications(routedItems, donation.donorDedication);
+
+    const campaignDestinations = await resolveCampaignDestinations(
+      [...new Set(itemAssignments.map((a) => a.campaignId))],
+      campaignsById,
+    );
+    const { needs, leftoverItems } = buildFulfillmentNeeds({
+      donationId,
+      stickers,
+      stickerDesign: donation.stickerDesign,
+      itemAssignments,
+      campaignDestinations,
+    });
+
+    // Quantity that never resolved to any campaign (every active campaign's
+    // milestone cap was already full) has no real destination yet — it joins
+    // the same free-for-claim pool as a donor-marked "no destination" item,
+    // same reasoning, different trigger.
+    await creditAvailableStock([...claimItems, ...leftoverItems]);
+
+    // Chunked rather than one batch: a large donation can produce one
+    // FulfillmentNeed per physical copy, which can exceed Firestore's 500-write
+    // batch limit in a way the old one-doc-per-vendor Order never approached.
+    const NEEDS_BATCH_SIZE = 450;
+    for (let i = 0; i < needs.length; i += NEEDS_BATCH_SIZE) {
+      const chunk = needs.slice(i, i + NEEDS_BATCH_SIZE);
+      const needsBatch = db.batch();
+      for (const need of chunk) {
+        needsBatch.set(db.collection('fulfillmentNeeds').doc(), need);
+      }
+      await needsBatch.commit();
+    }
 
     await donationRef.update({
       status: 'paid',
@@ -107,31 +136,6 @@ export const confirmDonation = onRequest(
       }
       await balanceBatch.commit();
     }
-
-    const ordersByVendor = splitOrdersByVendor(donation.items);
-    const batch = db.batch();
-    for (const [vendorId, items] of ordersByVendor) {
-      const orderRef = db.collection('orders').doc();
-      // TODO: attribute the shipping address of the specific campaign(s) each item
-      // was assigned to — assignDonationToCampaigns currently returns per-campaign
-      // totals, not a per-item breakdown, so a mixed-campaign order can't be split yet.
-      const order: Omit<Order, 'orderId' | 'createdAt'> & { createdAt: FirebaseFirestore.FieldValue } = {
-        donationId,
-        vendorId,
-        items: items.map((i) => ({ seferId: i.seferId, quantity: i.quantity, priceEach: i.priceEach })),
-        shippingAddress: {
-          line1: '',
-          city: '',
-          state: '',
-          postalCode: '',
-          country: '',
-        },
-        status: 'pending',
-        createdAt: FieldValue.serverTimestamp(),
-      };
-      batch.set(orderRef, order);
-    }
-    await batch.commit();
 
     await notifyCampaigners(campaignAssignments, campaignsById, donation.donorMessage ?? undefined, donationId);
     await notify({

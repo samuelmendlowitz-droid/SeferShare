@@ -16,24 +16,24 @@ import { deleteVendorListing, listSefarim } from '../services/sefarim';
 import { seferTypeText, subtypeLabel } from '../lib/seferTaxonomy';
 import { deleteNeshama, listNeshamos } from '../services/neshamos';
 import { deleteCampaign } from '../services/campaigns';
-import {
-  listAllCampaignsAdmin,
-  listAllDonationsAdmin,
-  listAllOrdersAdmin,
-  mergeNeshamos,
-  mergeSefarim,
-  updateOrderStatus,
-} from '../services/admin';
-import type { Campaign, Donation, Institution, Neshama, Order, OrderStatus, Sefer, User } from '../types';
+import { listAllCampaignsAdmin, listAllDonationsAdmin, mergeNeshamos, mergeSefarim } from '../services/admin';
+import { addStock, fulfillNeedFromStock, listFulfillmentNeedsAdmin, listStock } from '../services/fulfillment';
+import type { Campaign, Donation, FulfillmentNeed, Institution, Neshama, Sefer, StockEntry, User } from '../types';
 import { PageHeading } from '../components/layout/PageHeading';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { SeferForm } from '../components/vendor/SeferForm';
 
-type Section = 'vendors' | 'institutions' | 'sefarim' | 'neshamos' | 'campaigns' | 'donations' | 'orders' | 'users';
-
-const ORDER_STATUSES: OrderStatus[] = ['pending', 'shipped', 'delivered'];
+type Section =
+  | 'vendors'
+  | 'institutions'
+  | 'sefarim'
+  | 'neshamos'
+  | 'campaigns'
+  | 'donations'
+  | 'fulfillment'
+  | 'users';
 
 export function AdminPage() {
   const { t } = useTranslation();
@@ -49,14 +49,17 @@ export function AdminPage() {
   const [neshamos, setNeshamos] = useState<Neshama[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [fulfillmentNeeds, setFulfillmentNeeds] = useState<FulfillmentNeed[]>([]);
+  const [stock, setStock] = useState<StockEntry[]>([]);
+  const [addStockSeferId, setAddStockSeferId] = useState('');
+  const [addStockQty, setAddStockQty] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [selectedSefarim, setSelectedSefarim] = useState<string[]>([]);
   const [selectedNeshamos, setSelectedNeshamos] = useState<string[]>([]);
   const [showAddSefer, setShowAddSefer] = useState(false);
 
   async function reload() {
-    const [vendors, institutionOwners, insts, sef, nesh, camp, don, ord, allUsers] = await Promise.all([
+    const [vendors, institutionOwners, insts, sef, nesh, camp, don, needs, stockEntries, allUsers] = await Promise.all([
       listPendingVendorApplications(),
       listPendingInstitutionOwnerApplications(),
       listInstitutions(),
@@ -64,7 +67,8 @@ export function AdminPage() {
       listNeshamos(),
       listAllCampaignsAdmin(),
       listAllDonationsAdmin(),
-      listAllOrdersAdmin(),
+      listFulfillmentNeedsAdmin(),
+      listStock(),
       listAllUsers(),
     ]);
     setPendingVendors(vendors);
@@ -74,7 +78,8 @@ export function AdminPage() {
     setNeshamos(nesh);
     setCampaigns(camp);
     setDonations(don);
-    setOrders(ord);
+    setFulfillmentNeeds(needs);
+    setStock(stockEntries);
     setUsers(allUsers);
   }
 
@@ -87,7 +92,19 @@ export function AdminPage() {
     return <div className="mx-auto max-w-2xl px-4 pt-6 text-text-muted">{t('actions.notAuthorized')}</div>;
   }
 
-  const sections: Section[] = ['vendors', 'institutions', 'sefarim', 'neshamos', 'campaigns', 'donations', 'orders', 'users'];
+  const seferById = new Map(sefarim.map((s) => [s.seferId, s]));
+  const stockBySeferId = new Map(stock.map((s) => [s.seferId, s.quantity]));
+
+  const sections: Section[] = [
+    'vendors',
+    'institutions',
+    'sefarim',
+    'neshamos',
+    'campaigns',
+    'donations',
+    'fulfillment',
+    'users',
+  ];
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
@@ -401,31 +418,92 @@ export function AdminPage() {
         </div>
       )}
 
-      {section === 'orders' && (
+      {section === 'fulfillment' && (
         <div className="space-y-3">
-          <h2 className="text-base font-semibold">{t('admin.orders')}</h2>
-          {orders.map((o) => (
-            <Card key={o.orderId} className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold">{o.orderId}</p>
-                <p className="text-xs text-text-muted">{o.vendorId}</p>
-              </div>
-              <select
-                value={o.status}
-                onChange={async (e) => {
-                  await updateOrderStatus(o.orderId, e.target.value as OrderStatus);
-                  reload();
-                }}
-                className="rounded-btn border border-border px-2 py-1 text-sm"
-              >
-                {ORDER_STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {t(`orderStatus.${status}`)}
-                  </option>
-                ))}
-              </select>
+          <h2 className="text-base font-semibold">{t('admin.stockOnHand')}</h2>
+          <div className="flex flex-wrap items-end gap-2">
+            <select
+              value={addStockSeferId}
+              onChange={(e) => setAddStockSeferId(e.target.value)}
+              className="rounded-btn border border-border px-2 py-1 text-sm"
+            >
+              <option value="">{t('admin.selectSefer')}</option>
+              {sefarim.map((s) => (
+                <option key={s.seferId} value={s.seferId}>
+                  {s.englishName} · {s.hebrewName}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              min={1}
+              value={addStockQty}
+              onChange={(e) => setAddStockQty(e.target.value)}
+              placeholder={t('admin.quantity') ?? ''}
+              className="w-24 rounded-btn border border-border px-2 py-1 text-sm"
+            />
+            <Button
+              disabled={!addStockSeferId || !Number(addStockQty)}
+              onClick={async () => {
+                await addStock(addStockSeferId, Number(addStockQty));
+                setAddStockSeferId('');
+                setAddStockQty('');
+                reload();
+              }}
+            >
+              {t('admin.addStock')}
+            </Button>
+          </div>
+          {stock.length === 0 && <p className="text-text-muted">—</p>}
+          {stock.map((entry) => (
+            <Card key={entry.seferId} className="flex items-center justify-between">
+              <p className="text-sm font-semibold">{seferById.get(entry.seferId)?.englishName ?? entry.seferId}</p>
+              <p className="text-sm">{entry.quantity}</p>
             </Card>
           ))}
+
+          <h2 className="pt-2 text-base font-semibold">{t('admin.fulfillmentNeeds')}</h2>
+          {fulfillmentNeeds.length === 0 && <p className="text-text-muted">—</p>}
+          {fulfillmentNeeds.map((need) => {
+            const sefer = seferById.get(need.seferId);
+            const vendorName = sefer?.vendorListings.find((l) => l.vendorId === need.vendorId)?.vendorName;
+            const destinationName = need.destinationInstitutionId
+              ? institutions.find((i) => i.institutionId === need.destinationInstitutionId)?.name
+              : undefined;
+            const onHand = stockBySeferId.get(need.seferId) ?? 0;
+            return (
+              <Card key={need.fulfillmentNeedId} className="space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold">{sefer?.englishName ?? need.seferId}</p>
+                    <p className="text-xs text-text-muted">{vendorName ?? need.vendorId}</p>
+                    <p className="text-xs text-text-muted">
+                      {destinationName ?? `${need.destinationAddress.city}, ${need.destinationAddress.state}`}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-btn bg-surface-alt px-2 py-1 text-xs font-medium">
+                    {t(`fulfillmentNeedStatus.${need.status}`)}
+                  </span>
+                </div>
+                {need.status === 'needsFulfillment' && (
+                  <Button
+                    disabled={onHand < 1}
+                    onClick={async () => {
+                      try {
+                        await fulfillNeedFromStock(need);
+                        reload();
+                      } catch (err) {
+                        window.alert(err instanceof Error ? err.message : String(err));
+                      }
+                    }}
+                  >
+                    {t('admin.fulfillFromStock')}
+                    {onHand > 0 ? ` (${onHand})` : ''}
+                  </Button>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
 

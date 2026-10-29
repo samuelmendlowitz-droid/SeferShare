@@ -1,17 +1,6 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-  updateDoc,
-  where,
-  writeBatch,
-} from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, orderBy, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { Campaign, Donation, Order, OrderStatus, Sefer } from '../types';
+import type { Campaign, Donation, Sefer } from '../types';
 
 export async function listAllCampaignsAdmin(): Promise<Campaign[]> {
   const snap = await getDocs(query(collection(db, 'campaigns'), orderBy('createdAt', 'desc')));
@@ -21,10 +10,6 @@ export async function listAllCampaignsAdmin(): Promise<Campaign[]> {
 export async function listAllDonationsAdmin(): Promise<Donation[]> {
   const snap = await getDocs(query(collection(db, 'donations'), orderBy('createdAt', 'desc')));
   return snap.docs.map((d) => ({ ...(d.data() as Donation), donationId: d.id }));
-}
-
-export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<void> {
-  await updateDoc(doc(db, 'orders', orderId), { status });
 }
 
 /**
@@ -66,9 +51,4 @@ export async function mergeNeshamos(primaryNeshamaId: string, duplicateNeshamaId
   });
   batch.delete(doc(db, 'neshamos', duplicateNeshamaId));
   await batch.commit();
-}
-
-export async function listAllOrdersAdmin(): Promise<Order[]> {
-  const snap = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc')));
-  return snap.docs.map((d) => ({ ...(d.data() as Order), orderId: d.id }));
 }

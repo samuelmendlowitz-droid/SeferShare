@@ -12,6 +12,8 @@ import { Card } from '../ui/Card';
 import { FIELD_LABEL_CLASS, TextAreaField, TextField } from '../ui/TextField';
 import { ImageUploadField, resolveImageUrls, type ImageItem } from '../ui/ImageUploadField';
 
+const EMPTY_ADDRESS: Address = { line1: '', city: '', state: '', postalCode: '', country: '' };
+
 interface InstitutionEditFormProps {
   institution: Institution;
   onSaved: () => void;
@@ -29,6 +31,8 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
   const [type, setType] = useState<InstitutionType>(institution.type);
   const [customType, setCustomType] = useState(institution.customType ?? '');
   const [address, setAddress] = useState<Address>(institution.address);
+  const [shipsElsewhere, setShipsElsewhere] = useState(Boolean(institution.shippingAddress));
+  const [shippingAddress, setShippingAddress] = useState<Address>(institution.shippingAddress ?? EMPTY_ADDRESS);
   const [bio, setBio] = useState(institution.bio ?? '');
   const [accomplishments, setAccomplishments] = useState(institution.accomplishments ?? '');
   const [logoItems, setLogoItems] = useState<ImageItem[]>(
@@ -64,6 +68,7 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
         type,
         customType: type === 'other' ? customType.trim() || undefined : undefined,
         address,
+        shippingAddress: shipsElsewhere ? shippingAddress : undefined,
         bio: bio.trim() || undefined,
         accomplishments: accomplishments.trim() || undefined,
         images,
@@ -107,6 +112,15 @@ export function InstitutionEditForm({ institution, onSaved, onDeleted }: Institu
           <TextField required label={t('institution.customTypeLabel')} value={customType} onChange={setCustomType} />
         )}
         <AddressForm value={address} onChange={setAddress} />
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={shipsElsewhere} onChange={(e) => setShipsElsewhere(e.target.checked)} />
+          {t('institution.shipsElsewhereLabel')}
+        </label>
+        {shipsElsewhere && (
+          <div className="rounded-btn border border-border p-3">
+            <AddressForm value={shippingAddress} onChange={setShippingAddress} />
+          </div>
+        )}
         <TextAreaField label={t('institution.bioLabel')} value={bio} onChange={setBio} rows={3} />
         <TextAreaField
           label={t('institution.accomplishmentsLabel')}

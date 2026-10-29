@@ -126,10 +126,39 @@ service cloud.firestore {
       allow update, delete: if isAdmin() || (signedIn() && resource.data.createdByUid == request.auth.uid);
     }
 
-    // --- Orders — admin-only end to end now: admin receives the order, forwards
-    // it to the vendor outside the app, and tracks fulfillment itself. Vendors no
-    // longer read or manage their own orders in-app. -------------------------
-    match /orders/{orderId} {
+    // --- Fulfillment needs — one per physical copy a donation (or claimed
+    // availableStock) needs; created only by Cloud Functions at donation-confirm
+    // time. Admin-only end to end: this is the internal worklist (destination,
+    // dedication, sticker) a vendor never sees — they only ever see the batched
+    // VendorPurchaseOrder admin chooses to send them. --------------------------
+    match /fulfillmentNeeds/{needId} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- Admin's own on-hand inventory, per sefer — credited when a vendor
+    // purchase order is received, debited when it fulfills a need. ------------
+    match /stock/{seferId} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- Vendor purchase orders — what admin actually buys from one vendor,
+    // batched across as many fulfillment needs (or pure restocking) as admin
+    // chooses. The vendor can only ever read one once it's left 'draft' — that's
+    // the "only see it once we send it" boundary. All mutations (creating,
+    // sending, the vendor acknowledging/marking shipped, admin marking
+    // received/paid) go through Cloud Functions (Admin SDK bypasses these rules)
+    // so state transitions and payment fields are validated server-side, never
+    // trusted from a raw client write. ------------------------------------------
+    match /vendorPurchaseOrders/{poId} {
+      allow read: if isAdmin() || (
+        signedIn() && resource.data.vendorId == request.auth.uid && resource.data.fulfillmentStatus != 'draft'
+      );
+      allow write: if isAdmin();
+    }
+
+    // --- Shipments — groups fulfillment needs bound for the same destination
+    // into one outbound package; admin-only, no vendor involvement at this leg. --
+    match /shipments/{shipmentId} {
       allow read, write: if isAdmin();
     }
 

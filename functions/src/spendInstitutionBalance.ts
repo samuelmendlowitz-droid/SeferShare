@@ -4,9 +4,9 @@ import { db } from './lib/firebaseAdmin';
 import { priceItems } from './pricing';
 import { assignDonationToCampaigns } from './algorithm';
 import { assignStickerDedications } from './dedication';
-import { splitOrdersByVendor } from './orders';
+import { buildFulfillmentNeedsForFixedDestination } from './fulfillment';
 import { notifyCampaigners } from './notify';
-import type { DonationAd, DonationDedication, DonationItem, Institution, Order } from './types';
+import type { DonationAd, DonationDedication, DonationItem, Institution } from './types';
 
 interface SpendInstitutionBalanceRequest {
   institutionId: string;
@@ -74,19 +74,18 @@ export const spendInstitutionBalance = onCall<SpendInstitutionBalanceRequest>(as
   const stickers = await assignStickerDedications(items, donorDedication ?? null);
   await donationRef.update({ campaignAssignments, stickers });
 
-  const ordersByVendor = splitOrdersByVendor(items);
+  // Every item here ships to this same institution regardless of which of its
+  // own campaigns absorbed it (it's spending its own balance on itself) —
+  // simpler than the general donor-flow case, which can scatter across many
+  // institutions' campaigns.
+  const needs = buildFulfillmentNeedsForFixedDestination(
+    stickers,
+    { destinationInstitutionId: institutionId, destinationAddress: institution.shippingAddress ?? institution.address },
+    donationRef.id,
+  );
   const batch = db.batch();
-  for (const [vendorId, vendorItems] of ordersByVendor) {
-    const orderRef = db.collection('orders').doc();
-    const order: Omit<Order, 'orderId' | 'createdAt'> & { createdAt: FirebaseFirestore.FieldValue } = {
-      donationId: donationRef.id,
-      vendorId,
-      items: vendorItems.map((i) => ({ seferId: i.seferId, quantity: i.quantity, priceEach: i.priceEach })),
-      shippingAddress: institution.address,
-      status: 'pending',
-      createdAt: FieldValue.serverTimestamp(),
-    };
-    batch.set(orderRef, order);
+  for (const need of needs) {
+    batch.set(db.collection('fulfillmentNeeds').doc(), need);
   }
   await batch.commit();
 

@@ -49,7 +49,7 @@
       ]
     },
     {
-      "collectionGroup": "orders",
+      "collectionGroup": "vendorPurchaseOrders",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "vendorId", "order": "ASCENDING" },

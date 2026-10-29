@@ -183,27 +183,81 @@ export interface Institution {
   type: string;
   customType?: string;
   address: Address;
+  /** Falls back to `address` when unset — see fulfillment destination resolution. */
+  shippingAddress?: Address;
   createdByUid: string;
   verified: boolean;
   giftCardBalance?: number;
   createdAt: FirebaseFirestore.Timestamp;
 }
 
-export type OrderStatus = 'pending' | 'shipped' | 'delivered';
+export type FulfillmentNeedStatus =
+  | 'needsFulfillment'
+  | 'fulfilledFromStock'
+  | 'onOrder'
+  | 'received'
+  | 'packed'
+  | 'shipped'
+  | 'delivered';
 
-export interface OrderItem {
+export interface FulfillmentNeed {
+  fulfillmentNeedId: string;
   seferId: string;
-  quantity: number;
-  priceEach: number;
+  vendorId: string;
+  donationId?: string;
+  destinationInstitutionId?: string;
+  destinationAddress: Address;
+  dedication: DonationDedication;
+  stickerDesign?: StickerDesign;
+  status: FulfillmentNeedStatus;
+  vendorPurchaseOrderId?: string;
+  shipmentId?: string;
+  createdAt: FirebaseFirestore.Timestamp;
 }
 
-export interface Order {
-  orderId: string;
-  donationId: string;
+export type VendorPurchaseOrderFulfillmentStatus = 'draft' | 'sent' | 'acknowledged' | 'shipped' | 'received';
+export type VendorPurchaseOrderPaymentStatus = 'unpaid' | 'paid';
+
+export interface VendorPurchaseOrderItem {
+  seferId: string;
+  quantity: number;
+  wholesalePriceEach: number;
+}
+
+export interface VendorPurchaseOrder {
+  vendorPurchaseOrderId: string;
   vendorId: string;
-  items: OrderItem[];
-  shippingAddress: Address;
-  status: OrderStatus;
+  items: VendorPurchaseOrderItem[];
+  linkedFulfillmentNeedIds: string[];
+  fulfillmentStatus: VendorPurchaseOrderFulfillmentStatus;
+  paymentStatus: VendorPurchaseOrderPaymentStatus;
+  paidAt?: number;
+  paidAmount?: number;
+  paymentNote?: string;
+  createdByUid: string;
+  sentAt?: FirebaseFirestore.Timestamp;
+  receivedAt?: FirebaseFirestore.Timestamp;
+  createdAt: FirebaseFirestore.Timestamp;
+}
+
+export interface StockEntry {
+  seferId: string;
+  quantity: number;
+  updatedAt: FirebaseFirestore.Timestamp;
+}
+
+export type ShipmentStatus = 'packed' | 'shipped' | 'delivered';
+
+export interface Shipment {
+  shipmentId: string;
+  destinationInstitutionId?: string;
+  destinationAddress: Address;
+  fulfillmentNeedIds: string[];
+  status: ShipmentStatus;
+  carrier?: string;
+  trackingNumber?: string;
+  shippedAt?: FirebaseFirestore.Timestamp;
+  deliveredAt?: FirebaseFirestore.Timestamp;
   createdAt: FirebaseFirestore.Timestamp;
 }
 

@@ -5,6 +5,6 @@ export * from './institution';
 export * from './sefer';
 export * from './campaign';
 export * from './donation';
-export * from './order';
+export * from './fulfillment';
 export * from './notification';
 export * from './conversation';
