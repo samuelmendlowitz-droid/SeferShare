@@ -347,7 +347,8 @@ export type NotificationKind =
   | 'institution_owner_application_approved'
   | 'institution_owner_application_declined'
   | 'institution_verified'
-  | 'message_received';
+  | 'message_received'
+  | 'vendor_po_update';
 
 export type ConversationContext = 'vendor' | 'institutionOwner';
 export type MessageKind = 'text' | 'application_submitted' | 'application_approved' | 'application_declined';

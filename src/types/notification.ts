@@ -9,7 +9,8 @@ export type NotificationKind =
   | 'institution_owner_application_approved'
   | 'institution_owner_application_declined'
   | 'institution_verified'
-  | 'message_received';
+  | 'message_received'
+  | 'vendor_po_update';
 
 export interface Notification {
   notificationId: string;
@@ -26,5 +27,7 @@ export interface Notification {
   relatedInstitutionOwnerUid?: string;
   /** Set on institution_verified — the institution that was verified. */
   relatedInstitutionId?: string;
+  /** Set on vendor_po_update. */
+  relatedVendorPurchaseOrderId?: string;
   createdAt: number;
 }

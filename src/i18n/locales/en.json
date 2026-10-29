@@ -13,6 +13,7 @@
     "demand": "Demand",
     "availableToClaim": "Available to Claim",
     "myGallery": "My Gallery",
+    "myOrders": "My Orders",
     "community": "Directory",
     "shuls": "Shuls",
     "yeshivas": "Yeshivahs",
@@ -290,7 +291,10 @@
     "applicationSubmitted": "Your application has been submitted for review.",
     "applicationPending": "Your vendor application is pending approval.",
     "save": "Save",
-    "editSefer": "Edit sefer"
+    "editSefer": "Edit sefer",
+    "poEmpty": "No purchase orders yet.",
+    "acknowledgePo": "Acknowledge",
+    "markPoShipped": "Mark shipped to us"
   },
   "settings": {
     "language": "Language",
@@ -336,6 +340,24 @@
     "addStock": "Add Stock",
     "fulfillmentNeeds": "Fulfillment Needs",
     "fulfillFromStock": "Fulfill from stock",
+    "vendorPurchaseOrders": "Vendor Purchase Orders",
+    "selectVendorWithNeeds": "Select vendor…",
+    "wholesalePriceEach": "Wholesale $ each",
+    "createPo": "Create purchase order",
+    "sendPo": "Send to vendor",
+    "receivePo": "Mark received",
+    "markPaid": "Mark paid",
+    "markUnpaid": "Mark unpaid",
+    "enterPaidAmount": "How much did we pay?",
+    "enterPaymentNote": "Note (optional)",
+    "readyToPack": "Ready to Pack",
+    "shipmentItemCount": "{{count}} item(s)",
+    "createShipment": "Create shipment",
+    "shipments": "Shipments",
+    "carrier": "Carrier",
+    "trackingNumber": "Tracking number",
+    "markShipped": "Mark shipped",
+    "markDelivered": "Mark delivered",
     "users": "Users",
     "blocked": "Blocked",
     "block": "Block",
@@ -466,6 +488,22 @@
     "fulfilledFromStock": "Fulfilled From Stock",
     "onOrder": "On Order",
     "received": "Received",
+    "packed": "Packed",
+    "shipped": "Shipped",
+    "delivered": "Delivered"
+  },
+  "vendorPoFulfillmentStatus": {
+    "draft": "Draft",
+    "sent": "Sent",
+    "acknowledged": "Acknowledged",
+    "shipped": "Shipped to us",
+    "received": "Received"
+  },
+  "vendorPoPaymentStatus": {
+    "unpaid": "Unpaid",
+    "paid": "Paid"
+  },
+  "shipmentStatus": {
     "packed": "Packed",
     "shipped": "Shipped",
     "delivered": "Delivered"

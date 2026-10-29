@@ -53,6 +53,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "vendorId", "order": "ASCENDING" },
+        { "fieldPath": "fulfillmentStatus", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     },

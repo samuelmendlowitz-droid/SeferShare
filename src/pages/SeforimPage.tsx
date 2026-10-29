@@ -8,6 +8,7 @@ import { FilterSortSheet, type FilterGroup, type SortOption } from '../component
 import { SeforimShopList } from '../components/home/SeforimShopList';
 import { AvailableStockList } from '../components/home/AvailableStockList';
 import { CatalogTab, type CatalogGroupKey, type CatalogSortKey } from '../components/vendor/CatalogTab';
+import { VendorOrdersTab } from '../components/vendor/VendorOrdersTab';
 import { InstitutionSpendForm } from '../components/shared/InstitutionSpendForm';
 import { BubbleGrid } from '../components/ui/BubbleGrid';
 import { Card } from '../components/ui/Card';
@@ -309,6 +310,9 @@ export function SeforimPage() {
           ) : (
             <p className="text-text-muted">{t('actions.notAuthorized')}</p>
           ))}
+
+        {tab === 'myOrders' &&
+          (isApprovedVendor ? <VendorOrdersTab /> : <p className="text-text-muted">{t('actions.notAuthorized')}</p>)}
       </AppLayout>
 
       {tab === 'gallery' && (

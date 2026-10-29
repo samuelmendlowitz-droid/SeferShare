@@ -17,8 +17,33 @@ import { seferTypeText, subtypeLabel } from '../lib/seferTaxonomy';
 import { deleteNeshama, listNeshamos } from '../services/neshamos';
 import { deleteCampaign } from '../services/campaigns';
 import { listAllCampaignsAdmin, listAllDonationsAdmin, mergeNeshamos, mergeSefarim } from '../services/admin';
-import { addStock, fulfillNeedFromStock, listFulfillmentNeedsAdmin, listStock } from '../services/fulfillment';
-import type { Campaign, Donation, FulfillmentNeed, Institution, Neshama, Sefer, StockEntry, User } from '../types';
+import {
+  addStock,
+  createShipment,
+  createVendorPurchaseOrder,
+  fulfillNeedFromStock,
+  listFulfillmentNeedsAdmin,
+  listShipmentsAdmin,
+  listStock,
+  listVendorPurchaseOrdersAdmin,
+  markShipmentDelivered,
+  markShipmentShipped,
+  receiveVendorPurchaseOrder,
+  sendVendorPurchaseOrder,
+  setVendorPurchaseOrderPayment,
+} from '../services/fulfillment';
+import type {
+  Campaign,
+  Donation,
+  FulfillmentNeed,
+  Institution,
+  Neshama,
+  Sefer,
+  Shipment,
+  StockEntry,
+  User,
+  VendorPurchaseOrder,
+} from '../types';
 import { PageHeading } from '../components/layout/PageHeading';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -53,24 +78,32 @@ export function AdminPage() {
   const [stock, setStock] = useState<StockEntry[]>([]);
   const [addStockSeferId, setAddStockSeferId] = useState('');
   const [addStockQty, setAddStockQty] = useState('');
+  const [vendorPurchaseOrders, setVendorPurchaseOrders] = useState<VendorPurchaseOrder[]>([]);
+  const [poVendorId, setPoVendorId] = useState('');
+  const [poPrices, setPoPrices] = useState<Record<string, string>>({});
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [shipDrafts, setShipDrafts] = useState<Record<string, { carrier: string; trackingNumber: string }>>({});
   const [users, setUsers] = useState<User[]>([]);
   const [selectedSefarim, setSelectedSefarim] = useState<string[]>([]);
   const [selectedNeshamos, setSelectedNeshamos] = useState<string[]>([]);
   const [showAddSefer, setShowAddSefer] = useState(false);
 
   async function reload() {
-    const [vendors, institutionOwners, insts, sef, nesh, camp, don, needs, stockEntries, allUsers] = await Promise.all([
-      listPendingVendorApplications(),
-      listPendingInstitutionOwnerApplications(),
-      listInstitutions(),
-      listSefarim(),
-      listNeshamos(),
-      listAllCampaignsAdmin(),
-      listAllDonationsAdmin(),
-      listFulfillmentNeedsAdmin(),
-      listStock(),
-      listAllUsers(),
-    ]);
+    const [vendors, institutionOwners, insts, sef, nesh, camp, don, needs, stockEntries, pos, shipmentsList, allUsers] =
+      await Promise.all([
+        listPendingVendorApplications(),
+        listPendingInstitutionOwnerApplications(),
+        listInstitutions(),
+        listSefarim(),
+        listNeshamos(),
+        listAllCampaignsAdmin(),
+        listAllDonationsAdmin(),
+        listFulfillmentNeedsAdmin(),
+        listStock(),
+        listVendorPurchaseOrdersAdmin(),
+        listShipmentsAdmin(),
+        listAllUsers(),
+      ]);
     setPendingVendors(vendors);
     setPendingInstitutionOwners(institutionOwners);
     setInstitutions(insts);
@@ -80,6 +113,8 @@ export function AdminPage() {
     setDonations(don);
     setFulfillmentNeeds(needs);
     setStock(stockEntries);
+    setVendorPurchaseOrders(pos);
+    setShipments(shipmentsList);
     setUsers(allUsers);
   }
 
@@ -94,6 +129,45 @@ export function AdminPage() {
 
   const seferById = new Map(sefarim.map((s) => [s.seferId, s]));
   const stockBySeferId = new Map(stock.map((s) => [s.seferId, s.quantity]));
+
+  function vendorNameFor(vendorId: string): string {
+    for (const s of sefarim) {
+      const listing = s.vendorListings.find((l) => l.vendorId === vendorId);
+      if (listing) return listing.vendorName;
+    }
+    return vendorId;
+  }
+
+  const needsAwaitingPo = fulfillmentNeeds.filter((n) => n.status === 'needsFulfillment');
+  const vendorIdsWithNeeds = [...new Set(needsAwaitingPo.map((n) => n.vendorId))];
+  const poDraftCountsBySefer = new Map<string, number>();
+  if (poVendorId) {
+    for (const n of needsAwaitingPo) {
+      if (n.vendorId !== poVendorId) continue;
+      poDraftCountsBySefer.set(n.seferId, (poDraftCountsBySefer.get(n.seferId) ?? 0) + 1);
+    }
+  }
+
+  function destinationKeyFor(n: FulfillmentNeed): string {
+    if (n.destinationInstitutionId) return n.destinationInstitutionId;
+    const a = n.destinationAddress;
+    return `addr:${a.line1}|${a.city}|${a.state}|${a.postalCode}`;
+  }
+  function destinationNameFor(n: FulfillmentNeed): string {
+    if (n.destinationInstitutionId) {
+      return institutions.find((i) => i.institutionId === n.destinationInstitutionId)?.name ?? n.destinationInstitutionId;
+    }
+    return `${n.destinationAddress.city}, ${n.destinationAddress.state}`;
+  }
+
+  const readyToPackGroups = new Map<string, FulfillmentNeed[]>();
+  for (const n of fulfillmentNeeds) {
+    if (n.status !== 'received' && n.status !== 'fulfilledFromStock') continue;
+    const key = destinationKeyFor(n);
+    const list = readyToPackGroups.get(key) ?? [];
+    list.push(n);
+    readyToPackGroups.set(key, list);
+  }
 
   const sections: Section[] = [
     'vendors',
@@ -499,6 +573,237 @@ export function AdminPage() {
                   >
                     {t('admin.fulfillFromStock')}
                     {onHand > 0 ? ` (${onHand})` : ''}
+                  </Button>
+                )}
+              </Card>
+            );
+          })}
+
+          <h2 className="pt-2 text-base font-semibold">{t('admin.vendorPurchaseOrders')}</h2>
+          <div className="space-y-2">
+            <select
+              value={poVendorId}
+              onChange={(e) => {
+                setPoVendorId(e.target.value);
+                setPoPrices({});
+              }}
+              className="w-full rounded-btn border border-border px-2 py-1 text-sm"
+            >
+              <option value="">{t('admin.selectVendorWithNeeds')}</option>
+              {vendorIdsWithNeeds.map((vendorId) => (
+                <option key={vendorId} value={vendorId}>
+                  {vendorNameFor(vendorId)}
+                </option>
+              ))}
+            </select>
+            {poVendorId && (
+              <div className="space-y-2 rounded-btn border border-border p-3">
+                {[...poDraftCountsBySefer].map(([seferId, quantity]) => (
+                  <div key={seferId} className="flex items-center justify-between gap-2 text-sm">
+                    <span>
+                      {seferById.get(seferId)?.englishName ?? seferId} × {quantity}
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={poPrices[seferId] ?? ''}
+                      onChange={(e) => setPoPrices((prev) => ({ ...prev, [seferId]: e.target.value }))}
+                      placeholder={t('admin.wholesalePriceEach') ?? ''}
+                      className="w-28 rounded-btn border border-border px-2 py-1 text-sm"
+                    />
+                  </div>
+                ))}
+                <Button
+                  onClick={async () => {
+                    const fulfillmentNeedIds = needsAwaitingPo
+                      .filter((n) => n.vendorId === poVendorId)
+                      .map((n) => n.fulfillmentNeedId);
+                    const wholesalePricesBySeferId = Object.fromEntries(
+                      Object.entries(poPrices).map(([seferId, v]) => [seferId, Number(v) || 0]),
+                    );
+                    await createVendorPurchaseOrder({ vendorId: poVendorId, fulfillmentNeedIds, wholesalePricesBySeferId });
+                    setPoVendorId('');
+                    setPoPrices({});
+                    reload();
+                  }}
+                >
+                  {t('admin.createPo')}
+                </Button>
+              </div>
+            )}
+          </div>
+          {vendorPurchaseOrders.length === 0 && <p className="text-text-muted">—</p>}
+          {vendorPurchaseOrders.map((po) => (
+            <Card key={po.vendorPurchaseOrderId} className="space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold">{vendorNameFor(po.vendorId)}</p>
+                  <p className="text-xs text-text-muted">
+                    {po.items
+                      .map((item) => `${seferById.get(item.seferId)?.englishName ?? item.seferId} ×${item.quantity}`)
+                      .join(', ')}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <span className="rounded-btn bg-surface-alt px-2 py-1 text-xs font-medium">
+                    {t(`vendorPoFulfillmentStatus.${po.fulfillmentStatus}`)}
+                  </span>
+                  <span className={`text-xs font-medium ${po.paymentStatus === 'paid' ? 'text-success' : 'text-text-muted'}`}>
+                    {t(`vendorPoPaymentStatus.${po.paymentStatus}`)}
+                    {po.paymentStatus === 'paid' && po.paidAmount != null ? ` ($${po.paidAmount.toFixed(2)})` : ''}
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {po.fulfillmentStatus === 'draft' && (
+                  <Button
+                    onClick={async () => {
+                      await sendVendorPurchaseOrder(po.vendorPurchaseOrderId);
+                      reload();
+                    }}
+                  >
+                    {t('admin.sendPo')}
+                  </Button>
+                )}
+                {po.fulfillmentStatus === 'shipped' && (
+                  <Button
+                    onClick={async () => {
+                      await receiveVendorPurchaseOrder(po.vendorPurchaseOrderId);
+                      reload();
+                    }}
+                  >
+                    {t('admin.receivePo')}
+                  </Button>
+                )}
+                {po.paymentStatus === 'unpaid' ? (
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      const amountStr = window.prompt(t('admin.enterPaidAmount') ?? '');
+                      if (amountStr === null) return;
+                      const note = window.prompt(t('admin.enterPaymentNote') ?? '') ?? undefined;
+                      await setVendorPurchaseOrderPayment({
+                        vendorPurchaseOrderId: po.vendorPurchaseOrderId,
+                        paymentStatus: 'paid',
+                        paidAmount: Number(amountStr) || undefined,
+                        paymentNote: note || undefined,
+                      });
+                      reload();
+                    }}
+                  >
+                    {t('admin.markPaid')}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      await setVendorPurchaseOrderPayment({ vendorPurchaseOrderId: po.vendorPurchaseOrderId, paymentStatus: 'unpaid' });
+                      reload();
+                    }}
+                  >
+                    {t('admin.markUnpaid')}
+                  </Button>
+                )}
+              </div>
+            </Card>
+          ))}
+
+          <h2 className="pt-2 text-base font-semibold">{t('admin.readyToPack')}</h2>
+          {readyToPackGroups.size === 0 && <p className="text-text-muted">—</p>}
+          {[...readyToPackGroups.entries()].map(([key, needs]) => (
+            <Card key={key} className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-sm font-semibold">{destinationNameFor(needs[0])}</p>
+                <p className="text-xs text-text-muted">{t('admin.shipmentItemCount', { count: needs.length })}</p>
+              </div>
+              <Button
+                onClick={async () => {
+                  await createShipment({
+                    fulfillmentNeedIds: needs.map((n) => n.fulfillmentNeedId),
+                    destinationInstitutionId: needs[0].destinationInstitutionId,
+                    destinationAddress: needs[0].destinationAddress,
+                  });
+                  reload();
+                }}
+              >
+                {t('admin.createShipment')}
+              </Button>
+            </Card>
+          ))}
+
+          <h2 className="pt-2 text-base font-semibold">{t('admin.shipments')}</h2>
+          {shipments.length === 0 && <p className="text-text-muted">—</p>}
+          {shipments.map((shipment) => {
+            const destinationName = shipment.destinationInstitutionId
+              ? institutions.find((i) => i.institutionId === shipment.destinationInstitutionId)?.name
+              : undefined;
+            const draft =
+              shipDrafts[shipment.shipmentId] ?? { carrier: shipment.carrier ?? '', trackingNumber: shipment.trackingNumber ?? '' };
+            return (
+              <Card key={shipment.shipmentId} className="space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold">
+                      {destinationName ?? `${shipment.destinationAddress.city}, ${shipment.destinationAddress.state}`}
+                    </p>
+                    <p className="text-xs text-text-muted">
+                      {t('admin.shipmentItemCount', { count: shipment.fulfillmentNeedIds.length })}
+                    </p>
+                    {shipment.trackingNumber && (
+                      <p className="text-xs text-text-muted">
+                        {shipment.carrier} · {shipment.trackingNumber}
+                      </p>
+                    )}
+                  </div>
+                  <span className="shrink-0 rounded-btn bg-surface-alt px-2 py-1 text-xs font-medium">
+                    {t(`shipmentStatus.${shipment.status}`)}
+                  </span>
+                </div>
+                {shipment.status === 'packed' && (
+                  <div className="flex flex-wrap items-end gap-2">
+                    <input
+                      value={draft.carrier}
+                      onChange={(e) =>
+                        setShipDrafts((prev) => ({ ...prev, [shipment.shipmentId]: { ...draft, carrier: e.target.value } }))
+                      }
+                      placeholder={t('admin.carrier') ?? ''}
+                      className="w-32 rounded-btn border border-border px-2 py-1 text-sm"
+                    />
+                    <input
+                      value={draft.trackingNumber}
+                      onChange={(e) =>
+                        setShipDrafts((prev) => ({
+                          ...prev,
+                          [shipment.shipmentId]: { ...draft, trackingNumber: e.target.value },
+                        }))
+                      }
+                      placeholder={t('admin.trackingNumber') ?? ''}
+                      className="w-36 rounded-btn border border-border px-2 py-1 text-sm"
+                    />
+                    <Button
+                      disabled={!draft.carrier || !draft.trackingNumber}
+                      onClick={async () => {
+                        await markShipmentShipped({
+                          shipmentId: shipment.shipmentId,
+                          carrier: draft.carrier,
+                          trackingNumber: draft.trackingNumber,
+                        });
+                        reload();
+                      }}
+                    >
+                      {t('admin.markShipped')}
+                    </Button>
+                  </div>
+                )}
+                {shipment.status === 'shipped' && (
+                  <Button
+                    onClick={async () => {
+                      await markShipmentDelivered(shipment.shipmentId);
+                      reload();
+                    }}
+                  >
+                    {t('admin.markDelivered')}
                   </Button>
                 )}
               </Card>

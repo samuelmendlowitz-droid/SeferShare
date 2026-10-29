@@ -7,7 +7,7 @@ import { CornerButton } from './CornerButton';
 import { PlusIcon } from '../ui/icons';
 
 export type ProfileTab = 'campaigns' | 'donations' | 'institution' | 'notifications' | 'stickers' | 'settings';
-export type SeforimTab = 'gallery' | 'demand' | 'claim' | 'myGallery';
+export type SeforimTab = 'gallery' | 'demand' | 'claim' | 'myGallery' | 'myOrders';
 export type CommunityTab = 'shuls' | 'yeshivas' | 'kolels' | 'schools' | 'otherInstitutions' | 'rabbeim' | 'neshamas';
 
 interface BaseLayoutProps {
@@ -72,6 +72,7 @@ export function AppLayout(props: AppLayoutProps) {
           { key: 'demand', label: t('nav.demand') },
           { key: 'claim', label: t('nav.availableToClaim') },
           { key: 'myGallery', label: t('nav.myGallery') },
+          { key: 'myOrders', label: t('nav.myOrders') },
         ]
       : [];
 

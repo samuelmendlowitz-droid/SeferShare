@@ -13,6 +13,7 @@
     "demand": "ביקוש",
     "availableToClaim": "זמין לתביעה",
     "myGallery": "הגלריה שלי",
+    "myOrders": "ההזמנות שלי",
     "community": "מדריך",
     "shuls": "בתי כנסת",
     "yeshivas": "ישיבות",
@@ -290,7 +291,10 @@
     "applicationSubmitted": "הבקשה שלכם נשלחה לבדיקה.",
     "applicationPending": "בקשת הספק שלכם ממתינה לאישור.",
     "save": "שמירה",
-    "editSefer": "עריכת ספר"
+    "editSefer": "עריכת ספר",
+    "poEmpty": "אין הזמנות רכש עדיין.",
+    "acknowledgePo": "אישור קבלה",
+    "markPoShipped": "סימון כנשלח אלינו"
   },
   "settings": {
     "language": "שפה",
@@ -336,6 +340,24 @@
     "addStock": "הוספת מלאי",
     "fulfillmentNeeds": "פריטים למימוש",
     "fulfillFromStock": "מימוש מהמלאי",
+    "vendorPurchaseOrders": "הזמנות רכש מספקים",
+    "selectVendorWithNeeds": "בחר ספק…",
+    "wholesalePriceEach": "מחיר סיטונאי ליחידה",
+    "createPo": "יצירת הזמנת רכש",
+    "sendPo": "שליחה לספק",
+    "receivePo": "סימון כהתקבל",
+    "markPaid": "סימון כשולם",
+    "markUnpaid": "סימון כלא שולם",
+    "enterPaidAmount": "כמה שולם?",
+    "enterPaymentNote": "הערה (אופציונלי)",
+    "readyToPack": "מוכן לאריזה",
+    "shipmentItemCount": "{{count}} פריטים",
+    "createShipment": "יצירת משלוח",
+    "shipments": "משלוחים",
+    "carrier": "חברת שילוח",
+    "trackingNumber": "מספר מעקב",
+    "markShipped": "סימון כנשלח",
+    "markDelivered": "סימון כנמסר",
     "users": "משתמשים",
     "blocked": "חסום",
     "block": "חסימה",
@@ -469,6 +491,22 @@
     "packed": "אוחסן לאריזה",
     "shipped": "נשלח",
     "delivered": "הושלם"
+  },
+  "vendorPoFulfillmentStatus": {
+    "draft": "טיוטה",
+    "sent": "נשלח",
+    "acknowledged": "אושר",
+    "shipped": "נשלח אלינו",
+    "received": "התקבל"
+  },
+  "vendorPoPaymentStatus": {
+    "unpaid": "לא שולם",
+    "paid": "שולם"
+  },
+  "shipmentStatus": {
+    "packed": "אוחסן לאריזה",
+    "shipped": "נשלח",
+    "delivered": "נמסר"
   },
   "donationStatus": {
     "pending": "ממתין",

@@ -93,11 +93,14 @@ export interface VendorPurchaseOrder {
   createdAt: number;
 }
 
-/** Admin's own on-hand inventory, per sefer — credited when a
- *  VendorPurchaseOrder is received, debited when it fulfills a
- *  FulfillmentNeed. Deliberately has no required link to any vendor or
- *  donation: this is what lets a need be filled instantly instead of waiting
- *  on a fresh vendor order, and is the seed for eventually stocking/producing
+/** Admin's own on-hand inventory, per sefer — credited by a manual restock
+ *  (addStock) and debited by fulfillNeedFromStock when it satisfies a
+ *  specific need, always a deliberate per-item admin choice, never
+ *  automatic. A VendorPurchaseOrder's own linked needs go straight from
+ *  'onOrder' to 'received' when it's received (see
+ *  receiveVendorPurchaseOrder) without touching this ledger at all — they
+ *  were already earmarked for those exact copies, so there's nothing to
+ *  draw from stock. This is the seed for eventually stocking/producing
  *  seforim outside the vendor marketplace entirely. */
 export interface StockEntry {
   /** Doc id is the seferId itself. */

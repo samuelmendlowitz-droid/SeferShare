@@ -17,3 +17,11 @@ export { setUserBlocked, deleteUserAccount } from './manageUsers';
 export { spendInstitutionBalance } from './spendInstitutionBalance';
 // Also no Stripe secrets — claiming free stock never touches payment.
 export { claimAvailableStock } from './claimAvailableStock';
+export {
+  createVendorPurchaseOrder,
+  sendVendorPurchaseOrder,
+  acknowledgeVendorPurchaseOrder,
+  markVendorPurchaseOrderShipped,
+  receiveVendorPurchaseOrder,
+  setVendorPurchaseOrderPayment,
+} from './vendorPurchaseOrders';
