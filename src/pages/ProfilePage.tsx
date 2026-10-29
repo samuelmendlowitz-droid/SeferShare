@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppLayout, type ProfileTab } from '../components/layout/AppLayout';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../components/layout/FilterSortSheet';
 import { MyCampaignsTab } from '../components/profile/MyCampaignsTab';
@@ -14,11 +14,19 @@ import { useMyCampaignsFeed, type MyCampaignsSortKey } from '../hooks/useMyCampa
 import { useMyDonationsFeed, type MyDonationsSortKey } from '../hooks/useMyDonationsFeed';
 import { DONATION_STATUSES, type DonationStatus, type SeferType } from '../types';
 
+const PROFILE_TABS: ProfileTab[] = ['campaigns', 'donations', 'institution', 'notifications', 'stickers', 'settings'];
+
 export function ProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const [tab, setTab] = useState<ProfileTab>('campaigns');
+  const [searchParams] = useSearchParams();
+  // Supports deep-linking straight to a tab, e.g. `/profile?tab=institution`
+  // from the Available to Claim page's "become an institution" prompt.
+  const [tab, setTab] = useState<ProfileTab>(() => {
+    const fromUrl = searchParams.get('tab');
+    return (PROFILE_TABS as string[]).includes(fromUrl ?? '') ? (fromUrl as ProfileTab) : 'campaigns';
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
 

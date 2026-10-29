@@ -7,6 +7,8 @@ import { AppLayout, type SeforimTab } from '../components/layout/AppLayout';
 import { FilterSortSheet, type FilterGroup, type SortOption } from '../components/layout/FilterSortSheet';
 import { SeforimShopList } from '../components/home/SeforimShopList';
 import { AvailableStockList } from '../components/home/AvailableStockList';
+import { ClaimInfoBubble } from '../components/home/ClaimInfoBubble';
+import { BecomeVendorTab } from '../components/vendor/BecomeVendorTab';
 import { CatalogTab, type CatalogGroupKey, type CatalogSortKey } from '../components/vendor/CatalogTab';
 import { VendorOrdersTab } from '../components/vendor/VendorOrdersTab';
 import { InstitutionSpendForm } from '../components/shared/InstitutionSpendForm';
@@ -230,7 +232,14 @@ export function SeforimPage() {
 
   return (
     <>
-      <AppLayout variant="seforim" tab={tab} onTabChange={setTab} onSearch={setSearchQuery} filterSort={filterSort}>
+      <AppLayout
+        variant="seforim"
+        tab={tab}
+        onTabChange={setTab}
+        onSearch={setSearchQuery}
+        filterSort={filterSort}
+        isApprovedVendor={isApprovedVendor}
+      >
         {tab === 'gallery' && (
           <>
             {myVerifiedInstitutions.length > 0 && (
@@ -271,34 +280,38 @@ export function SeforimPage() {
             </>
           ))}
 
-        {tab === 'claim' &&
-          (stockLoading ? (
-            <LoadingSpinner />
-          ) : stockItems.length === 0 ? (
-            <Card className="flex flex-col items-center gap-2 py-8 text-center">
-              <BookIcon className="text-accent" width={32} height={32} />
-              <p className="max-w-xs text-xs text-text-muted">{t('seforim.availableStockEmpty')}</p>
-            </Card>
-          ) : (
-            <>
-              {myVerifiedInstitutions.length > 1 && (
-                <div className="mb-3">
-                  <p className="mb-1 text-xs font-semibold text-text-muted">{t('seforim.claimingAsLabel')}</p>
-                  <BubbleGrid
-                    rows={1}
-                    options={myVerifiedInstitutions.map((inst) => ({ value: inst.institutionId, label: inst.name }))}
-                    isSelected={(v) => claimingInstitutionId === v}
-                    onToggle={setClaimingInstitutionId}
-                  />
-                </div>
-              )}
-              {myVerifiedInstitutions.length === 0 && (
-                <p className="mb-3 text-xs text-text-muted">{t('seforim.claimNeedsVerifiedInstitution')}</p>
-              )}
-              {claimError && <p className="mb-3 text-sm text-error">{claimError}</p>}
-              <AvailableStockList items={stockItems} onClaim={claimingInstitutionId ? handleClaim : undefined} />
-            </>
-          ))}
+        {tab === 'claim' && (
+          <>
+            {myVerifiedInstitutions.length === 0 && <ClaimInfoBubble />}
+            {stockLoading ? (
+              <LoadingSpinner />
+            ) : stockItems.length === 0 ? (
+              <Card className="flex flex-col items-center gap-2 py-8 text-center">
+                <BookIcon className="text-accent" width={32} height={32} />
+                <p className="max-w-xs text-xs text-text-muted">{t('seforim.availableStockEmpty')}</p>
+              </Card>
+            ) : (
+              <>
+                {myVerifiedInstitutions.length > 1 && (
+                  <div className="mb-3">
+                    <p className="mb-1 text-xs font-semibold text-text-muted">{t('seforim.claimingAsLabel')}</p>
+                    <BubbleGrid
+                      rows={1}
+                      options={myVerifiedInstitutions.map((inst) => ({ value: inst.institutionId, label: inst.name }))}
+                      isSelected={(v) => claimingInstitutionId === v}
+                      onToggle={setClaimingInstitutionId}
+                    />
+                  </div>
+                )}
+                {myVerifiedInstitutions.length === 0 && (
+                  <p className="mb-3 text-xs text-text-muted">{t('seforim.claimNeedsVerifiedInstitution')}</p>
+                )}
+                {claimError && <p className="mb-3 text-sm text-error">{claimError}</p>}
+                <AvailableStockList items={stockItems} onClaim={claimingInstitutionId ? handleClaim : undefined} />
+              </>
+            )}
+          </>
+        )}
 
         {tab === 'myGallery' &&
           (isApprovedVendor ? (
@@ -313,6 +326,8 @@ export function SeforimPage() {
 
         {tab === 'myOrders' &&
           (isApprovedVendor ? <VendorOrdersTab /> : <p className="text-text-muted">{t('actions.notAuthorized')}</p>)}
+
+        {tab === 'becomeVendor' && <BecomeVendorTab />}
       </AppLayout>
 
       {tab === 'gallery' && (

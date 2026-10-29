@@ -7,7 +7,7 @@ import { CornerButton } from './CornerButton';
 import { PlusIcon } from '../ui/icons';
 
 export type ProfileTab = 'campaigns' | 'donations' | 'institution' | 'notifications' | 'stickers' | 'settings';
-export type SeforimTab = 'gallery' | 'demand' | 'claim' | 'myGallery' | 'myOrders';
+export type SeforimTab = 'gallery' | 'demand' | 'claim' | 'myGallery' | 'myOrders' | 'becomeVendor';
 export type CommunityTab = 'shuls' | 'yeshivas' | 'kolels' | 'schools' | 'otherInstitutions' | 'rabbeim' | 'neshamas';
 
 interface BaseLayoutProps {
@@ -29,6 +29,9 @@ interface SeforimLayoutProps extends BaseLayoutProps {
   variant: 'seforim';
   tab: SeforimTab;
   onTabChange: (tab: SeforimTab) => void;
+  /** Swaps the My Gallery / My Orders tabs for a single Become a Vendor tab
+   *  when false — those two are useless to anyone who can't act on them. */
+  isApprovedVendor: boolean;
 }
 
 interface ProfileLayoutProps extends BaseLayoutProps {
@@ -71,8 +74,12 @@ export function AppLayout(props: AppLayoutProps) {
           { key: 'gallery', label: t('nav.gallery') },
           { key: 'demand', label: t('nav.demand') },
           { key: 'claim', label: t('nav.availableToClaim') },
-          { key: 'myGallery', label: t('nav.myGallery') },
-          { key: 'myOrders', label: t('nav.myOrders') },
+          ...(props.isApprovedVendor
+            ? [
+                { key: 'myGallery', label: t('nav.myGallery') },
+                { key: 'myOrders', label: t('nav.myOrders') },
+              ]
+            : [{ key: 'becomeVendor', label: t('nav.becomeVendor') }]),
         ]
       : [];
 

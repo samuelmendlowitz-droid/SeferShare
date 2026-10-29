@@ -14,6 +14,7 @@
     "availableToClaim": "Available to Claim",
     "myGallery": "My Gallery",
     "myOrders": "My Orders",
+    "becomeVendor": "Become a Vendor",
     "community": "Directory",
     "shuls": "Shuls",
     "yeshivas": "Yeshivahs",
@@ -247,6 +248,7 @@
     "claimAction": "Claim",
     "claimingAsLabel": "Claiming as",
     "claimNeedsVerifiedInstitution": "Only a verified institution can claim seforim — apply from Profile > My Institution.",
+    "claimInfoBubble": "Only an institution owner can claim seforim here. Sign up to become one and get verified to start claiming.",
     "availableStockEmpty": "Nothing is available to claim right now."
   },
   "donation": {
@@ -292,6 +294,7 @@
     "applicationPending": "Your vendor application is pending approval.",
     "save": "Save",
     "editSefer": "Edit sefer",
+    "becomeVendorExplanation": "Vendors list their seforim catalog, set their own stock, and set wholesale pricing — never shown to donors. We never ship your seforim directly to a donor or institution: when we need some, we send you a purchase order, and you ship it to us so we can add the dedication sticker, package it, and deliver it ourselves. You're paid separately for each purchase order once it's fulfilled.",
     "poEmpty": "No purchase orders yet.",
     "acknowledgePo": "Acknowledge",
     "markPoShipped": "Mark shipped to us"
