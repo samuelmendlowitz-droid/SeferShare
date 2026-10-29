@@ -30,6 +30,8 @@ jobs:
         env:
           SA_FILE: ${{ runner.temp }}/service-account.json
       - name: Deploy Firestore rules/indexes + Functions
-        run: npx firebase-tools@13 deploy --project sefershare --only firestore:rules,firestore:indexes,functions --non-interactive
+        # --force: needed in non-interactive mode whenever firestore.indexes.json drops an
+        # index that's still live (e.g. retiring a collection) — it confirms deleting it.
+        run: npx firebase-tools@13 deploy --project sefershare --only firestore:rules,firestore:indexes,functions --non-interactive --force
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/service-account.json
